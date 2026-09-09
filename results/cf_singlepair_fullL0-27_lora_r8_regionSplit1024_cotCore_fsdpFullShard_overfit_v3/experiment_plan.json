@@ -1,0 +1,126 @@
+{
+  "args": {
+    "activation_checkpointing": true,
+    "checkpoint_every": 10,
+    "checkpoint_path": "/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT/ema.safetensors",
+    "eval_steps": [
+      0,
+      25,
+      50,
+      100,
+      200,
+      300,
+      400,
+      500
+    ],
+    "expected_num_tokens": 16384,
+    "image_size": 1024,
+    "llm_path": "/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT",
+    "lora_alpha": 16,
+    "lora_dropout": 0.0,
+    "lora_r": 8,
+    "lr": 3e-05,
+    "manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/reruns/nanobanana_v4_absolute_region/manifests/intervention_pairs_single_ball_c1.jsonl",
+    "max_grad_norm": 1.0,
+    "max_num_tokens": 16384,
+    "max_num_tokens_per_sample": 16384,
+    "max_peak_reserved_gib": 38.5,
+    "milestone_steps": [
+      0,
+      25,
+      50,
+      100,
+      200,
+      300,
+      400,
+      500
+    ],
+    "min_gpu_memory_gib": 38.0,
+    "num_samples": 1,
+    "output_dir": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_regionSplit1024_cotCore_fsdpFullShard_overfit_v3",
+    "pair_id": "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+    "precision": "bf16",
+    "resume": "auto",
+    "seed": 1234,
+    "steps": 500,
+    "trainable_name_regex": "^(time_embedder|latent_pos_embed|vit_pos_embed|vae2llm|llm2vae|connector)\\.",
+    "vae_path": "/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT/ae.safetensors",
+    "variant": "paired_cf_mvp",
+    "vit_image_size": 980,
+    "vit_min_image_size": 980,
+    "weight_decay": 0.0
+  },
+  "experiment_name": "cf_singlepair_fullL0-27_lora_r8_regionSplit1024_cotCore_fsdpFullShard_overfit_v3",
+  "fsdp": {
+    "managed_params": "frozen_base_only",
+    "replicated_params": "LoRA_and_bridge_trainables",
+    "sharding_strategy": "FULL_SHARD",
+    "use_orig_params": true,
+    "world_size": 2
+  },
+  "input_structure": [
+    "source_vae_1024",
+    "source_vit_980",
+    "source_prompt_plus_target_cot",
+    "target_vae_1024_loss"
+  ],
+  "pair_id": "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+  "prompt_profile": "cot_core_v1",
+  "region_objective": {
+    "candidate_mask_reconstruction": {
+      "dilation_px": 9,
+      "median_filter_px": 3,
+      "pixel_exact_match": true,
+      "threshold": 24
+    },
+    "expected_target_tokens": 4096,
+    "formula": "0.25*old_mse + 0.25*new_mse + 0.50*preserve_mse",
+    "loss_weights": {
+      "new": 0.25,
+      "old": 0.25,
+      "preserve": 0.5
+    },
+    "mask_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/masks/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+    "new_pixels": 41295,
+    "new_roi_ltrb": [
+      810,
+      610,
+      1024,
+      860
+    ],
+    "objective": "old_new_preserve_target_flow_mse",
+    "old_pixels": 36943,
+    "old_roi_ltrb": [
+      40,
+      590,
+      270,
+      850
+    ],
+    "partition_max_error": 0.0,
+    "preserve_pixels": 970338,
+    "preserve_target": "gold_target_flow_velocity_not_source_latent",
+    "sha256": {
+      "mask": "1e3cc4e4c0f1cc45b6c2052e674104711838490bac1b7b0a86cc333bff677887",
+      "source": "71d756241d84721b7885c68bd4da650bf4873277d48be363fb6990d74ace1539",
+      "target": "8500c4401b5dd17ca7aa06d78bf9f3e1dbab3ceb67904c0a2903e034477f9dd1"
+    },
+    "source_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+    "target_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+    "token_grid_hw": [
+      64,
+      64
+    ],
+    "token_mass_ratios": {
+      "new": 0.039381980895996094,
+      "old": 0.035231590270996094,
+      "preserve": 0.9253864288330078
+    },
+    "token_masses": {
+      "new": 161.30859375,
+      "old": 144.30859375,
+      "preserve": 3790.3828125
+    }
+  },
+  "source": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+  "target": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png"
+}

@@ -1,0 +1,5 @@
+{
+  "latest_checkpoint": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_regionSplit1024_cotCore_fsdpFullShard_overfit_v3/checkpoints/latest.pt",
+  "status": "completed",
+  "step": 500
+}

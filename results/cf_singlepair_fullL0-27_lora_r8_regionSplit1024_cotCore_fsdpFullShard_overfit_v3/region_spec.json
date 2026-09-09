@@ -1,0 +1,55 @@
+{
+  "candidate_mask_reconstruction": {
+    "dilation_px": 9,
+    "median_filter_px": 3,
+    "pixel_exact_match": true,
+    "threshold": 24
+  },
+  "expected_target_tokens": 4096,
+  "formula": "0.25*old_mse + 0.25*new_mse + 0.50*preserve_mse",
+  "loss_weights": {
+    "new": 0.25,
+    "old": 0.25,
+    "preserve": 0.5
+  },
+  "mask_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/masks/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+  "new_pixels": 41295,
+  "new_roi_ltrb": [
+    810,
+    610,
+    1024,
+    860
+  ],
+  "objective": "old_new_preserve_target_flow_mse",
+  "old_pixels": 36943,
+  "old_roi_ltrb": [
+    40,
+    590,
+    270,
+    850
+  ],
+  "partition_max_error": 0.0,
+  "preserve_pixels": 970338,
+  "preserve_target": "gold_target_flow_velocity_not_source_latent",
+  "sha256": {
+    "mask": "1e3cc4e4c0f1cc45b6c2052e674104711838490bac1b7b0a86cc333bff677887",
+    "source": "71d756241d84721b7885c68bd4da650bf4873277d48be363fb6990d74ace1539",
+    "target": "8500c4401b5dd17ca7aa06d78bf9f3e1dbab3ceb67904c0a2903e034477f9dd1"
+  },
+  "source_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+  "target_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+  "token_grid_hw": [
+    64,
+    64
+  ],
+  "token_mass_ratios": {
+    "new": 0.039381980895996094,
+    "old": 0.035231590270996094,
+    "preserve": 0.9253864288330078
+  },
+  "token_masses": {
+    "new": 161.30859375,
+    "old": 144.30859375,
+    "preserve": 3790.3828125
+  }
+}
