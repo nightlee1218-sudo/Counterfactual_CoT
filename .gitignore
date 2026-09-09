@@ -1,0 +1,39 @@
+__pycache__/
+*.py[cod]
+
+# Model weights and checkpoints
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+
+# Images, videos and generated artifacts
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+outputs/
+checkpoints/
+evaluation/
+logs/
+*.log
+
+# Local datasets, manifests and temporary storage
+models/
+dockerdata/
+gold40_final/
+images_gold*/
+reruns/
+manual_candidates/
+*.jsonl
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,279 @@
+diff --git a/data/dataset_base.py b/data/dataset_base.py
+index 263eece..368db07 100644
+--- a/data/dataset_base.py
++++ b/data/dataset_base.py
+@@ -106,6 +106,52 @@ class PackedDataset(torch.utils.data.IterableDataset):
+                 vit_transform = ImageTransform(**dataset_args.pop('vit_image_transform_args'))
+                 dataset_args['vit_transform'] = vit_transform
+
++            # ── JSONL-based datasets (OptionalPlanDataset) ───────────────────
++            # These datasets use manifest_path instead of data_dir_list.
++            # They are identified by the presence of 'manifest_path' in the
++            # first DATASET_INFO entry for this grouped_dataset_name.
++            _first_meta = next(
++                iter(DATASET_INFO.get(grouped_dataset_name, {}).values()), {}
++            )
++            if 'manifest_path' in _first_meta:
++                assert 'dataset_names' in dataset_args, \
++                    f"dataset_names required for {grouped_dataset_name}"
++                dataset_names = dataset_args.pop('dataset_names')
++                # For JSONL datasets, only one dataset_name is supported per group.
++                if len(dataset_names) != 1:
++                    raise ValueError(
++                        f"{grouped_dataset_name}: JSONL-based datasets support "
++                        f"exactly one dataset_name per group, got {dataset_names}"
++                    )
++                item = dataset_names[0]
++                if self.local_rank == 0:
++                    print(f'Preparing JSONL Dataset {grouped_dataset_name}/{item}')
++                meta_info = DATASET_INFO[grouped_dataset_name][item]
++                # Pass manifest_path and optional fields directly
++                dataset_args['manifest_path'] = meta_info['manifest_path']
++                dataset_args['variant'] = meta_info.get('variant', grouped_dataset_name)
++                dataset_args['training_seed'] = meta_info.get('training_seed', 42)
++                if meta_info.get('registry_path'):
++                    dataset_args['registry_path'] = meta_info['registry_path']
++
++                resume_data_status = dataset_args.pop('resume_data_status', True)
++                if data_status is not None and grouped_dataset_name in data_status and resume_data_status:
++                    data_status_per_group = data_status[grouped_dataset_name]
++                else:
++                    data_status_per_group = None
++                dataset = DATASET_REGISTRY[grouped_dataset_name](
++                    dataset_name=grouped_dataset_name,
++                    tokenizer=self.tokenizer,
++                    local_rank=self.local_rank,
++                    world_size=self.world_size,
++                    num_workers=self.num_workers,
++                    data_status=data_status_per_group,
++                    **dataset_args,
++                )
++                datasets.append(dataset)
++                continue
++            # ── End JSONL-based branch ────────────────────────────────────────
++
+             assert 'dataset_names' in dataset_args.keys()
+             dataset_names = dataset_args.pop('dataset_names')
+             dataset_args['data_dir_list'] = []
+diff --git a/data/dataset_info.py b/data/dataset_info.py
+index 055e301..524797c 100644
+--- a/data/dataset_info.py
++++ b/data/dataset_info.py
+@@ -2,6 +2,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+
+ from .interleave_datasets import UnifiedEditIterableDataset
++from .optional_plan_dataset import OptionalPlanDataset
+ from .t2i_dataset import T2IIterableDataset
+ from .vlm_dataset import SftJSONLIterableDataset
+
+@@ -10,30 +11,64 @@ DATASET_REGISTRY = {
+     't2i_pretrain': T2IIterableDataset,
+     'vlm_sft': SftJSONLIterableDataset,
+     'unified_edit': UnifiedEditIterableDataset,
++    # STARS / OptionalPlan training variants
++    'optional_plan': OptionalPlanDataset,
++    'stars_raw': OptionalPlanDataset,      # same class, variant="stars_raw"
++    'plan_only': OptionalPlanDataset,      # same class, variant="plan_only"
+ }
+
+
+ DATASET_INFO = {
+     't2i_pretrain': {
+         't2i': {
+-            'data_dir': 'your_data_path/bagel_example/t2i', # path of the parquet files
+-            'num_files': 10, # number of data units to be sharded across all ranks and workers
+-            'num_total_samples': 1000, # number of total samples in the dataset
++            'data_dir': 'your_data_path/bagel_example/t2i',
++            'num_files': 10,
++            'num_total_samples': 1000,
+         },
+     },
+-    'unified_edit':{
++    'unified_edit': {
+         'seedxedit_multi': {
+             'data_dir': 'your_data_path/bagel_example/editing/seedxedit_multi',
+             'num_files': 10,
+             'num_total_samples': 1000,
+-            "parquet_info_path": 'your_data_path/bagel_example/editing/parquet_info/seedxedit_multi_nas.json', # information of the parquet files
+-		},
++            'parquet_info_path': 'your_data_path/bagel_example/editing/parquet_info/seedxedit_multi_nas.json',
++        },
+     },
+     'vlm_sft': {
+         'llava_ov': {
+-			'data_dir': 'your_data_path/bagel_example/vlm/images',
+-			'jsonl_path': 'your_data_path/bagel_example/vlm/llava_ov_si.jsonl',
+-			'num_total_samples': 1000
+-		},
++            'data_dir': 'your_data_path/bagel_example/vlm/images',
++            'jsonl_path': 'your_data_path/bagel_example/vlm/llava_ov_si.jsonl',
++            'num_total_samples': 1000,
++        },
++    },
++    # ── STARS / OptionalPlan datasets ────────────────────────────────────────
++    # Paths are filled in after build_stars_data.py produces the manifests.
++    # training_seed must match the --global_seed passed to the training script.
++    'optional_plan': {
++        'stars_optional_plan': {
++            'manifest_path': 'experiments/umm_cot_experiment_kit/data/optional_plan_train.jsonl',
++            'variant': 'optional_plan',
++            'training_seed': 3407,
++            'registry_path': 'experiments/umm_cot_experiment_kit/data/frozen_plans.jsonl',
++            'num_total_samples': 0,   # filled in after build_stars_data.py
++        },
++    },
++    'stars_raw': {
++        'stars_raw': {
++            'manifest_path': 'experiments/umm_cot_experiment_kit/data/stars_raw_train.jsonl',
++            'variant': 'stars_raw',
++            'training_seed': 3407,
++            'registry_path': None,
++            'num_total_samples': 0,
++        },
++    },
++    'plan_only': {
++        'stars_plan_only': {
++            'manifest_path': 'experiments/umm_cot_experiment_kit/data/plan_only_train.jsonl',
++            'variant': 'plan_only',
++            'training_seed': 3407,
++            'registry_path': 'experiments/umm_cot_experiment_kit/data/frozen_plans.jsonl',
++            'num_total_samples': 0,
++        },
+     },
+ }
+\ No newline at end of file
+diff --git a/inferencer.py b/inferencer.py
+index faebe28..eac48d7 100644
+--- a/inferencer.py
++++ b/inferencer.py
+@@ -27,6 +27,21 @@ class InterleaveInferencer:
+         self.vae_transform = vae_transform
+         self.vit_transform = vit_transform
+         self.new_token_ids = new_token_ids
++
++    @property
++    def device(self):
++        return next(self.model.parameters()).device
++
++    def to_model_device(self, value):
++        if torch.is_tensor(value):
++            return value.to(self.device)
++        if isinstance(value, dict):
++            return {key: self.to_model_device(item) for key, item in value.items()}
++        if isinstance(value, list):
++            return [self.to_model_device(item) for item in value]
++        if isinstance(value, tuple):
++            return tuple(self.to_model_device(item) for item in value)
++        return value
+
+     def init_gen_context(self):
+         gen_context = {
+@@ -50,6 +65,7 @@ class InterleaveInferencer:
+             tokenizer=self.tokenizer,
+             new_token_ids=self.new_token_ids,
+         )
++        generation_input = self.to_model_device(generation_input)
+
+         past_key_values = self.model.forward_cache_update_text(past_key_values, **generation_input)
+         gen_context['kv_lens'] = kv_lens
+@@ -76,6 +92,7 @@ class InterleaveInferencer:
+                 transforms=self.vae_transform,
+                 new_token_ids=self.new_token_ids,
+             )
++            generation_input = self.to_model_device(generation_input)
+             past_key_values = self.model.forward_cache_update_vae(self.vae_model, past_key_values, **generation_input)
+
+         if vit:
+@@ -87,6 +104,7 @@ class InterleaveInferencer:
+                 transforms=self.vit_transform,
+                 new_token_ids=self.new_token_ids,
+             )
++            generation_input = self.to_model_device(generation_input)
+             past_key_values = self.model.forward_cache_update_vit(past_key_values, **generation_input)
+
+         gen_context['kv_lens'] = kv_lens
+@@ -123,6 +141,7 @@ class InterleaveInferencer:
+             image_sizes=[image_shape],
+             new_token_ids=self.new_token_ids,
+         )
++        generation_input = self.to_model_device(generation_input)
+
+         # text cfg
+         cfg_text_past_key_values = cfg_text_precontext['past_key_values']
+@@ -133,6 +152,7 @@ class InterleaveInferencer:
+             curr_rope=ropes_cfg,
+             image_sizes=[image_shape],
+         )
++        generation_input_cfg_text = self.to_model_device(generation_input_cfg_text)
+
+         # img cfg
+         cfg_img_past_key_values = cfg_img_precontext['past_key_values']
+@@ -143,6 +163,7 @@ class InterleaveInferencer:
+             curr_rope=ropes_cfg,
+             image_sizes=[image_shape],
+         )
++        generation_input_cfg_img = self.to_model_device(generation_input_cfg_img)
+
+         unpacked_latent = self.model.generate_image(
+             past_key_values=past_key_values,
+@@ -192,6 +213,7 @@ class InterleaveInferencer:
+         ropes = gen_context['ropes']
+
+         generation_input = self.model.prepare_start_tokens(kv_lens, ropes, self.new_token_ids)
++        generation_input = self.to_model_device(generation_input)
+         unpacked_latent = self.model.generate_text(
+             past_key_values=past_key_values,
+             max_length=max_length,
+diff --git a/modeling/bagel/bagel.py b/modeling/bagel/bagel.py
+index dd14009..b0588a3 100644
+--- a/modeling/bagel/bagel.py
++++ b/modeling/bagel/bagel.py
+@@ -163,7 +163,7 @@ class Bagel(PreTrainedModel):
+         else:
+             attention_mask = nested_attention_masks
+
+-        if self.config.visual_und:
++        if self.config.visual_und and packed_vit_tokens is not None:
+             cu_seqlens = torch.nn.functional.pad(torch.cumsum(vit_token_seqlens, dim=0), (1, 0))
+             cu_seqlens = cu_seqlens.to(torch.int32)
+             max_seqlen = torch.max(vit_token_seqlens).item()
+@@ -200,7 +200,7 @@ class Bagel(PreTrainedModel):
+         if self.use_moe:
+             packed_und_token_indexes = packed_text_indexes
+             if packed_vit_token_indexes is not None:
+-                packed_und_token_indexes=torch.cat([packed_text_indexes, packed_vit_token_indexes], dim=0)
++                packed_und_token_indexes = torch.cat([packed_text_indexes, packed_vit_token_indexes], dim=0)
+             extra_inputs.update(
+                 packed_und_token_indexes=packed_und_token_indexes,
+                 packed_gen_token_indexes=packed_vae_token_indexes,
+@@ -216,15 +216,17 @@ class Bagel(PreTrainedModel):
+
+         mse = None
+         if self.config.visual_gen:
++            mse_loss_indexes = mse_loss_indexes.to(last_hidden_state.device)
+             packed_mse_preds = self.llm2vae(last_hidden_state[mse_loss_indexes])
+-            target = noise - packed_latent_clean # NOTE: v_t=dx_t/dt=x_1-x_0, pointing from data to noise
+-            has_mse = packed_timesteps > 0
++            target = (noise - packed_latent_clean).to(packed_mse_preds.device) # NOTE: v_t=dx_t/dt=x_1-x_0, pointing from data to noise
++            has_mse = (packed_timesteps > 0).to(target.device)
+             mse = (packed_mse_preds - target[has_mse]) ** 2
+
+         ce = None
+         if ce_loss_indexes is not None:
++            ce_loss_indexes = ce_loss_indexes.to(last_hidden_state.device)
+             packed_ce_preds = self.language_model.lm_head(last_hidden_state[ce_loss_indexes])
+-            ce = F.cross_entropy(packed_ce_preds, packed_label_ids, reduction="none")
++            ce = F.cross_entropy(packed_ce_preds, packed_label_ids.to(packed_ce_preds.device), reduction="none")
+
+         return dict(mse=mse, ce=ce)
+
+@@ -1070,6 +1072,6 @@ class Bagel(PreTrainedModel):
+                 **generation_input,
+             )
+         output = tokenizer.decode(unpacked_latent[:,0])
+-        output = output.split('<|im_end|>')[0].split('<|im_start|>')[1]
++        output = output.split('\<|im_end|\>')[0].split('<|im_start|>')[1]
+
+         return output
+\ No newline at end of file
