@@ -1,0 +1,6 @@
+{
+  "schema_version": "counterfactual_detailed_repair_plan_v1",
+  "manifest": "experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "pair_count": 0,
+  "plans": []
+}

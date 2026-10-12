@@ -1,0 +1,9 @@
+{
+  "records": 1000,
+  "unique_pair_ids": 1000,
+  "unique_source_scenes": 150,
+  "unique_transitions": 1000,
+  "errors": 0,
+  "examples": [],
+  "generation_ready": true
+}

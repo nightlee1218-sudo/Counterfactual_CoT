@@ -1,0 +1,1157 @@
+{
+  "counts": {
+    "intervention_types": {
+      "attribute_replace": 10,
+      "count_change": 10,
+      "object_replace": 10,
+      "spatial_position_change": 8,
+      "spatial_relation_change": 2
+    },
+    "source_scenes": 10,
+    "unique_pairs": 40
+  },
+  "created_at": "2026-09-10T08:07:52.430774+00:00",
+  "human_review_used": false,
+  "inputs": {
+    "automatic_mask_root": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks",
+    "candidate_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/gold40_source_target_paired_candidate_v4.jsonl",
+    "candidate_manifest_sha256": "cbaa00ecc80e60490e2def20f30c347e321a92ac9145cdbc76798e7934d0f30b"
+  },
+  "mask_provenance": {
+    "kind": "automatic_rgb_difference_mask",
+    "semantic_annotation": false,
+    "state_specific": false
+  },
+  "output": {
+    "manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/gold40_source_target_automask_v5.jsonl",
+    "manifest_sha256": "3f7bb1846fe31dfcba67371b2c69bd03671dc43bad4fc3677b25661fc50ec8a2"
+  },
+  "pairs": [
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 149210,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000.png",
+        "sha256": "f99cca56fbd29ccab8ee166323c1d5119d33212592e44570308f38c5f84666ce",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000__source.png",
+        "sha256": "f0f607f653f0201087479f7452a01a7a113e94be4f9abab4173d980cb01e1619"
+      },
+      "source_scene_id": "city_street",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000__target.png",
+        "sha256": "8016cdc57dbb97c2d6d66d7282c780d255931389e54c16c2f7de8b0d12a7d2e2"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 192384,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_attribute_replace_0000.png",
+        "sha256": "ca03ea4d1049b7477429556c0c77cb3183304cdbe094480506e37579f66a386b",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_city_street_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_city_street_attribute_replace_0000__source.png",
+        "sha256": "64e2be9bf7e976cab91d51179795825fd55cf6690ea87ff6aa3d0c737502f4f6"
+      },
+      "source_scene_id": "city_street",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_city_street_attribute_replace_0000__target.png",
+        "sha256": "1f448f368e420d378ffd163c7a08950c0ec153568bc7ec5a1ea4b0e2cbc79e27"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 47738,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_count_change_0000.png",
+        "sha256": "cacdc2d3b38dfd73efdbcf5fb71998549671bb0dd3459651ee105d0f6415584b",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_city_street_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_city_street_count_change_0000__source.png",
+        "sha256": "74a81d6e775c9c929bf9acc415d309389f1e8bcd05429fa364b3a078ffaaca17"
+      },
+      "source_scene_id": "city_street",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_city_street_count_change_0000__target.png",
+        "sha256": "9aef176bdf47b942fc3f71a2055b2d9d68cc7312d0c3810bf30eef2531e0ea57"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 43928,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_object_replace_0000.png",
+        "sha256": "b9ba01d34a9e3568178275adc3c9e4790760c55df05f8934533e5ea91c5f167b",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_city_street_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_city_street_object_replace_0000__source.png",
+        "sha256": "df094e764aabc895d75e8f099a8e81c7a6cd96c76919004563f7cc9c339ea5ee"
+      },
+      "source_scene_id": "city_street",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_city_street_object_replace_0000__target.png",
+        "sha256": "6e15ae6e3f130be71c154a26fd6ff09f70bb0297b7a1ec75876302cc3923ee37"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 225783,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "6566bb4e98b5fb5f48a27a93fe87a40e653daccf8db23b71c05e40576a8e8c30",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "773e2ba16593ebc525b4ff2c5909f57a903fde89c01def98ca5bda6efea8b00f"
+      },
+      "source_scene_id": "classroom",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "c4e99b358338b8a421a3feeeccc0e93533c9b5dd7630ade5ad069329ed69af74"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 192582,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_attribute_replace_0000.png",
+        "sha256": "44021feb8b74fa8d4984e464ebeb03b00d6e0fa2dc151a859e95289fd416b396",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_classroom_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_classroom_attribute_replace_0000__source.png",
+        "sha256": "b42ef717e6c72607f7e2d4e37278b17a10e3b9a9031d71229dddd832c587ac3e"
+      },
+      "source_scene_id": "classroom",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_classroom_attribute_replace_0000__target.png",
+        "sha256": "f97d5699180a2c3f0d30643c0bdeca9c05ac940c193f10018e47c35fea6a3413"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 47482,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_count_change_0000.png",
+        "sha256": "04a42b0d5828817f3bbd44c599d80566c8036b9ba9e2937e647ed70ee86333c1",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_classroom_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_classroom_count_change_0000__source.png",
+        "sha256": "7373ac603e068c9822ca489801bba3ddecf5402452a774661013ea0a5c90f94b"
+      },
+      "source_scene_id": "classroom",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_classroom_count_change_0000__target.png",
+        "sha256": "5ad89558e6fb000d6448e8a09b9fd3b3f226c0c2755b7efdc5b2821a008933fd"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 269976,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_object_replace_0000.png",
+        "sha256": "029074a26d6c057af9f7b5318d3096e414e93f65fef0ce443a751b8c8cf90042",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_classroom_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_classroom_object_replace_0000__source.png",
+        "sha256": "b1a786efcbe2e3ad0678f4d934c9d34ed2ef6bdb465122d42b870b92e19c5b56"
+      },
+      "source_scene_id": "classroom",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_classroom_object_replace_0000__target.png",
+        "sha256": "3e5b52cbdb932f7a84c6c04425e24637b0317bc20020cfd5f46b5532b7fcaa91"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 155352,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000.png",
+        "sha256": "9e13272de72a38201c9e0153643b51987da3ff18a588b72cd3a762fecee2dafc",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000__source.png",
+        "sha256": "0bcbbbe62323d270d070a3b16224c5510ea42d4f68048fab4a3fef61293d2594"
+      },
+      "source_scene_id": "flower_shop",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000__target.png",
+        "sha256": "4196f6d49b36335afc6bda70971c1b5dec9cde6f387738898203685a54085a5f"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 29380,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_attribute_replace_0000.png",
+        "sha256": "5fd60a8c32809219430912d44f0df34607292a5c9aaeb17799f38db81129af96",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_flower_shop_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_flower_shop_attribute_replace_0000__source.png",
+        "sha256": "d1f7aaa4c7ee471279d2b793d3a4724e2439f823459cf287873779b98610f117"
+      },
+      "source_scene_id": "flower_shop",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_flower_shop_attribute_replace_0000__target.png",
+        "sha256": "d83354235d2636255a1a2201628b9621668a6081ddce89d1d137afddd14424bd"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 30600,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_count_change_0000.png",
+        "sha256": "7bf38b881af555ddc3a31a3c053c096c37b92e229e595febcc1ec549f6ff9b03",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_flower_shop_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_flower_shop_count_change_0000__source.png",
+        "sha256": "f335c5685e1d626fefcbb47a9bfda72d4c6697f7d0c48e9c276dac711e072013"
+      },
+      "source_scene_id": "flower_shop",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_flower_shop_count_change_0000__target.png",
+        "sha256": "9d2c174a7c025cf2bc9c09d34b55dd133cbee5d3bae3d10bdbee907176f7fbe4"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 71265,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_object_replace_0000.png",
+        "sha256": "35379d256a29f1856f44943b314c70d268c9ffcc4956ecaf50c764646fc20713",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_flower_shop_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_flower_shop_object_replace_0000__source.png",
+        "sha256": "559c9098d48f7b653ceef4aa823dcd29e984a27e71bc1dcb356784bb79c4e9b3"
+      },
+      "source_scene_id": "flower_shop",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_flower_shop_object_replace_0000__target.png",
+        "sha256": "84d72f493cd637a1d8085d51d2fe40d4b52ead83181402084b8394733aab5845"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 334322,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "4272cb0de300e8cf7254ef9ef3e908c1a342383de9e8624e20536ea66be18bc3",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "baf7f56c4e7c0ad6a3a308fc5b313284071be1e2cc3574b0b5ccf1b6fc8c3205"
+      },
+      "source_scene_id": "garden_animals",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "2b2a3c984743b2f71010c95372f20467a42ac0d70ccae86c60e12f2fc97e4d88"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 645811,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_attribute_replace_0000.png",
+        "sha256": "e2af9d78b7092222a8b5e148334661999048540e5e6a5828c5fcfa9b0c3db52b",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_garden_animals_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_garden_animals_attribute_replace_0000__source.png",
+        "sha256": "8296f63c3e2dac37a16cb94d3777fca3ea677fbf6a40a1e39f43be822e24334d"
+      },
+      "source_scene_id": "garden_animals",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_garden_animals_attribute_replace_0000__target.png",
+        "sha256": "c04986faa295c3d79d618e5480677999803cd2cc9e61c0b7396764d83f3dbc12"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 571170,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "4005d4c0e784e8142b7c42e6c2514a0588575e3d3e8eb91117ca32a06cd6ca18",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "00ea2083784655880065a9b0ea989ea88d2ee5ba37e7b1813a5aac7f632f6012"
+      },
+      "source_scene_id": "garden_animals",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "6811395926de921c46ec5ef7702ff04831029c978c95b2e4a117d82b3c916961"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 396450,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "fa05c5453e6af3e24e037ee4a3b0972e036e714f3dac94b6ee4fe7c586843023",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "065903c7dfee4c24676052b7a65305387c6ac46affe58cc33a0f098e9c41d543"
+      },
+      "source_scene_id": "garden_animals",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "734950792ec5d1e1752739c497300d14a2bb66337a227f1f46ec9c8c1514c624"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 258172,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000.png",
+        "sha256": "a62206af7873f98b85ad1f016d2d9cb7540395492d31e241be956c85dd52cd49",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000__source.png",
+        "sha256": "0cf42b9e825ca3632e0262994fcebb1d82a0ef4b48a7f5ae0fe29a56aeca601c"
+      },
+      "source_scene_id": "grocery_display",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000__target.png",
+        "sha256": "b53158447237b3113628342056c95e742f5ab1e08fbf202b76b2515295fa9323"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 57041,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_attribute_replace_0000.png",
+        "sha256": "fa2b2437c70b70d2d6cdcf81e3e41f9c3a3bdbf1ba115e5a8a7d4436b4226060",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_grocery_display_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_grocery_display_attribute_replace_0000__source.png",
+        "sha256": "237bdc8a955ff8158fd994013b638cf6e18be2259668b16df454e5bde16e0b05"
+      },
+      "source_scene_id": "grocery_display",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_grocery_display_attribute_replace_0000__target.png",
+        "sha256": "ee8fd4fe6a481685a2cfb873df657a16cee27a05b459fcaeb7ae26368ab7fbdd"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 131856,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_count_change_0000.png",
+        "sha256": "8031c5eb6e13af2d24ef3af1e727e9dda6e6cc9d1a496c08104e4257e27668ac",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_grocery_display_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_grocery_display_count_change_0000__source.png",
+        "sha256": "b4dd9c69f634d081948958982ca2bf8ca8c2662a7a42dfdf9cfcfcb19e80561a"
+      },
+      "source_scene_id": "grocery_display",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_grocery_display_count_change_0000__target.png",
+        "sha256": "c72f72b009e6a880974b156f4774994e776e23bf34bb1521904ee909e07ba2e2"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 271528,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "eca8e7306b607a46b2ce0bef317fc8a3b113230e022c75a9d0191076ad373038",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "8b170e8d7b3e4274056cdd22c6cc2f50bd59470639d4d166fac326bb46cad99f"
+      },
+      "source_scene_id": "grocery_display",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "b408f45bbfc20d34bca247b91b6c5536e329033d38b3ffbeb00e3f3c8dccbdba"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 53621,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_attribute_replace_0000.png",
+        "sha256": "d8046d007bc711dc401a9a230898e1402757bb688475b9f952e456eb90f77c13",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_home_kitchen_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_home_kitchen_attribute_replace_0000__source.png",
+        "sha256": "f0a158faf8cbf5bb8bba9cae928e60627ef4d11da18b1fb0b60c4492db066f5f"
+      },
+      "source_scene_id": "home_kitchen",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_home_kitchen_attribute_replace_0000__target.png",
+        "sha256": "b3be2aa9fa6011e0bde89bb1e2ea808198ca17eb9d3032131bfc2446e96ba88c"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 372373,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "c516b6d47f6fbfcf03f5ebe65d337eca791f538f3f0a319c0d4f0264270d6ada",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "b5c135c0ae8d464d086f01ade352e25caeb02a71f682431910d0f321d08cd74c"
+      },
+      "source_scene_id": "home_kitchen",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "ad0bab0e22e27d3d0b9fe49e02084b7baf55acf31870193840d266816eea1760"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 65129,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_object_replace_0000.png",
+        "sha256": "1082457f7864e33b781cec3325937847b0d5c727119d6485a60676ebf9f5da3e",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_home_kitchen_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_home_kitchen_object_replace_0000__source.png",
+        "sha256": "90cf71ef4620cb8ec0db0b2ab17d64dd643df233ec6b08990beab55406f965cf"
+      },
+      "source_scene_id": "home_kitchen",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_home_kitchen_object_replace_0000__target.png",
+        "sha256": "5ee61a2438d4d508448f8cb657971229fe56aeb9f1e765f842597a68f21709f4"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_relation_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 221316,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_spatial_relation_change_0000.png",
+        "sha256": "3bf805df010bf847d04a2735b70d5e76d8db7d891c046f2509ed009935e8bfc5",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_home_kitchen_spatial_relation_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_home_kitchen_spatial_relation_change_0000__source.png",
+        "sha256": "8b3c73a03c41d5b56687fb5a1a89ee4d684e9303c4f89132dbad8a22f4283980"
+      },
+      "source_scene_id": "home_kitchen",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_home_kitchen_spatial_relation_change_0000__target.png",
+        "sha256": "48a8727e2fb2516f54ce0c9c76cb01b4a7f673017e728c07dda4270b7cc4dce3"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 174418,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_attribute_replace_0000.png",
+        "sha256": "bf16062058d5a686a19a0f1d04c69907dda90da585b621e197892cebb900c5d5",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_lakeside_birds_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_lakeside_birds_attribute_replace_0000__source.png",
+        "sha256": "6b7f545d4b87fff7bf44a46b0a2598444d456b391781db93c06df96e185c7f30"
+      },
+      "source_scene_id": "lakeside_birds",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_lakeside_birds_attribute_replace_0000__target.png",
+        "sha256": "23614bc30bfbdf3829d92c5bf978b075996df79d38c6afd60bb4a3a86b5d5029"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 189712,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_count_change_0000.png",
+        "sha256": "bf556025ffd3605ec0dd5c0e24c56ba5e537b82dc02caeb26a3b12c723452b41",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_lakeside_birds_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_lakeside_birds_count_change_0000__source.png",
+        "sha256": "f70a66e46f7bb80d22d79139fcac91886db53db18b58bd1514e23fe7fc02c188"
+      },
+      "source_scene_id": "lakeside_birds",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_lakeside_birds_count_change_0000__target.png",
+        "sha256": "358fa9dfaae738e6ab1fb26bef6f8faa5ab4f89dee26dd63b9d0eca59ef7ea9e"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 139638,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_object_replace_0000.png",
+        "sha256": "7d3c3b86ea777432eb8a7a3090dce70edf72bb48b0b4982bad7c83a83e9526e4",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_lakeside_birds_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_lakeside_birds_object_replace_0000__source.png",
+        "sha256": "2f0ba6176e8a579b8e37eeab2cd379b26046d6e756e5cfce344eb65296070fdb"
+      },
+      "source_scene_id": "lakeside_birds",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_lakeside_birds_object_replace_0000__target.png",
+        "sha256": "2bc2e70a55675e29da0a3e69a415df1b60e2d1f6d27f45b148589b4b67ea4e71"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_relation_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 320783,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_spatial_relation_change_0000.png",
+        "sha256": "2eb01af507260e08036f8e2067c373fa68c43f8fd57d1f5624f287afc95416c6",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_lakeside_birds_spatial_relation_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_lakeside_birds_spatial_relation_change_0000__source.png",
+        "sha256": "5553445578e4f0aee4e55f92b54d1bba8adac3907371e026ce85d976f488a66b"
+      },
+      "source_scene_id": "lakeside_birds",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_lakeside_birds_spatial_relation_change_0000__target.png",
+        "sha256": "be00b88f1200f409b70b3af2d65460d20b2c76a79aa2918b1b2ba3f53165ff0a"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 168053,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "b55165142399347505f3a350ec2577d77424c5440dcc78fb69d85de67e4994b9",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "2c2a86d9dac9e523dcedc8efcfb176f8c4747eb9bd7390a7c92d63c26377839a"
+      },
+      "source_scene_id": "library_table",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "9aa3dc8361c7292d77bc6430bd6d847f0592734213bff33a875c9ba7c957a847"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 58612,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_attribute_replace_0000.png",
+        "sha256": "65f072878fb2a0a8735373603ac00cc586d0b7cb81818cc44dce9ec46f387d77",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_library_table_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_library_table_attribute_replace_0000__source.png",
+        "sha256": "96c9593410d75bb6b914cc612e4d07ef1d04434558d5cd54d8e4ff8141b0cb25"
+      },
+      "source_scene_id": "library_table",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_library_table_attribute_replace_0000__target.png",
+        "sha256": "507fa040a8f34ecbcfea9bd7e5f30c06f9fdae04589863e9f52b2ec8f0d149c6"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 43399,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_count_change_0000.png",
+        "sha256": "447fe03095fd69abd1b00c05d8266b9bc8096430423859ab86d736ea35a2a208",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_library_table_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_library_table_count_change_0000__source.png",
+        "sha256": "50a3e0ee29c0ee23546c05f0e5646e6b06099ce4647c5144bc235b2196bb4368"
+      },
+      "source_scene_id": "library_table",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_library_table_count_change_0000__target.png",
+        "sha256": "ce2b5d2bcb3e20413960ae2acd217114574609cda02dad92df8751ee7430ac6d"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 69199,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_object_replace_0000.png",
+        "sha256": "5e78e58e399f23e0d77764ee7b8818a027a439d4688fe53032a330f122d28c92",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_library_table_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_library_table_object_replace_0000__source.png",
+        "sha256": "0298b6e7995c9f33ae37a7b36ad4dc12d3c18dc2d794cdb0eb44f1188854f549"
+      },
+      "source_scene_id": "library_table",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_library_table_object_replace_0000__target.png",
+        "sha256": "5694505b35d8775a917c7bc7e7f005d69d5b13375c900dffcac9eb5661519df5"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 280170,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "1e3cc4e4c0f1cc45b6c2052e674104711838490bac1b7b0a86cc333bff677887",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "71d756241d84721b7885c68bd4da650bf4873277d48be363fb6990d74ace1539"
+      },
+      "source_scene_id": "living_room_play",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "8500c4401b5dd17ca7aa06d78bf9f3e1dbab3ceb67904c0a2903e034477f9dd1"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 208023,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_attribute_replace_0000.png",
+        "sha256": "a58ecd11b28395065998041feaf10a5508bb1b75ed1af5775d41958d9ea39101",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_living_room_play_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_attribute_replace_0000__source.png",
+        "sha256": "1f3f59cb38d0628467e8d0ffd20517faf5a8b45c711dc7929654ea32c922d323"
+      },
+      "source_scene_id": "living_room_play",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_attribute_replace_0000__target.png",
+        "sha256": "d9d0acc70256adc639d200fa1493ca6512792bcfc452ba8f5222893a4fdc3dad"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 37305,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_count_change_0000.png",
+        "sha256": "d6b2e8fcee56d257e9aeb77e30fd708c739e4b9999b24e724c590d947e830537",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_living_room_play_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_count_change_0000__source.png",
+        "sha256": "d491efc49357a43f5d0a3080ab23f5c54104be4e17259b80320493b01b798878"
+      },
+      "source_scene_id": "living_room_play",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_count_change_0000__target.png",
+        "sha256": "8d237e7198c2324e1bddb85ad0da9c6a4b7c8bfafce76335773ed1a8039b0852"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 65980,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_object_replace_0000.png",
+        "sha256": "46bd3d5c059f83df454aa964a990b4cd4d33ac9e0e5f31528f446a78fa7709f4",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_living_room_play_object_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_living_room_play_object_replace_0000__source.png",
+        "sha256": "2668dfadb7448cd6e4fb7414d88f343d98338aadb13976f5fded23c7d241c6d5"
+      },
+      "source_scene_id": "living_room_play",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_living_room_play_object_replace_0000__target.png",
+        "sha256": "8fcb3af876524e36845958864ae2be27d82e85cbd731ad6c5dab628b12797967"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 442744,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "b29fe5fb8d15c3299e2ffddbeb4ec9a6726ffc556c0114bde6317c950e23c358",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "5c3b6c06660fe1e3070561a4b00330690ec330afebea1c69fbf7892474a7ae8b"
+      },
+      "source_scene_id": "seaside_path",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "8628699e00a1b6779011389ed57249e349e51fa5129283c3dc065cb765a5965c"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 251583,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_attribute_replace_0000.png",
+        "sha256": "69178748263a75e70365b952cacad0638f39550e19f961a0324f2ce95bd430d2",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_seaside_path_attribute_replace_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_seaside_path_attribute_replace_0000__source.png",
+        "sha256": "84c3a0bdd958e28c0daa2cf796b8bdf3851ac365d0de91649f42b06ce2c0262d"
+      },
+      "source_scene_id": "seaside_path",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_seaside_path_attribute_replace_0000__target.png",
+        "sha256": "f91f9456d464ff19585e0a0ccd59b7ab78f7b4cd7e9f3fd23f4332012cd79f49"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "count_change",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 416513,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_count_change_0000.png",
+        "sha256": "dd1ed6a631abe177f863e68e65631c4776657f3e20ea43e55f166e5839adb8a9",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_seaside_path_count_change_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_seaside_path_count_change_0000__source.png",
+        "sha256": "a0ff05b62bb62216cdf7d515c4caf9d7b414303819d9975e1b1b608f70ed7a4a"
+      },
+      "source_scene_id": "seaside_path",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_seaside_path_count_change_0000__target.png",
+        "sha256": "0822a5b4d7a63ee5b2731de96398e5154df54eb9f0d87172f5dcf36258abdd4b"
+      }
+    },
+    {
+      "candidate_paired_branches_consistent": true,
+      "intervention_type": "object_replace",
+      "mask": {
+        "height": 1024,
+        "nonzero_pixels": 273782,
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "sha256": "1ffb0e8a27fde2f17632b685b79b9df569bff5a418f995d1b7cc965b3bede36b",
+        "width": 1024
+      },
+      "mask_provenance": {
+        "kind": "automatic_rgb_difference_mask",
+        "semantic_annotation": false,
+        "state_specific": false
+      },
+      "pair_id": "cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000",
+      "schema_version": "gold40_automask_v5",
+      "source": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/source/cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000__source.png",
+        "sha256": "5e6022c3ff1deba79e98d18c242b7ec14e99240cc890c6b6476e07a52f39a79b"
+      },
+      "source_scene_id": "seaside_path",
+      "status": "training_ready_candidate_derived",
+      "target": {
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/target/cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000__target.png",
+        "sha256": "670575d831d4842d1a8677f4ce1e60424e3074f3288b93a609f88b7aa72daeb0"
+      }
+    }
+  ],
+  "status": "training_ready_candidate_derived",
+  "training_readiness": {
+    "basis": "candidate_derived_automatic_mask",
+    "human_review_used": false,
+    "ready_for_training": true
+  }
+}

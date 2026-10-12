@@ -1,0 +1,9 @@
+thresholds:
+  target_success: 1.0
+  preservation_score: 0.8
+  binding_score: 0.8
+  locality_score: 0.7
+  image_quality_score: 0.6
+manual_review:
+  required_for_gold: true
+  sample_rate_pilot: 0.1

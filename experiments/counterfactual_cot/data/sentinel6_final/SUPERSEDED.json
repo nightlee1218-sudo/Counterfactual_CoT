@@ -1,0 +1,7 @@
+{
+  "status": "superseded_do_not_train",
+  "reason": "The v1 delta prompts used internal entity IDs and could not resolve the relation target from Gold40 final cot_text.",
+  "replacement": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/data/sentinel6_final_v2",
+  "source_data_was_gold40_final": true,
+  "files_deleted": false
+}

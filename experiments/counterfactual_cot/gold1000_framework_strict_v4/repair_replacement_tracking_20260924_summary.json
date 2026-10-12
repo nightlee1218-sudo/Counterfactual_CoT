@@ -1,0 +1,36 @@
+{
+  "schema_version": "repair_replacement_tracking_v1",
+  "tracking_created_date": "2026-09-24",
+  "tracking_file": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_replacement_tracking_20260924.jsonl",
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "original_manifest_sha256": "2de4bf66be76ffcf5103301f2bce88bdbdda2af26ccbe17b84ec76f8a5c2b080",
+  "record_count": 342,
+  "distinct_pair_count": 268,
+  "overlap_pair_count": 74,
+  "v3_nonoverlap_candidate_count": 187,
+  "batches": {
+    "repair_batch_20260923_v3": {
+      "record_count": 261,
+      "review_status": "no_problem",
+      "replacement_candidate_count": 187,
+      "held_by_current_batch_overlap_count": 74,
+      "target_generated_count": 261,
+      "mask_generated_count": 261
+    },
+    "repair_batch_20240924_v1": {
+      "record_count": 81,
+      "review_status": "problem_under_repair",
+      "source_scene_count": 47,
+      "source_success_count_at_snapshot": 47,
+      "source_pending_count_at_snapshot": 0,
+      "reported_problem_count": 65,
+      "spillover_count": 16,
+      "target_generated_count_at_snapshot": 81,
+      "target_pending_count_at_snapshot": 0,
+      "generation_status": "complete_unreviewed",
+      "replacement_status": "blocked_until_manual_audit",
+      "fusion_status": "not_ready"
+    }
+  },
+  "replacement_rule": "同一pair若同时存在v3与当前v1记录，当前v1优先；v1完成并人工通过前，不得使用v3替换。"
+}

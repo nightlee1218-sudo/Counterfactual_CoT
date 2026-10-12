@@ -1,0 +1,36 @@
+{
+  "schema_version": "counterfactual_repair_batch_v1",
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round3_20260928/revised_cot_manifest.jsonl",
+  "original_image_root": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_batch_20260924_round2_strict_atomic_v4",
+  "model": "gemini-3-pro-image",
+  "source_scene_count": 7,
+  "reported_problem_count": 13,
+  "selected_target_count": 15,
+  "source_scene_ids": [
+    "classroom__n3_chair__v0198__r2_a9344cccd226",
+    "closet_wardrobe__beanie_hatbox_scarf__v0289__r2_d044eadeb30d",
+    "closet_wardrobe__socks_basket_pajamas_hat__v0313__r2_746bd768eb53",
+    "dining_table__plate_quota__v0376__r2_024c253edc0f",
+    "pantry_shelf_closeup__cans_open_crate_out__v0712__r2_ee2acfb742aa",
+    "warehouse_shelf__box_sack_pallet__v0799__r2_d992c469b393",
+    "warehouse_shelf__box_tote_drum__v0794__r2_1ad77e1fd361"
+  ],
+  "spillover_pair_count": 2,
+  "pair_ids": [
+    "g1000_classroom__n3_chair__3_to_2_002",
+    "g1000_closet_wardrobe__beanie_hatbox_scarf__1_to_2_002",
+    "g1000_closet_wardrobe__socks_basket_pajamas_hat__occlusion_state_001",
+    "g1000_dining_table__plate_quota__2_to_1_001",
+    "g1000_dining_table__plate_quota__2_to_3_001",
+    "g1000_dining_table__plate_quota__3_to_2_001",
+    "g1000_office_desk__stand_keyboard_pad__occlusion_state_002",
+    "g1000_pantry_shelf_closeup__cans_open_crate_out__containment_001",
+    "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+    "g1000_warehouse_shelf__box_sack_pallet__2_to_3_001",
+    "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+    "g1000_warehouse_shelf__box_tote_drum__3_to_2_001",
+    "g1000_warehouse_shelf__sack_bundle_bin__3_to_2_001"
+  ]
+}

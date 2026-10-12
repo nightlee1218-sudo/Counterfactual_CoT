@@ -1,0 +1,17 @@
+{
+  "schema_version": "counterfactual_repair_batch_strict_atomic_summary_v1",
+  "audit_round": 2,
+  "manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924_v4/revised_cot_manifest.jsonl",
+  "source_registry": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924_v4/revised_source_registry.jsonl",
+  "generation_plan": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924_v4/strict_atomic_generation_plan.jsonl",
+  "record_count": 49,
+  "source_variant_count": 30,
+  "source_plus_target_count": 45,
+  "target_only_count": 4,
+  "reported_problem_count": 37,
+  "spillover_count": 12,
+  "all_cot_atomic": true,
+  "generation_gate": "ready",
+  "replacement_status": "blocked_until_round2_audit",
+  "fusion_status": "not_ready"
+}

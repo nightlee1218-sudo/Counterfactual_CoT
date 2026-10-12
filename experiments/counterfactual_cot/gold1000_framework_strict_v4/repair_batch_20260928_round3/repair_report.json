@@ -1,0 +1,269 @@
+{
+  "plan": {
+    "schema_version": "counterfactual_repair_batch_v1",
+    "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round3_20260928/revised_cot_manifest.jsonl",
+    "original_image_root": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_batch_20260924_round2_strict_atomic_v4",
+    "model": "gemini-3-pro-image",
+    "source_scene_count": 7,
+    "reported_problem_count": 13,
+    "selected_target_count": 15,
+    "source_scene_ids": [
+      "classroom__n3_chair__v0198__r2_a9344cccd226",
+      "closet_wardrobe__beanie_hatbox_scarf__v0289__r2_d044eadeb30d",
+      "closet_wardrobe__socks_basket_pajamas_hat__v0313__r2_746bd768eb53",
+      "dining_table__plate_quota__v0376__r2_024c253edc0f",
+      "pantry_shelf_closeup__cans_open_crate_out__v0712__r2_ee2acfb742aa",
+      "warehouse_shelf__box_sack_pallet__v0799__r2_d992c469b393",
+      "warehouse_shelf__box_tote_drum__v0794__r2_1ad77e1fd361"
+    ],
+    "spillover_pair_count": 2,
+    "pair_ids": [
+      "g1000_classroom__n3_chair__3_to_2_002",
+      "g1000_closet_wardrobe__beanie_hatbox_scarf__1_to_2_002",
+      "g1000_closet_wardrobe__socks_basket_pajamas_hat__occlusion_state_001",
+      "g1000_dining_table__plate_quota__2_to_1_001",
+      "g1000_dining_table__plate_quota__2_to_3_001",
+      "g1000_dining_table__plate_quota__3_to_2_001",
+      "g1000_office_desk__stand_keyboard_pad__occlusion_state_002",
+      "g1000_pantry_shelf_closeup__cans_open_crate_out__containment_001",
+      "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+      "g1000_warehouse_shelf__box_sack_pallet__2_to_3_001",
+      "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001",
+      "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+      "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+      "g1000_warehouse_shelf__box_tote_drum__3_to_2_001",
+      "g1000_warehouse_shelf__sack_bundle_bin__3_to_2_001"
+    ]
+  },
+  "items": [
+    {
+      "stage": "source",
+      "scene_id": "classroom__n3_chair__v0198__r2_a9344cccd226",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "83ff77c66366b2571acf3e44b5fdbf7d1b70a473ab8e7743d0c1150408247b89",
+      "latency_s": 22.6
+    },
+    {
+      "stage": "source",
+      "scene_id": "closet_wardrobe__beanie_hatbox_scarf__v0289__r2_d044eadeb30d",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "11bdcef9704738ee5db82275618a29e645c88ad400633bdf8425fcc4af4cfb40",
+      "latency_s": 23.9
+    },
+    {
+      "stage": "source",
+      "scene_id": "closet_wardrobe__socks_basket_pajamas_hat__v0313__r2_746bd768eb53",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "1171e5d6048b48fe52c3e0d2db488510ff311de340112efb62e52eb630db41e9",
+      "latency_s": 24.3
+    },
+    {
+      "stage": "source",
+      "scene_id": "dining_table__plate_quota__v0376__r2_024c253edc0f",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "60e78d7c4bd7c633f2777789f4b5b2e5cea9143737fc4dccd855327fa5cccdd9",
+      "latency_s": 25.3
+    },
+    {
+      "stage": "source",
+      "scene_id": "pantry_shelf_closeup__cans_open_crate_out__v0712__r2_ee2acfb742aa",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "df0f85d59bb93ac8a54de38fafd66efc171fdb31d6f11cd91f56bd607812e132",
+      "latency_s": 24.1
+    },
+    {
+      "stage": "source",
+      "scene_id": "warehouse_shelf__box_sack_pallet__v0799__r2_d992c469b393",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "5b020ce3106817e9c621aab396ec04a2bee5ec5878b951e26be3343f712bb8de",
+      "latency_s": 24.1
+    },
+    {
+      "stage": "source",
+      "scene_id": "warehouse_shelf__box_tote_drum__v0794__r2_1ad77e1fd361",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "prompt_sha256": "60eb5dc1facab000c0ebc5d9ccb845f9c03a8811eefbe4118c132904fb957db7",
+      "latency_s": 24.1
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_classroom__n3_chair__3_to_2_002",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "d964a1fc8feb99e669021689581a7e97b66023c95fc32e58ffc3d9bc729bde39",
+      "latency_s": 24.3,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_closet_wardrobe__beanie_hatbox_scarf__1_to_2_002",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "7d98b6d9943fc4529c93db196acfe05d55e9534af1806440568cc66996bb09f5",
+      "latency_s": 23.4,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_closet_wardrobe__socks_basket_pajamas_hat__occlusion_state_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "f7cb2bbd45c7cf6359e4da5e89eda1c74722676b6629b744824171f52ee92758",
+      "latency_s": 24.9,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_dining_table__plate_quota__2_to_1_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "bfa07b397e0323a8a669eb17ab660938713665a4f14d0f58e46da72211f6e9b2",
+      "latency_s": 32.8,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_dining_table__plate_quota__2_to_3_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "1502d8e20754dd8eef8a6b926197c858e648e1e7e59b98dd43749f87141ac11a",
+      "latency_s": 74.0,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_dining_table__plate_quota__3_to_2_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "8f8c36591204304e5c557204ea9cdbdfdd0f77d4005aa16cbc58e15b998d56e4",
+      "latency_s": 24.0,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_office_desk__stand_keyboard_pad__occlusion_state_002",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": false,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "135d5a2488620730af6a56a5768ebcc6dd7a2476dd7f111b5a4efa7f1247a465",
+      "latency_s": 24.7,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_pantry_shelf_closeup__cans_open_crate_out__containment_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "8d2a71b1b2bd797837eef0ba865fd527a875853e43065d09c8bdef033fcd4241",
+      "latency_s": 24.9,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "2a16bf5a9e0f60fd119af508c0a7d40aa207f9ac6e4ead50ee0b5970e7c9937d",
+      "latency_s": 24.0,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_sack_pallet__2_to_3_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "4ec963f78a495a122a55cc5866ca01abcb043b7ecebeb3973a1be6041287e0c0",
+      "latency_s": 26.8,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "b53541c8d0fc8dcb2faf7820b2202102b46771024acd8ab33a8f4edc1278735a",
+      "latency_s": 24.6,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "source_scene_spillover",
+      "prompt_sha256": "026c9c58a165285b8d1b7b398dfa504559024b9af4f01f10da5b90096023cd3a",
+      "latency_s": 24.2,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "source_scene_spillover",
+      "prompt_sha256": "9e3a2d185c611fba1390d6ddb0192f43f017f77ad70d083731d672c76dcd7d40",
+      "latency_s": 24.2,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__box_tote_drum__3_to_2_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": true,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "989cdd35195351667d15d1e4a69ff29f13bc120fc126b65f9bf1bcb1b258bba1",
+      "latency_s": 26.0,
+      "error": null
+    },
+    {
+      "stage": "target",
+      "pair_id": "g1000_warehouse_shelf__sack_bundle_bin__3_to_2_001",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "source_regenerated": false,
+      "repair_role": "reported_problem",
+      "prompt_sha256": "d9c2a8d58a8e0be6262f251d6a2b4653aa3878789cee4e75aad38dfe77d814d7",
+      "latency_s": 32.4,
+      "error": null
+    }
+  ],
+  "summary": {
+    "selected_targets": 15,
+    "generated_records": 15,
+    "source_scenes": 7,
+    "source_success": 7,
+    "target_success": 15,
+    "failures": 0
+  }
+}

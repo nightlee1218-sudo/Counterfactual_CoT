@@ -1,0 +1,8 @@
+{
+  "manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "manifest_sha256": "2de4bf66be76ffcf5103301f2bce88bdbdda2af26ccbe17b84ec76f8a5c2b080",
+  "audit_jsonl": null,
+  "pairs": 1000,
+  "pages": 67,
+  "include_all": true
+}

@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-10T06:33:49.110815+00:00",
+  "error": "review decisions does not exist or is not a file: /group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/review_decisions.jsonl",
+  "inputs": {
+    "candidate_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/gold40_source_target_paired_candidate_v4.jsonl",
+    "mask_audit": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/gold40_dynamic_mask_audit_v4.json",
+    "review_decisions": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/review_decisions.jsonl"
+  },
+  "status": "failed",
+  "training_readiness": {
+    "ready_for_training": false
+  }
+}

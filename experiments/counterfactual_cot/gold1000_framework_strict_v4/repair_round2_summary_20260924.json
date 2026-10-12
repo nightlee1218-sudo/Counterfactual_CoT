@@ -1,0 +1,62 @@
+{
+  "schema_version": "repair_round2_summary_v1",
+  "tracking_created_date": "2026-09-24",
+  "previous_batch": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_batch_20240924_v1",
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "round2_direct_problem_count": 37,
+  "round2_direct_source_required_count": 31,
+  "round2_direct_target_only_count": 6,
+  "round2_direct_cot_revision_blocked_count": 5,
+  "round2_direct_ready_count": 32,
+  "round2_effective_cot_revision_blocked_selected_count": 7,
+  "previous_v1_pair_count": 81,
+  "previous_v1_unlisted_default_reasonable_count": 44,
+  "source_scene_count": 29,
+  "source_variant_count": 29,
+  "selected_target_count_including_variant_spillover": 51,
+  "generation_target_count_excluding_cot_blocked": 44,
+  "source_scene_spillover_count": 14,
+  "source_variant_count_conflict_policy": "同一 source_scene_id 下 source COT canonical signature 不同（尤其 old count=2 与 old count=3）时拆成不同 source_variant，不共用 source。",
+  "historical_record_as_user_provided": {
+    "repair_batch_20260923_v3": {
+      "record_count": 261,
+      "review_status": "no_problem",
+      "target_generated_count": 261,
+      "mask_generated_count": 261,
+      "replacement_candidate_count": 187,
+      "replacement_status": "pending",
+      "held_by_current_batch_overlap_count": 74
+    },
+    "repair_batch_20240924_v1": {
+      "record_count": 81,
+      "review_status": "problem_under_repair",
+      "reported_problem_count": 65,
+      "spillover_count": 16,
+      "generation_snapshot": {
+        "source_success": 21,
+        "source_total": 47,
+        "target_pending": 81
+      },
+      "replacement_status": "blocked_until_repair_complete"
+    }
+  },
+  "current_verified_v1_status": {
+    "source_success": 47,
+    "source_total": 47,
+    "target_success": 81,
+    "failures": 0,
+    "replacement_status": "blocked_until_manual_audit"
+  },
+  "files": {
+    "direct_plan": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/detailed_repair_plan_20260924_round2.jsonl",
+    "generation_plan": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_generation_plan_20260924.jsonl",
+    "scene_plan": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/scene_repair_plan_20260924_round2.json",
+    "round2_tracking": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_tracking_20260924.jsonl",
+    "cumulative_tracking": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_replacement_tracking_20260924_v2.jsonl"
+  },
+  "status_policy": {
+    "listed": "problem_under_repair_round2; blocked_until_round2_audit",
+    "unlisted": "no_problem or default_reasonable_but_sync_required; never auto-fused",
+    "cot_revision": "blocked_cot_revision; do not send to image generation before COT/source/target definitions are synchronized"
+  }
+}

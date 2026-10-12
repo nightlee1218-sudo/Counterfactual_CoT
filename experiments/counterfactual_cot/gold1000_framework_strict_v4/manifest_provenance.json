@@ -1,0 +1,28 @@
+{
+  "schema_version": "gold1000_framework_strict_v4",
+  "source_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_manifest 3",
+  "manifest": "gold1000_framework_strict_v4.jsonl",
+  "records": 1000,
+  "source_scenes": 812,
+  "entity_count_distribution": {"1": 200, "2": 500, "3": 300},
+  "source_reuse_distribution": {"1": 718, "3": 94},
+  "shared_pairs": 282,
+  "source_reuse_cap": 3,
+  "source_prompt_profile": "strict_source_v5_physical_grounding",
+  "generation_ready": true,
+  "validation_report": "framework_v4_audit.json",
+  "generation_status": "blocked_pending_physical_regression_v1",
+  "validator": "validate_framework_strict_v4.py",
+  "location_vocabulary": [
+    "left_region",
+    "center_region",
+    "right_region",
+    "top_region",
+    "bottom_region",
+    "upper_left",
+    "upper_right",
+    "lower_left",
+    "lower_right"
+  ],
+  "note": "The 20 official values are template families. source_scene_id is finer-grained and intentionally contains multiple source scenes per template family."
+}

@@ -1,0 +1,90 @@
+{
+  "asset_batch_counts_by_split": {
+    "test": {
+      "baseline": 31,
+      "round2": 1,
+      "v1": 2,
+      "v3": 10
+    },
+    "train": {
+      "baseline": 671,
+      "round2": 28,
+      "round3": 8,
+      "v1": 26,
+      "v3": 163
+    },
+    "val": {
+      "baseline": 29,
+      "round2": 4,
+      "round3": 1,
+      "v1": 3,
+      "v3": 14
+    }
+  },
+  "created_at": "2026-09-28T07:47:18.442518+00:00",
+  "input_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/final991_automask_v5_data/artifacts/final991_source_target_automask_v5.jsonl",
+  "intervention_type_counts_by_split": {
+    "test": {
+      "attribute_intervention": 9,
+      "category_replacement": 13,
+      "instance_cardinality_intervention": 12,
+      "spatial_geometric_intervention": 10
+    },
+    "train": {
+      "attribute_intervention": 228,
+      "category_replacement": 225,
+      "instance_cardinality_intervention": 209,
+      "spatial_geometric_intervention": 234
+    },
+    "val": {
+      "attribute_intervention": 11,
+      "category_replacement": 12,
+      "instance_cardinality_intervention": 22,
+      "spatial_geometric_intervention": 6
+    }
+  },
+  "outputs": {
+    "smoke_train_8_pairs": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/final991_automask_v5_data/artifacts/splits/smoke_train_8_pairs.jsonl",
+    "test": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/final991_automask_v5_data/artifacts/splits/test.jsonl",
+    "train": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/final991_automask_v5_data/artifacts/splits/train.jsonl",
+    "val": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/final991_automask_v5_data/artifacts/splits/val.jsonl"
+  },
+  "pair_count": 991,
+  "pair_counts": {
+    "test": 44,
+    "train": 896,
+    "val": 51
+  },
+  "scene_count": 813,
+  "scene_counts": {
+    "test": 40,
+    "train": 732,
+    "val": 41
+  },
+  "scene_ratios": {
+    "test": 0.05,
+    "train": 0.9,
+    "val": 0.05
+  },
+  "schema_version": "gold40_automask_v5",
+  "seed": 20260928,
+  "smoke": {
+    "pair_count": 8,
+    "pair_ids": [
+      "g1000_antique_curio_shop__figurine_lamp_globe__affordance_divergent_replace_001",
+      "g1000_antique_curio_shop__figurine_lamp_globe__affordance_divergent_replace_002",
+      "g1000_antique_curio_shop__figurine_lamp_globe__affordance_divergent_replace_003",
+      "g1000_antique_curio_shop__urn_candlestick_sculpture__affordance_divergent_replace_001",
+      "g1000_antique_curio_shop__urn_candlestick_sculpture__affordance_divergent_replace_002",
+      "g1000_antique_curio_shop__urn_candlestick_sculpture__affordance_divergent_replace_003",
+      "g1000_antique_curio_shop__vase_frame_clock__affordance_divergent_replace_001",
+      "g1000_antique_curio_shop__vase_frame_clock__affordance_divergent_replace_002"
+    ],
+    "scene_count": 3,
+    "scene_ids": [
+      "antique_curio_shop__figurine_lamp_globe__v0013",
+      "antique_curio_shop__urn_candlestick_sculpture__v0039",
+      "antique_curio_shop__vase_frame_clock__v0006"
+    ]
+  }
+}

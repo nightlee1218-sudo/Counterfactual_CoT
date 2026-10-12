@@ -1,0 +1,38 @@
+source_generation:
+  backend: base_bagel
+  model_path: models/BAGEL-7B-MoT
+  think: false
+  width: 1024
+  height: 1024
+  num_timesteps: 50
+  cfg_text_scale: 4.0
+  timestep_shift: 3.0
+  require_human_acceptance_before_intervention: true
+
+target_generation:
+  provider: nano_banana_pro
+  model: gemini-3-pro-image
+  api_key_env: CFCOT_IMAGE_API_KEY
+  endpoint: http://v2.open.venus.oa.com/llmproxy/chat/completions
+  timeout_s: 120
+  max_retries: 3
+  retry_backoff_s: 2
+  rate_limit_qps: 0.2
+  generation_mode: edit
+
+mask:
+  candidate_only: true
+  threshold: 24
+  dilation_px: 9
+  min_area_ratio: 0.001
+  max_area_ratio: 0.50
+
+limits:
+  max_per_scene: 8
+  smoke_pairs: 2
+  gold_pairs: 40
+  pilot_pairs: 1000
+
+mock:
+  source_backend: mock
+  target_provider: mock

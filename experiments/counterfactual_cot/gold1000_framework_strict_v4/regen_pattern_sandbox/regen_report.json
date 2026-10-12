@@ -1,0 +1,112 @@
+{
+  "created_at": "2026-09-22T13:08:24",
+  "sandbox": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/regen_pattern_sandbox",
+  "source_image_root_read_only": "experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/source_images",
+  "model": "gemini-3-pro-image",
+  "fallback": null,
+  "plan": {
+    "regen_source_scenes": [],
+    "target_count": 13,
+    "source_count": 0,
+    "spillover": {}
+  },
+  "items": [
+    {
+      "pair_id": "g1000_flower_shop__orchid_stand_gift__pattern_003",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 22.9
+    },
+    {
+      "pair_id": "g1000_flower_shop__orchid_stand_gift__pattern_004",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.0
+    },
+    {
+      "pair_id": "g1000_flower_shop__peony_crate_pot__pattern_004",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.2
+    },
+    {
+      "pair_id": "g1000_flower_shop__peony_crate_pot__pattern_005",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 26.0
+    },
+    {
+      "pair_id": "g1000_flower_shop__peony_crate_pot__pattern_006",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 45.4
+    },
+    {
+      "pair_id": "g1000_flower_shop__peony_crate_potd__pattern_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 28.8
+    },
+    {
+      "pair_id": "g1000_flower_shop__rose_vase_wrap__pattern_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 45.2
+    },
+    {
+      "pair_id": "g1000_flower_shop__sunflower_basket_card__pattern_005",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 31.7
+    },
+    {
+      "pair_id": "g1000_flower_shop__sunflower_basket_card__pattern_006",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 35.7
+    },
+    {
+      "pair_id": "g1000_flower_shop__tulip_pot_ribbon__pattern_005",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.5
+    },
+    {
+      "pair_id": "g1000_flower_shop__tulip_pot_ribbon__pattern_006",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.6
+    },
+    {
+      "pair_id": "g1000_flower_shop__tulip_pot_ribbon__pattern_007",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.6
+    },
+    {
+      "pair_id": "g1000_flower_shop__tulip_pot_ribbon__pattern_008",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 28.1
+    }
+  ],
+  "summary": {
+    "planned_sources": 0,
+    "planned_targets": 13,
+    "succeeded": 13,
+    "failed_or_kept_original": 0
+  }
+}

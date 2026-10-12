@@ -1,0 +1,14 @@
+{
+  "scene_id": "closet_wardrobe__n3_pants__v0330",
+  "status": "success",
+  "model": "gemini-3-pro-image",
+  "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/regen_n3_pants_source_only/source/_by_scene/cf_source_closet_wardrobe__n3_pants__v0330__source.png",
+  "size": [
+    1024,
+    1024
+  ],
+  "prompt_sha256": "856b9e47b085e59098a72440f31c9daafb3e07a5c68c9eec86d54b33d89ba4f2",
+  "latency_s": 29.7,
+  "targets_generated": false,
+  "original_manifest_read_only": true
+}

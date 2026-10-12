@@ -1,0 +1,36 @@
+{
+  "schema_version": "strict_atomic_cot_revision_summary_v1",
+  "audit_round": 2,
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "original_manifest_sha256": "2de4bf66be76ffcf5103301f2bce88bdbdda2af26ccbe17b84ec76f8a5c2b080",
+  "output_dir": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924",
+  "direct_problem_count": 37,
+  "revised_manifest_record_count": 49,
+  "revised_source_variant_count": 30,
+  "revised_source_scene_count": 34,
+  "source_regenerated_record_count": 45,
+  "target_regenerated_record_count": 49,
+  "strict_atomic_validation_errors": 0,
+  "split_variant_pair_ids": [
+    "g1000_living_room_play__n1_rattle__3_to_2_001",
+    "g1000_warehouse_shelf__bag_quota__3_to_2_001"
+  ],
+  "retained_split_sibling_count": 0,
+  "user_semantic_revisions": {
+    "beanie": "scarf_1 renamed to beanie_1 and category revised to knitted beanie; count remains the only source->target atom.",
+    "bag_quota": "intervention revised from can_2 to bag_1 with source count 3 and target count 2; can group is preserved.",
+    "rattle_3_to_2": "intervention revised from cube_3 to rattle_1 with source count 3 and target count 2; cube group is preserved.",
+    "toolbox": "oilcan_1 renamed to toolbox_1 and category revised to compact hinged metal toolbox; functional_state remains the only source->target atom.",
+    "single_instance_containment": "plants, flower, and milk counts revised to 1 in both source and target before their relation/location atom changes."
+  },
+  "atomic_rule": "每条 revised source/target COT 的 canonical render 必须只有一个不同 atom；intervention.entity_id + field 必须等于该 atom；preservation.allowed_to_change 只能包含同一个字段。",
+  "files": {
+    "revised_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924/revised_cot_manifest.jsonl",
+    "revised_source_registry": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924/revised_source_registry.jsonl",
+    "cot_revision_plan": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924/cot_revision_plan.jsonl",
+    "tracking": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924/round2_cot_tracking.jsonl",
+    "blocked_or_retained": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_round2_strict_atomic_20260924/blocked_semantic_review.jsonl"
+  },
+  "status_policy": "仅 revised_manifest 中的记录允许进入下一步独立 source/target 生图；所有记录在分页人工审计通过前均不得融合1000-pair。",
+  "tracking_record_count": 49
+}

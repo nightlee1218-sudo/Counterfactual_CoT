@@ -1,0 +1,139 @@
+{
+  "records": 500,
+  "subtype_counts": {
+    "1_to_2": 30,
+    "2_to_1": 30,
+    "2_to_3": 35,
+    "3_to_2": 30,
+    "absolute_horizontal": 38,
+    "absolute_vertical": 37,
+    "affordance_divergent_replace": 43,
+    "color": 22,
+    "containment": 50,
+    "functional_state": 25,
+    "material": 25,
+    "occlusion_state": 28,
+    "pattern": 25,
+    "same_affordance_replace": 40,
+    "shape_divergent_replace": 42
+  },
+  "entity_count_distribution": {
+    "1": 100,
+    "2": 250,
+    "3": 150
+  },
+  "family_counts": {
+    "antique_curio_shop": 27,
+    "bathroom_counter": 10,
+    "beach_scene": 13,
+    "bedroom_nightstand": 6,
+    "bookshelf_study": 41,
+    "city_street": 29,
+    "classroom": 17,
+    "closet_wardrobe": 25,
+    "dining_table": 30,
+    "flower_shop": 17,
+    "grocery_display": 60,
+    "kitchen_counter": 34,
+    "living_room_play": 48,
+    "office_desk": 23,
+    "pantry_shelf_closeup": 3,
+    "parking_lot": 20,
+    "picnic_blanket": 6,
+    "playground": 13,
+    "toolshed_garage": 21,
+    "warehouse_shelf": 57
+  },
+  "domain_counts": {
+    "commercial_display": 125,
+    "dense_closeup": 9,
+    "furniture_storage": 123,
+    "indoor_activity": 95,
+    "indoor_counter": 73,
+    "outdoor_open": 75
+  },
+  "source_scenes": 330,
+  "source_reuse_distribution": {
+    "1": 241,
+    "2": 8,
+    "3": 81
+  },
+  "shared_pairs": 259,
+  "subtype_entity_plan": {
+    "same_affordance_replace": {
+      "1": 40,
+      "2": 0,
+      "3": 0
+    },
+    "shape_divergent_replace": {
+      "1": 12,
+      "2": 30,
+      "3": 0
+    },
+    "affordance_divergent_replace": {
+      "1": 1,
+      "2": 42,
+      "3": 0
+    },
+    "color": {
+      "1": 11,
+      "2": 11,
+      "3": 0
+    },
+    "material": {
+      "1": 25,
+      "2": 0,
+      "3": 0
+    },
+    "pattern": {
+      "1": 4,
+      "2": 21,
+      "3": 0
+    },
+    "occlusion_state": {
+      "1": 0,
+      "2": 28,
+      "3": 0
+    },
+    "functional_state": {
+      "1": 7,
+      "2": 18,
+      "3": 0
+    },
+    "1_to_2": {
+      "1": 0,
+      "2": 16,
+      "3": 14
+    },
+    "2_to_1": {
+      "1": 0,
+      "2": 7,
+      "3": 23
+    },
+    "2_to_3": {
+      "1": 0,
+      "2": 13,
+      "3": 22
+    },
+    "3_to_2": {
+      "1": 0,
+      "2": 7,
+      "3": 23
+    },
+    "absolute_horizontal": {
+      "1": 0,
+      "2": 36,
+      "3": 2
+    },
+    "absolute_vertical": {
+      "1": 0,
+      "2": 0,
+      "3": 37
+    },
+    "containment": {
+      "1": 0,
+      "2": 21,
+      "3": 29
+    }
+  }
+}

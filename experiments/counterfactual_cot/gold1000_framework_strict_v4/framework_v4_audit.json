@@ -1,0 +1,44 @@
+{
+  "records": 1000,
+  "unique_pair_ids": 1000,
+  "unique_transitions": 1000,
+  "source_scenes": 814,
+  "subtype_counts": {
+    "2_to_3": 70,
+    "same_affordance_replace": 80,
+    "color": 45,
+    "2_to_1": 60,
+    "absolute_horizontal": 75,
+    "1_to_2": 60,
+    "pattern": 50,
+    "shape_divergent_replace": 85,
+    "3_to_2": 60,
+    "absolute_vertical": 75,
+    "affordance_divergent_replace": 85,
+    "occlusion_state": 55,
+    "functional_state": 50,
+    "containment": 100,
+    "material": 50
+  },
+  "domain_counts": {
+    "indoor_counter": 138,
+    "furniture_storage": 246,
+    "commercial_display": 250,
+    "outdoor_open": 146,
+    "indoor_activity": 206,
+    "dense_closeup": 14
+  },
+  "entity_count_distribution": {
+    "2": 500,
+    "3": 300,
+    "1": 200
+  },
+  "source_reuse_distribution": {
+    "3": 93,
+    "1": 721
+  },
+  "shared_pairs": 279,
+  "errors": 0,
+  "examples": [],
+  "generation_ready": true
+}

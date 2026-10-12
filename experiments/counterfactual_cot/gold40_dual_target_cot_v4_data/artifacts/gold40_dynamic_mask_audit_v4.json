@@ -1,0 +1,2076 @@
+{
+  "counts": {
+    "branch_records": 80,
+    "intervention_types": {
+      "attribute_replace": 10,
+      "count_change": 10,
+      "object_replace": 10,
+      "spatial_position_change": 8,
+      "spatial_relation_change": 2
+    },
+    "paired_records": 40,
+    "warning_counts": {
+      "candidate_mask_area_outside_recommended_range": 2,
+      "candidate_mask_touches_image_border": 27,
+      "large_candidate_mask_requires_manual_locality_review": 12
+    }
+  },
+  "created_at": "2026-09-10T05:02:44.056083+00:00",
+  "input_manifests": {
+    "asset_index": {
+      "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/manifest/asset_index.jsonl",
+      "sha256": "18cdd6268899748c6a41b2115f08b5a688c01e0a35dc011abd3107d30a0f9f04"
+    },
+    "gold40_final_semantic_and_asset_manifest": {
+      "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/manifest/intervention_pairs_gold40_final.jsonl",
+      "sha256": "e74a0dc713cd99628d4df296a54c9c367913682d3a88ed030ff12de321d3587c"
+    },
+    "v3_semantic_reference": {
+      "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/reruns/nanobanana_v4_absolute_region/manifests/intervention_pairs_gold40_human_verified_final_normalized_v3_schema_consistent.jsonl",
+      "sha256": "5960e1eebb4d7a394a7b7cba2b2c17c686d184756b637110ef8b43397e172061"
+    }
+  },
+  "output": {
+    "branch_records": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/gold40_branch_records_candidate_v4.jsonl",
+    "dynamic_mask_root": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks",
+    "paired_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/gold40_source_target_paired_candidate_v4.jsonl",
+    "review_contact_sheet": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/review/gold40_dynamic_mask_contact_sheet.jpg"
+  },
+  "pairs": [
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.14229774475097656,
+          "bbox_area_ratio": 1.0,
+          "bbox_ltrb": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 149210,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": true,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 243,
+          "mean_absolute_rgb_difference": 8.994293848673502,
+          "raw_changed_pixels": 85464,
+          "raw_changed_ratio": 0.08150482177734375
+        },
+        "review_status": "unreviewed",
+        "sha256": "f99cca56fbd29ccab8ee166323c1d5119d33212592e44570308f38c5f84666ce",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "car_1.location"
+        ],
+        "expected_changed_atom": "car_1.location",
+        "source_cot_text_sha256": "3df0dd27f7602bd473289c78227d73e392c9c6fd09b75b3b7d5e37d4cec63f3d",
+        "target_cot_text_sha256": "b9c460ad443c99ba724767651413b13fef387e61d5a11a5a878d13b688600aad"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.1834716796875,
+          "bbox_area_ratio": 1.0,
+          "bbox_ltrb": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 192384,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": true,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 170,
+          "mean_absolute_rgb_difference": 4.289223988850911,
+          "raw_changed_pixels": 16313,
+          "raw_changed_ratio": 0.015557289123535156
+        },
+        "review_status": "unreviewed",
+        "sha256": "ca03ea4d1049b7477429556c0c77cb3183304cdbe094480506e37579f66a386b",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_city_street_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "car_1.attributes.color"
+        ],
+        "expected_changed_atom": "car_1.attributes.color",
+        "source_cot_text_sha256": "f5ef584f2751acac6c6e26b12614b1d4486fc7a8e1cd1921461061dc7d0127bd",
+        "target_cot_text_sha256": "641501fbde4f55ba0a6b19bee4df8f76082798e1173576bfadd908fd43705415"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.04552650451660156,
+          "bbox_area_ratio": 0.9468364715576172,
+          "bbox_ltrb": [
+            19,
+            14,
+            1002,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 47738,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 196,
+          "mean_absolute_rgb_difference": 3.6122541427612305,
+          "raw_changed_pixels": 18105,
+          "raw_changed_ratio": 0.017266273498535156
+        },
+        "review_status": "unreviewed",
+        "sha256": "cacdc2d3b38dfd73efdbcf5fb71998549671bb0dd3459651ee105d0f6415584b",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_city_street_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "car_1.count"
+        ],
+        "expected_changed_atom": "car_1.count",
+        "source_cot_text_sha256": "ee7e4ff527a170ef32bb100d69797ab33597fd85970fae93d22347cdf4936dd0",
+        "target_cot_text_sha256": "60bfe0f80e6d56a855a186342699f6cdf222bfb21f664c956eb2314e1320a318"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.04189300537109375,
+          "bbox_area_ratio": 0.6544532775878906,
+          "bbox_ltrb": [
+            14,
+            60,
+            1010,
+            749
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 43928,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_city_street_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 255,
+          "mean_absolute_rgb_difference": 3.4113547007242837,
+          "raw_changed_pixels": 21473,
+          "raw_changed_ratio": 0.020478248596191406
+        },
+        "review_status": "unreviewed",
+        "sha256": "b9ba01d34a9e3568178275adc3c9e4790760c55df05f8934533e5ea91c5f167b",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_city_street_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "car_1.category"
+        ],
+        "expected_changed_atom": "car_1.category",
+        "source_cot_text_sha256": "4fc72e0a3789453af213e65a82ade40597f644f2851299fa4ab320deb53d1200",
+        "target_cot_text_sha256": "a22fb0ab269b386e4ec233c6eb20e524c9b75b61e550095cba16298944529f8e"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.21532344818115234,
+          "bbox_area_ratio": 0.955078125,
+          "bbox_ltrb": [
+            16,
+            0,
+            994,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 225783,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": true,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 247,
+          "mean_absolute_rgb_difference": 17.42303212483724,
+          "raw_changed_pixels": 178504,
+          "raw_changed_ratio": 0.17023468017578125
+        },
+        "review_status": "unreviewed",
+        "sha256": "6566bb4e98b5fb5f48a27a93fe87a40e653daccf8db23b71c05e40576a8e8c30",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_classroom_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "chair_1.location"
+        ],
+        "expected_changed_atom": "chair_1.location",
+        "source_cot_text_sha256": "6e1066274a1ac0439795e7497ebae5a241b7af770a8498397d0a2f9f492b3abd",
+        "target_cot_text_sha256": "11bb197c3a0fa34f6e6f478602de2f9749fb6ce2c53611098d3a0c127ce58944"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.18366050720214844,
+          "bbox_area_ratio": 0.54876708984375,
+          "bbox_ltrb": [
+            46,
+            286,
+            910,
+            952
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 192582,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 160,
+          "mean_absolute_rgb_difference": 8.822408676147461,
+          "raw_changed_pixels": 139227,
+          "raw_changed_ratio": 0.13277721405029297
+        },
+        "review_status": "unreviewed",
+        "sha256": "44021feb8b74fa8d4984e464ebeb03b00d6e0fa2dc151a859e95289fd416b396",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_classroom_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "chair_1.attributes.color"
+        ],
+        "expected_changed_atom": "chair_1.attributes.color",
+        "source_cot_text_sha256": "b3b2dadc908905bf42c9e043ee4c386fb9f906ff385be6413ffaf47ddbbe720c",
+        "target_cot_text_sha256": "ce8dfa650bdea6eb08c8a6e11b85b453d684b20c42eed05d535f6eb7ee55dcc8"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.04528236389160156,
+          "bbox_area_ratio": 0.48648834228515625,
+          "bbox_ltrb": [
+            18,
+            341,
+            999,
+            861
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 47482,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 227,
+          "mean_absolute_rgb_difference": 5.081051826477051,
+          "raw_changed_pixels": 25454,
+          "raw_changed_ratio": 0.024274826049804688
+        },
+        "review_status": "unreviewed",
+        "sha256": "04a42b0d5828817f3bbd44c599d80566c8036b9ba9e2937e647ed70ee86333c1",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_classroom_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "chair_1.count"
+        ],
+        "expected_changed_atom": "chair_1.count",
+        "source_cot_text_sha256": "209a5d615c919492b724e7ebff29b167f7ee57e7800b27511f187eb950e06492",
+        "target_cot_text_sha256": "3c14ec089a3b7379166616b63c7d6549bd163f7abb9de90051d4615770818a00"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.25746917724609375,
+          "bbox_area_ratio": 0.7765960693359375,
+          "bbox_ltrb": [
+            53,
+            14,
+            923,
+            950
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 269976,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_classroom_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 253,
+          "mean_absolute_rgb_difference": 17.251338958740234,
+          "raw_changed_pixels": 223957,
+          "raw_changed_ratio": 0.21358203887939453
+        },
+        "review_status": "unreviewed",
+        "sha256": "029074a26d6c057af9f7b5318d3096e414e93f65fef0ce443a751b8c8cf90042",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_classroom_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "chair_1.category"
+        ],
+        "expected_changed_atom": "chair_1.category",
+        "source_cot_text_sha256": "2e96b25f9e00335b3e3e34bc98ae352a3817b66d95ccb6a6d5434067acd68b1a",
+        "target_cot_text_sha256": "2940f4681c1e8433f7a60ccbf19349e13bcd0a062c956b0d61424a5cce7c6750"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review"
+      ]
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.14815521240234375,
+          "bbox_area_ratio": 0.5483627319335938,
+          "bbox_ltrb": [
+            0,
+            176,
+            1000,
+            751
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 155352,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 255,
+          "mean_absolute_rgb_difference": 10.397970835367838,
+          "raw_changed_pixels": 121678,
+          "raw_changed_ratio": 0.11604118347167969
+        },
+        "review_status": "unreviewed",
+        "sha256": "9e13272de72a38201c9e0153643b51987da3ff18a588b72cd3a762fecee2dafc",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_flower_shop_absolute_position_change_v4_absolute_region_wide_table_fix_v6_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "watering_can_1.location"
+        ],
+        "expected_changed_atom": "watering_can_1.location",
+        "source_cot_text_sha256": "4d2493f8149af0b2d817e32996e2a2f39e8ab76a2820084dce9815544d04924c",
+        "target_cot_text_sha256": "b4a102abf1573a21b1786423819339f8087f7758a36f0cac1d5bc156992e6331"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.028018951416015625,
+          "bbox_area_ratio": 0.20931243896484375,
+          "bbox_ltrb": [
+            534,
+            244,
+            844,
+            952
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 29380,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 220,
+          "mean_absolute_rgb_difference": 3.6175012588500977,
+          "raw_changed_pixels": 24448,
+          "raw_changed_ratio": 0.0233154296875
+        },
+        "review_status": "unreviewed",
+        "sha256": "5fd60a8c32809219430912d44f0df34607292a5c9aaeb17799f38db81129af96",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_flower_shop_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "flower_1.attributes.color"
+        ],
+        "expected_changed_atom": "flower_1.attributes.color",
+        "source_cot_text_sha256": "3fd67aecec6369a4e19643c935b42972f4ac110e8bec51bac268007e1f145b41",
+        "target_cot_text_sha256": "92e3c9ce8cd31f560d3b706f829649a8611c2f6d5fa7c198105fb8d6210a00d9"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.02918243408203125,
+          "bbox_area_ratio": 0.22856998443603516,
+          "bbox_ltrb": [
+            148,
+            177,
+            451,
+            968
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 30600,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 249,
+          "mean_absolute_rgb_difference": 3.9427668253580728,
+          "raw_changed_pixels": 17098,
+          "raw_changed_ratio": 0.016305923461914062
+        },
+        "review_status": "unreviewed",
+        "sha256": "7bf38b881af555ddc3a31a3c053c096c37b92e229e595febcc1ec549f6ff9b03",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_flower_shop_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "flower_1.count"
+        ],
+        "expected_changed_atom": "flower_1.count",
+        "source_cot_text_sha256": "8279b0afb631a162418a2c2c9101e54f80b91b2c214c5a1e115f19b1909c4b27",
+        "target_cot_text_sha256": "9284497207009170d00caebebb1b10fa7174b321bc83922c42d8f91fb2c4c184"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.0679636001586914,
+          "bbox_area_ratio": 0.1894855499267578,
+          "bbox_ltrb": [
+            87,
+            370,
+            445,
+            925
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 71265,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_flower_shop_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 240,
+          "mean_absolute_rgb_difference": 4.431652386983235,
+          "raw_changed_pixels": 51081,
+          "raw_changed_ratio": 0.048714637756347656
+        },
+        "review_status": "unreviewed",
+        "sha256": "35379d256a29f1856f44943b314c70d268c9ffcc4956ecaf50c764646fc20713",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_flower_shop_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "flower_1.category"
+        ],
+        "expected_changed_atom": "flower_1.category",
+        "source_cot_text_sha256": "19e13d4f065e9546653eb6a676e40777b48a529988e6dffee91d57a4df7e86cb",
+        "target_cot_text_sha256": "32cf0af7e592fa42980879d8a758d0dcbdb02cb4d461b518d8223d9a09aa9baa"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.3188343048095703,
+          "bbox_area_ratio": 0.7216796875,
+          "bbox_ltrb": [
+            0,
+            141,
+            1024,
+            880
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 334322,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 237,
+          "mean_absolute_rgb_difference": 7.177934646606445,
+          "raw_changed_pixels": 71664,
+          "raw_changed_ratio": 0.0683441162109375
+        },
+        "review_status": "unreviewed",
+        "sha256": "4272cb0de300e8cf7254ef9ef3e908c1a342383de9e8624e20536ea66be18bc3",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_garden_animals_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "rabbit_1.location"
+        ],
+        "expected_changed_atom": "rabbit_1.location",
+        "source_cot_text_sha256": "2f3080786f888dd0f200f010ccc99d5770e05ea30a91d4a9caf67dbe4af2b013",
+        "target_cot_text_sha256": "ef8f1484c510d23f0edf190cfa947e29583bd74e6e2c437fe0c6fbc414580c00"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.6158933639526367,
+          "bbox_area_ratio": 1.0,
+          "bbox_ltrb": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 645811,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": true,
+          "within_recommended_range": false
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 235,
+          "mean_absolute_rgb_difference": 13.223704973856607,
+          "raw_changed_pixels": 139082,
+          "raw_changed_ratio": 0.13263893127441406
+        },
+        "review_status": "unreviewed",
+        "sha256": "e2af9d78b7092222a8b5e148334661999048540e5e6a5828c5fcfa9b0c3db52b",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_garden_animals_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "dog_1.attributes.color"
+        ],
+        "expected_changed_atom": "dog_1.attributes.color",
+        "source_cot_text_sha256": "a93472b2480bc1f62b73065702b5c56029b95b5e54dcaf2dcb8a670e8d5d95e1",
+        "target_cot_text_sha256": "4bdac6213cc52a81f36a4cbdd38efc47d1940d90d3651004699eb03d64ca6229"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_area_outside_recommended_range",
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.5447101593017578,
+          "bbox_area_ratio": 0.9130859375,
+          "bbox_ltrb": [
+            0,
+            89,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 571170,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": false
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 234,
+          "mean_absolute_rgb_difference": 8.611443837483725,
+          "raw_changed_pixels": 106801,
+          "raw_changed_ratio": 0.1018533706665039
+        },
+        "review_status": "unreviewed",
+        "sha256": "4005d4c0e784e8142b7c42e6c2514a0588575e3d3e8eb91117ca32a06cd6ca18",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_garden_animals_count_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "rabbit_1.count"
+        ],
+        "expected_changed_atom": "rabbit_1.count",
+        "source_cot_text_sha256": "c80f1a4596252356072472e07e680c6b59e3322969ff733f9b161f7c9496ff05",
+        "target_cot_text_sha256": "815766440d6ed9369a0475c06c70ea7ff3ebb227993e62bd49140e637c1ec50b"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_area_outside_recommended_range",
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.3780841827392578,
+          "bbox_area_ratio": 0.9404296875,
+          "bbox_ltrb": [
+            0,
+            61,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 396450,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 255,
+          "mean_absolute_rgb_difference": 13.039918263753256,
+          "raw_changed_pixels": 160852,
+          "raw_changed_ratio": 0.15340042114257812
+        },
+        "review_status": "unreviewed",
+        "sha256": "fa05c5453e6af3e24e037ee4a3b0972e036e714f3dac94b6ee4fe7c586843023",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_garden_animals_object_replace_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "rabbit_1.category"
+        ],
+        "expected_changed_atom": "rabbit_1.category",
+        "source_cot_text_sha256": "815766440d6ed9369a0475c06c70ea7ff3ebb227993e62bd49140e637c1ec50b",
+        "target_cot_text_sha256": "de3670ab745538b69345d72c1bfa3d33c36b43ff6c110cf7d5a47b9f51e245f7"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.24621200561523438,
+          "bbox_area_ratio": 0.791015625,
+          "bbox_ltrb": [
+            0,
+            66,
+            1024,
+            876
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 258172,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 205,
+          "mean_absolute_rgb_difference": 17.61146608988444,
+          "raw_changed_pixels": 229379,
+          "raw_changed_ratio": 0.21875286102294922
+        },
+        "review_status": "unreviewed",
+        "sha256": "a62206af7873f98b85ad1f016d2d9cb7540395492d31e241be956c85dd52cd49",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_grocery_display_absolute_position_change_v4_absolute_region_pumpkin_in_basket_fix_v5_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "pumpkin_1.location"
+        ],
+        "expected_changed_atom": "pumpkin_1.location",
+        "source_cot_text_sha256": "fe721c50b46b03e94c85ed57a4984be4fbe755437f965f1b1641c421deed9eb3",
+        "target_cot_text_sha256": "418223cc8e5823f2010cb8598641eb05a3cc4c4f2c69a904c4c0bffcc0fc03aa"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.054398536682128906,
+          "bbox_area_ratio": 0.7080078125,
+          "bbox_ltrb": [
+            0,
+            174,
+            1024,
+            899
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 57041,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 193,
+          "mean_absolute_rgb_difference": 3.3465522130330405,
+          "raw_changed_pixels": 10589,
+          "raw_changed_ratio": 0.010098457336425781
+        },
+        "review_status": "unreviewed",
+        "sha256": "fa2b2437c70b70d2d6cdcf81e3e41f9c3a3bdbf1ba115e5a8a7d4436b4226060",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_grocery_display_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "apple_1.attributes.color"
+        ],
+        "expected_changed_atom": "apple_1.attributes.color",
+        "source_cot_text_sha256": "0c701a99a7374834aacf885156dcbe04e3c63e5dc29209b0cb1908324267f873",
+        "target_cot_text_sha256": "fd1810b3e3113d254ce1884fde623cadf40da141726a8f5cfbed0261954af243"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.1257476806640625,
+          "bbox_area_ratio": 0.5419082641601562,
+          "bbox_ltrb": [
+            2,
+            224,
+            1024,
+            780
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 131856,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 212,
+          "mean_absolute_rgb_difference": 5.536477088928223,
+          "raw_changed_pixels": 35656,
+          "raw_changed_ratio": 0.03400421142578125
+        },
+        "review_status": "unreviewed",
+        "sha256": "8031c5eb6e13af2d24ef3af1e727e9dda6e6cc9d1a496c08104e4257e27668ac",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_grocery_display_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "apple_1.count"
+        ],
+        "expected_changed_atom": "apple_1.count",
+        "source_cot_text_sha256": "12389bb58cab25cc28fa24cb66de8bffcf05430da2207f3ea3f8b788b1554f8a",
+        "target_cot_text_sha256": "691a31eefb0d63d8f032c2f61ba7613c69f94718c670e0a8a2799237884c576b"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.25894927978515625,
+          "bbox_area_ratio": 0.8170394897460938,
+          "bbox_ltrb": [
+            0,
+            38,
+            978,
+            914
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 271528,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 228,
+          "mean_absolute_rgb_difference": 14.450277964274088,
+          "raw_changed_pixels": 228256,
+          "raw_changed_ratio": 0.217681884765625
+        },
+        "review_status": "unreviewed",
+        "sha256": "eca8e7306b607a46b2ce0bef317fc8a3b113230e022c75a9d0191076ad373038",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_grocery_display_object_replace_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "cabbage_1.category"
+        ],
+        "expected_changed_atom": "cabbage_1.category",
+        "source_cot_text_sha256": "e7f2c4411458ced239eed848723ab995615018a568a31c9616330028c0c97d35",
+        "target_cot_text_sha256": "96794d9ce397d4bf9ba7cf6bc881a7bd2e68e0166e7ba6c7b419fe767e728167"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.05113697052001953,
+          "bbox_area_ratio": 0.20836257934570312,
+          "bbox_ltrb": [
+            0,
+            542,
+            867,
+            794
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 53621,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 141,
+          "mean_absolute_rgb_difference": 4.608631451924642,
+          "raw_changed_pixels": 45849,
+          "raw_changed_ratio": 0.043725013732910156
+        },
+        "review_status": "unreviewed",
+        "sha256": "d8046d007bc711dc401a9a230898e1402757bb688475b9f952e456eb90f77c13",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_home_kitchen_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "cup_1.attributes.color"
+        ],
+        "expected_changed_atom": "cup_1.attributes.color",
+        "source_cot_text_sha256": "e3c4f15b677193c599bb634fd758c350279c0bb14d47d0f0944a8688179870d7",
+        "target_cot_text_sha256": "b36b406aa61dcb90600e6ab3c19315af1ea5867bf3e3509397083ce7f61d5670"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.35512256622314453,
+          "bbox_area_ratio": 0.5852432250976562,
+          "bbox_ltrb": [
+            53,
+            392,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 372373,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": false,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 221,
+          "mean_absolute_rgb_difference": 25.11647669474284,
+          "raw_changed_pixels": 326772,
+          "raw_changed_ratio": 0.3116340637207031
+        },
+        "review_status": "unreviewed",
+        "sha256": "c516b6d47f6fbfcf03f5ebe65d337eca791f538f3f0a319c0d4f0264270d6ada",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_home_kitchen_count_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "mug_1.count"
+        ],
+        "expected_changed_atom": "mug_1.count",
+        "source_cot_text_sha256": "8db34e507615bad3f80b9037264630f0314d3db2dc7f7930b0016b092582f720",
+        "target_cot_text_sha256": "1209297c3e029e9677e80491077d0351ed9fa52e08ef807f29c4be766ea98123"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.062111854553222656,
+          "bbox_area_ratio": 0.1210784912109375,
+          "bbox_ltrb": [
+            618,
+            553,
+            986,
+            898
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 65129,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 255,
+          "mean_absolute_rgb_difference": 5.320698102315267,
+          "raw_changed_pixels": 45265,
+          "raw_changed_ratio": 0.043168067932128906
+        },
+        "review_status": "unreviewed",
+        "sha256": "1082457f7864e33b781cec3325937847b0d5c727119d6485a60676ebf9f5da3e",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_home_kitchen_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "cup_1.category"
+        ],
+        "expected_changed_atom": "cup_1.category",
+        "source_cot_text_sha256": "965c8a4d4b98fcfe443e43df06725204a8cfb679ae9debaba5116a2f627c17dc",
+        "target_cot_text_sha256": "d1d55512abb9031148236f735e0bd2cd83ffceba66acb438177552ae84415464"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "relations.0.predicate",
+      "intervention_type": "spatial_relation_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.21106338500976562,
+          "bbox_area_ratio": 0.4501991271972656,
+          "bbox_ltrb": [
+            83,
+            187,
+            647,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 221316,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_home_kitchen_spatial_relation_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 223,
+          "mean_absolute_rgb_difference": 19.587091128031414,
+          "raw_changed_pixels": 190665,
+          "raw_changed_ratio": 0.18183231353759766
+        },
+        "review_status": "unreviewed",
+        "sha256": "3bf805df010bf847d04a2735b70d5e76d8db7d891c046f2509ed009935e8bfc5",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_home_kitchen_spatial_relation_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "cup_1.relations.0.predicate"
+        ],
+        "expected_changed_atom": "cup_1.relations.0.predicate",
+        "source_cot_text_sha256": "c0fb76cb84d5360e87d54dca48e58ae04bee7d8b595baca643d6323c67921c20",
+        "target_cot_text_sha256": "dc13f54a53d59a131efac23048c24e3b0b1e4fe7906c916144e66ff1e581b2d2"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.1663379669189453,
+          "bbox_area_ratio": 0.4316425323486328,
+          "bbox_ltrb": [
+            382,
+            266,
+            1024,
+            971
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 174418,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 156,
+          "mean_absolute_rgb_difference": 3.1704025268554688,
+          "raw_changed_pixels": 15750,
+          "raw_changed_ratio": 0.015020370483398438
+        },
+        "review_status": "unreviewed",
+        "sha256": "bf16062058d5a686a19a0f1d04c69907dda90da585b621e197892cebb900c5d5",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_lakeside_birds_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bird_1.attributes.color"
+        ],
+        "expected_changed_atom": "bird_1.attributes.color",
+        "source_cot_text_sha256": "d6ea75707781537475684864024cce1a52897dbd52cbb84ea2b23e3a62badcf8",
+        "target_cot_text_sha256": "975e9fa0d1b193985c28b9bfbc961e10b98b1ab10904754a1722fdb9f9ff40c3"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.1809234619140625,
+          "bbox_area_ratio": 0.4832115173339844,
+          "bbox_ltrb": [
+            95,
+            381,
+            883,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 189712,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 220,
+          "mean_absolute_rgb_difference": 4.232048988342285,
+          "raw_changed_pixels": 26648,
+          "raw_changed_ratio": 0.02541351318359375
+        },
+        "review_status": "unreviewed",
+        "sha256": "bf556025ffd3605ec0dd5c0e24c56ba5e537b82dc02caeb26a3b12c723452b41",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_lakeside_birds_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bird_1.count"
+        ],
+        "expected_changed_atom": "bird_1.count",
+        "source_cot_text_sha256": "b316aaf1099dcabd66a18a4f06fd8c400f8d583d3f214514166bb22f2ab415dd",
+        "target_cot_text_sha256": "44f21d16beecda65816fce019f4798347f465065e19688e678739745e1ca019e"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.13316917419433594,
+          "bbox_area_ratio": 0.8193359375,
+          "bbox_ltrb": [
+            0,
+            185,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 139638,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 244,
+          "mean_absolute_rgb_difference": 3.485088030497233,
+          "raw_changed_pixels": 17590,
+          "raw_changed_ratio": 0.016775131225585938
+        },
+        "review_status": "unreviewed",
+        "sha256": "7d3c3b86ea777432eb8a7a3090dce70edf72bb48b0b4982bad7c83a83e9526e4",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_lakeside_birds_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bird_1.category"
+        ],
+        "expected_changed_atom": "bird_1.category",
+        "source_cot_text_sha256": "0d0c6670f244ea758a6a0f4eb93785db0b2267b01d2fb0ba6d249116ce81b639",
+        "target_cot_text_sha256": "33443dc1b72f5c88506ef0f3dce4ba912cce4259ee94f722a280e9bd44b3e855"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "relations.0.predicate",
+      "intervention_type": "spatial_relation_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.3059225082397461,
+          "bbox_area_ratio": 1.0,
+          "bbox_ltrb": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 320783,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": true,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_lakeside_birds_spatial_relation_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 239,
+          "mean_absolute_rgb_difference": 6.960004806518555,
+          "raw_changed_pixels": 51033,
+          "raw_changed_ratio": 0.048668861389160156
+        },
+        "review_status": "unreviewed",
+        "sha256": "2eb01af507260e08036f8e2067c373fa68c43f8fd57d1f5624f287afc95416c6",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_lakeside_birds_spatial_relation_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bird_1.relations.0.predicate"
+        ],
+        "expected_changed_atom": "bird_1.relations.0.predicate",
+        "source_cot_text_sha256": "27abedabe4b4ec7d2bd8e84cea0d86313538cd15c287cac4ef4f51dbb6301e55",
+        "target_cot_text_sha256": "9b9d1067d7905c78cd97e64993ee9bf6b6c931b7376815b4825f8d436d1a78d5"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.16026782989501953,
+          "bbox_area_ratio": 0.32721710205078125,
+          "bbox_ltrb": [
+            246,
+            241,
+            803,
+            857
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 168053,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 231,
+          "mean_absolute_rgb_difference": 11.080150604248047,
+          "raw_changed_pixels": 152127,
+          "raw_changed_ratio": 0.1450796127319336
+        },
+        "review_status": "unreviewed",
+        "sha256": "b55165142399347505f3a350ec2577d77424c5440dcc78fb69d85de67e4994b9",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_library_table_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "book_1.location"
+        ],
+        "expected_changed_atom": "book_1.location",
+        "source_cot_text_sha256": "62c55e3792e1b9c40b0c197045db0c7b4530e3273247dbf4780f0cee025bfaa7",
+        "target_cot_text_sha256": "dc04659b836ed78045b6de069340099f71751f007e24be89f3c6e8387d66e680"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.055896759033203125,
+          "bbox_area_ratio": 0.45484066009521484,
+          "bbox_ltrb": [
+            98,
+            122,
+            1003,
+            649
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 58612,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 144,
+          "mean_absolute_rgb_difference": 4.55439821879069,
+          "raw_changed_pixels": 42590,
+          "raw_changed_ratio": 0.04061698913574219
+        },
+        "review_status": "unreviewed",
+        "sha256": "65f072878fb2a0a8735373603ac00cc586d0b7cb81818cc44dce9ec46f387d77",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_library_table_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "book_1.attributes.color"
+        ],
+        "expected_changed_atom": "book_1.attributes.color",
+        "source_cot_text_sha256": "676fa49cb836ef85bb6eae25c9f4a624372673af8513a321d3f5a99a549b6068",
+        "target_cot_text_sha256": "116846fd8f4677ba4cb684228fba03ca588c8ceb2a71771e1f60eaaf32fdb647"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.041388511657714844,
+          "bbox_area_ratio": 0.5146808624267578,
+          "bbox_ltrb": [
+            165,
+            95,
+            1023,
+            724
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 43399,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 223,
+          "mean_absolute_rgb_difference": 3.5308383305867515,
+          "raw_changed_pixels": 30869,
+          "raw_changed_ratio": 0.02943897247314453
+        },
+        "review_status": "unreviewed",
+        "sha256": "447fe03095fd69abd1b00c05d8266b9bc8096430423859ab86d736ea35a2a208",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_library_table_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "book_1.count"
+        ],
+        "expected_changed_atom": "book_1.count",
+        "source_cot_text_sha256": "e5a1ffd481e6f6680c3409bd843ac0fb28d3194efa1d65e7eb6ae6cd2f1905c1",
+        "target_cot_text_sha256": "b0ecd2acb0d0fe530ddeaaf54168b8de499a13003e8b6cf82d12e0e92ae840fc"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.0659933090209961,
+          "bbox_area_ratio": 0.35320186614990234,
+          "bbox_ltrb": [
+            445,
+            111,
+            918,
+            894
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 69199,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_library_table_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 226,
+          "mean_absolute_rgb_difference": 3.9930858612060547,
+          "raw_changed_pixels": 32997,
+          "raw_changed_ratio": 0.03146839141845703
+        },
+        "review_status": "unreviewed",
+        "sha256": "5e78e58e399f23e0d77764ee7b8818a027a439d4688fe53032a330f122d28c92",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_library_table_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "book_1.category"
+        ],
+        "expected_changed_atom": "book_1.category",
+        "source_cot_text_sha256": "71699d3a213ce86995c02bb58f38d1df2362918ac34afd08cdcedaf1f5361e70",
+        "target_cot_text_sha256": "49462e46d2a32f8228f622bf5211a9de0536dbf6bd6dc1ca787cdc5e910aab59"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.26719093322753906,
+          "bbox_area_ratio": 0.83203125,
+          "bbox_ltrb": [
+            0,
+            145,
+            1024,
+            997
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 280170,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 228,
+          "mean_absolute_rgb_difference": 8.09117571512858,
+          "raw_changed_pixels": 56059,
+          "raw_changed_ratio": 0.05346202850341797
+        },
+        "review_status": "unreviewed",
+        "sha256": "1e3cc4e4c0f1cc45b6c2052e674104711838490bac1b7b0a86cc333bff677887",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "ball_1.location"
+        ],
+        "expected_changed_atom": "ball_1.location",
+        "source_cot_text_sha256": "6a8262eb6a459fd66db521d5eeb621b3d9400bbc9dece30b8618ec0748bf7035",
+        "target_cot_text_sha256": "20452b4539ee898ef1400cc359920ee467e966e197fc43869fae98f9c2dffe1b"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.19838619232177734,
+          "bbox_area_ratio": 0.9501953125,
+          "bbox_ltrb": [
+            0,
+            51,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 208023,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 196,
+          "mean_absolute_rgb_difference": 5.966360727945964,
+          "raw_changed_pixels": 41666,
+          "raw_changed_ratio": 0.03973579406738281
+        },
+        "review_status": "unreviewed",
+        "sha256": "a58ecd11b28395065998041feaf10a5508bb1b75ed1af5775d41958d9ea39101",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_living_room_play_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "ball_1.attributes.color"
+        ],
+        "expected_changed_atom": "ball_1.attributes.color",
+        "source_cot_text_sha256": "813acf5e5aa2fb1c3e79f72aba5199b7a59183d16737b9ebb7d926963502b051",
+        "target_cot_text_sha256": "e8a26a604a4cc7e2d6e341096d086ea4b79215558cd3c7133085ddbad0e67844"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.035576820373535156,
+          "bbox_area_ratio": 0.2919921875,
+          "bbox_ltrb": [
+            0,
+            238,
+            1024,
+            537
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 37305,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 209,
+          "mean_absolute_rgb_difference": 4.577368418375651,
+          "raw_changed_pixels": 23375,
+          "raw_changed_ratio": 0.022292137145996094
+        },
+        "review_status": "unreviewed",
+        "sha256": "d6b2e8fcee56d257e9aeb77e30fd708c739e4b9999b24e724c590d947e830537",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_living_room_play_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "ball_1.count"
+        ],
+        "expected_changed_atom": "ball_1.count",
+        "source_cot_text_sha256": "9dcee809cf8a544eea0c82d06b9af6b1d274ad62de6b0085a2aac398541cc5a3",
+        "target_cot_text_sha256": "dafc016c06e0dd06eb0d4fddabc232e4717c79040aea9d4cd9ac2a816994dbb2"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.06292343139648438,
+          "bbox_area_ratio": 0.4286384582519531,
+          "bbox_ltrb": [
+            33,
+            377,
+            1023,
+            831
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 65980,
+          "threshold": 24,
+          "touches_bottom": false,
+          "touches_left": false,
+          "touches_right": false,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_living_room_play_object_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 218,
+          "mean_absolute_rgb_difference": 4.1532942454020185,
+          "raw_changed_pixels": 27406,
+          "raw_changed_ratio": 0.026136398315429688
+        },
+        "review_status": "unreviewed",
+        "sha256": "46bd3d5c059f83df454aa964a990b4cd4d33ac9e0e5f31528f446a78fa7709f4",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_living_room_play_object_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "ball_1.category"
+        ],
+        "expected_changed_atom": "ball_1.category",
+        "source_cot_text_sha256": "528cc31d2faba4ed02d9c7eee25d35e9b25e5662b65f25647f2af1b6141db604",
+        "target_cot_text_sha256": "77b6da71fb27bebc4d5bc51f1e6ca2291609ae5dabdea765a08e76394646dea5"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": []
+    },
+    {
+      "intervention_field": "location",
+      "intervention_type": "spatial_position_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.42223358154296875,
+          "bbox_area_ratio": 0.685546875,
+          "bbox_ltrb": [
+            0,
+            322,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 442744,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 255,
+          "mean_absolute_rgb_difference": 12.89631430308024,
+          "raw_changed_pixels": 125097,
+          "raw_changed_ratio": 0.11930179595947266
+        },
+        "review_status": "unreviewed",
+        "sha256": "b29fe5fb8d15c3299e2ffddbeb4ec9a6726ffc556c0114bde6317c950e23c358",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_seaside_path_absolute_position_change_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bucket_1.location"
+        ],
+        "expected_changed_atom": "bucket_1.location",
+        "source_cot_text_sha256": "9711a1390c78d42faec7de0ae1d086311b4aeb19e09b399ba32c185838ae7a90",
+        "target_cot_text_sha256": "6b52684f0ceeb549db157d3ad0cff38185557d5440039a561cf749278961b322"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "attributes.color",
+      "intervention_type": "attribute_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.2399282455444336,
+          "bbox_area_ratio": 0.90625,
+          "bbox_ltrb": [
+            0,
+            96,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 251583,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_attribute_replace_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 212,
+          "mean_absolute_rgb_difference": 4.666975021362305,
+          "raw_changed_pixels": 51999,
+          "raw_changed_ratio": 0.049590110778808594
+        },
+        "review_status": "unreviewed",
+        "sha256": "69178748263a75e70365b952cacad0638f39550e19f961a0324f2ce95bd430d2",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_seaside_path_attribute_replace_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bicycle_1.attributes.color"
+        ],
+        "expected_changed_atom": "bicycle_1.attributes.color",
+        "source_cot_text_sha256": "42259f3d4709e9f45745de73b73dab56d93977180f0c631f0c43cf2e80b83608",
+        "target_cot_text_sha256": "525a395666c4bb30127fb6d206135351c65d1f528f0a0812f902534e02971373"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "count",
+      "intervention_type": "count_change",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.3972177505493164,
+          "bbox_area_ratio": 0.7412109375,
+          "bbox_ltrb": [
+            0,
+            265,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 416513,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_count_change_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 249,
+          "mean_absolute_rgb_difference": 8.798727671305338,
+          "raw_changed_pixels": 89844,
+          "raw_changed_ratio": 0.08568191528320312
+        },
+        "review_status": "unreviewed",
+        "sha256": "dd1ed6a631abe177f863e68e65631c4776657f3e20ea43e55f166e5839adb8a9",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_seaside_path_count_change_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "bicycle_1.count"
+        ],
+        "expected_changed_atom": "bicycle_1.count",
+        "source_cot_text_sha256": "363e7eb11c338bca70d974b131ccd9c33da5f1189899b8090140124d48349985",
+        "target_cot_text_sha256": "17d83507810c1342927b1c8b6db5f4782d6552f5e9bbf77967231d053ec38ccc"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    },
+    {
+      "intervention_field": "category",
+      "intervention_type": "object_replace",
+      "mask": {
+        "candidate_only": true,
+        "dilation_px": 9,
+        "manual_review_required": true,
+        "mask_geometry": {
+          "area_ratio": 0.26109886169433594,
+          "bbox_area_ratio": 0.57421875,
+          "bbox_ltrb": [
+            0,
+            436,
+            1024,
+            1024
+          ],
+          "candidate_only": true,
+          "dilation_px": 9,
+          "pixels": 273782,
+          "threshold": 24,
+          "touches_bottom": true,
+          "touches_left": true,
+          "touches_right": true,
+          "touches_top": false,
+          "within_recommended_range": true
+        },
+        "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_dual_target_cot_v4_data/artifacts/dynamic_masks/cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000.png",
+        "raw_difference": {
+          "max_channel_difference": 244,
+          "mean_absolute_rgb_difference": 11.29411252339681,
+          "raw_changed_pixels": 118145,
+          "raw_changed_ratio": 0.1126718521118164
+        },
+        "review_status": "unreviewed",
+        "sha256": "1ffb0e8a27fde2f17632b685b79b9df569bff5a418f995d1b7cc965b3bede36b",
+        "threshold": 24
+      },
+      "pair_id": "cf_source_seaside_path_object_replace_v4_absolute_region_replacement_v4_0000",
+      "semantic_audit": {
+        "changed_atoms": [
+          "vehicle_1.category"
+        ],
+        "expected_changed_atom": "vehicle_1.category",
+        "source_cot_text_sha256": "b2c91c649e7a4ead560a1abe82b0f67dec4ad6a10773129e51cb7170275c6293",
+        "target_cot_text_sha256": "a6d3f84e1ef086ef5799ce7177e1265b1e85b202d3d60bcf4473403ff5e15713"
+      },
+      "status": "candidate_ready_manual_review_required",
+      "warnings": [
+        "large_candidate_mask_requires_manual_locality_review",
+        "candidate_mask_touches_image_border"
+      ]
+    }
+  ],
+  "status": "candidate_ready_manual_review_required",
+  "training_readiness": {
+    "ready_for_training": false,
+    "reason": "Masks are RGB-difference candidate masks. Every pair must receive explicit human review/approval before v4 Gold40 training.",
+    "required_next_artifact": "review_decisions.jsonl with pair_id, approved, reviewer, reviewed_at, and notes"
+  }
+}

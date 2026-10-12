@@ -1,0 +1,1488 @@
+{
+  "input_records": 1005,
+  "unique_pair_ids": 1000,
+  "unique_scenes": 149,
+  "scene_size_histogram": {
+    "1": 34,
+    "2": 5,
+    "3": 5,
+    "4": 3,
+    "5": 7,
+    "6": 9,
+    "7": 10,
+    "8": 9,
+    "9": 13,
+    "10": 37,
+    "11": 11,
+    "12": 4,
+    "19": 1,
+    "23": 1
+  },
+  "dimension_histogram": {
+    "attribute_intervention": 280,
+    "category_replacement": 191,
+    "spatial_geometric_intervention": 199,
+    "instance_cardinality_intervention": 171,
+    "spatial_geometric": 55,
+    "instance_cardinality": 49,
+    "object_replace_intervention": 32,
+    "spatial_relation_change_intervention": 14,
+    "spatial_relational_intervention": 9
+  },
+  "field_histogram": {
+    "attributes.color": 93,
+    "attributes.material": 86,
+    "category": 215,
+    "attributes.functional_state": 46,
+    "location": 185,
+    "attributes.occlusion_state": 41,
+    "count": 220,
+    "relations": 78,
+    "attributes.pattern": 22,
+    "relations[0].predicate": 14
+  },
+  "findings_total": 913,
+  "finding_counts": {
+    "dimension_type_inconsistent": 410,
+    "cot_text_not_canonical": 244,
+    "subtype_inconsistent": 63,
+    "changed_values_mismatch_intervention": 49,
+    "background_not_object": 40,
+    "atom_count_mismatch": 31,
+    "location_outside_vocabulary": 28,
+    "scene_source_cot_not_unique": 22,
+    "scene_source_prompt_not_unique": 21,
+    "duplicate_pair_id": 5
+  },
+  "ready_for_image_generation": false,
+  "files": [
+    "batch01_kitchen_counter_scene01.jsonl",
+    "batch_antique_curio_shop.jsonl",
+    "batch_bathroom_counter.jsonl",
+    "batch_beach_scene.jsonl",
+    "batch_bedroom_nightstand.jsonl",
+    "batch_bookshelf_study.jsonl",
+    "batch_city_street.jsonl",
+    "batch_classroom.jsonl",
+    "batch_closet_wardrobe.jsonl",
+    "batch_dining_table.jsonl",
+    "batch_flower_shop.jsonl",
+    "batch_grocery_display.jsonl",
+    "batch_kitchen_counter.jsonl",
+    "batch_living_room_play.jsonl",
+    "batch_office_desk.jsonl",
+    "batch_pantry_shelf_closeup.jsonl",
+    "batch_parking_lot.jsonl",
+    "batch_picnic_blanket.jsonl",
+    "batch_playground.jsonl",
+    "batch_toolshed_garage.jsonl",
+    "batch_warehouse_shelf.jsonl"
+  ],
+  "findings": [
+    {
+      "code": "duplicate_pair_id",
+      "pair_id": "g1000_kc01_p01",
+      "locations": [
+        "batch01_kitchen_counter_scene01.jsonl:1",
+        "batch_kitchen_counter.jsonl:1"
+      ]
+    },
+    {
+      "code": "duplicate_pair_id",
+      "pair_id": "g1000_kc01_p02",
+      "locations": [
+        "batch01_kitchen_counter_scene01.jsonl:2",
+        "batch_kitchen_counter.jsonl:2"
+      ]
+    },
+    {
+      "code": "duplicate_pair_id",
+      "pair_id": "g1000_kc01_p03",
+      "locations": [
+        "batch01_kitchen_counter_scene01.jsonl:3",
+        "batch_kitchen_counter.jsonl:3"
+      ]
+    },
+    {
+      "code": "duplicate_pair_id",
+      "pair_id": "g1000_kc01_p04",
+      "locations": [
+        "batch01_kitchen_counter_scene01.jsonl:4",
+        "batch_kitchen_counter.jsonl:4"
+      ]
+    },
+    {
+      "code": "duplicate_pair_id",
+      "pair_id": "g1000_kc01_p05",
+      "locations": [
+        "batch01_kitchen_counter_scene01.jsonl:5",
+        "batch_kitchen_counter.jsonl:5"
+      ]
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "kc01_mug_board_jar",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs01_book_bookend_plant",
+      "variants": 3
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs01_book_bookend_plant",
+      "variants": 3
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs02_magazine_lamp_globe",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs02_magazine_lamp_globe",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs03_picturebook_bin",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs03_picturebook_bin",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs04_penjar_folder_trophy",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs04_penjar_folder_trophy",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs06_cardstack_figurine",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs06_cardstack_figurine",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs07_tin_plant",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs07_tin_plant",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs08_clock_radio_toycar",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs08_clock_radio_toycar",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs09_bottle_holder",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs09_bottle_holder",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "bs11_mugcollection_folder",
+      "variants": 4
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "bs11_mugcollection_folder",
+      "variants": 4
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw01_shirt_sweater_shoebox",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw01_shirt_sweater_shoebox",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw02_tshirts_jewelrybox",
+      "variants": 4
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw02_tshirts_jewelrybox",
+      "variants": 4
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw03_beanie_hatbox_scarf",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw03_beanie_hatbox_scarf",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw04_jeans_belt",
+      "variants": 3
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw04_jeans_belt",
+      "variants": 3
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw05_sunglasses_giftbox_tie",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw05_sunglasses_giftbox_tie",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "cw06_socks_basket_pajamas_hat",
+      "variants": 7
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "cw06_socks_basket_pajamas_hat",
+      "variants": 7
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "gd01_apple_basket_oranges",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "gd01_apple_basket_oranges",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "gd05_milk_crate_yogurt",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "gd05_milk_crate_yogurt",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "wh01_wrench_crate_boxes",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "wh01_wrench_crate_boxes",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "wh02_drums_palletcage",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "wh02_drums_palletcage",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "wh05_cans_bin_labelboxes",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "wh05_cans_bin_labelboxes",
+      "variants": 2
+    },
+    {
+      "code": "scene_source_prompt_not_unique",
+      "scene_id": "wh07_fasteners_bin_sacks",
+      "variants": 7
+    },
+    {
+      "code": "scene_source_cot_not_unique",
+      "scene_id": "wh07_fasteners_bin_sacks",
+      "variants": 7
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_kc01_p03",
+      "location": "batch01_kitchen_counter_scene01.jsonl:3",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_kc01_p03",
+      "location": "batch01_kitchen_counter_scene01.jsonl:3",
+      "subtype": "same_affordance_replace",
+      "intervention_subtype": "category_replacement"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p01",
+      "location": "batch_antique_curio_shop.jsonl:1",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p02",
+      "location": "batch_antique_curio_shop.jsonl:2",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p03",
+      "location": "batch_antique_curio_shop.jsonl:3",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p04",
+      "location": "batch_antique_curio_shop.jsonl:4",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p05",
+      "location": "batch_antique_curio_shop.jsonl:5",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p06",
+      "location": "batch_antique_curio_shop.jsonl:6",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p07",
+      "location": "batch_antique_curio_shop.jsonl:7",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p08",
+      "location": "batch_antique_curio_shop.jsonl:8",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p09",
+      "location": "batch_antique_curio_shop.jsonl:9",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs01_p10",
+      "location": "batch_antique_curio_shop.jsonl:10",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p01",
+      "location": "batch_antique_curio_shop.jsonl:11",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p02",
+      "location": "batch_antique_curio_shop.jsonl:12",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p03",
+      "location": "batch_antique_curio_shop.jsonl:13",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p04",
+      "location": "batch_antique_curio_shop.jsonl:14",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p05",
+      "location": "batch_antique_curio_shop.jsonl:15",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p06",
+      "location": "batch_antique_curio_shop.jsonl:16",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p07",
+      "location": "batch_antique_curio_shop.jsonl:17",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p08",
+      "location": "batch_antique_curio_shop.jsonl:18",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p09",
+      "location": "batch_antique_curio_shop.jsonl:19",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs02_p10",
+      "location": "batch_antique_curio_shop.jsonl:20",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs03_p01",
+      "location": "batch_antique_curio_shop.jsonl:21",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs03_p02",
+      "location": "batch_antique_curio_shop.jsonl:22",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs03_p03",
+      "location": "batch_antique_curio_shop.jsonl:23",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "dimension_type_inconsistent",
+      "pair_id": "g1000_acs03_p04",
+      "location": "batch_antique_curio_shop.jsonl:24",
+      "dimension": "category_replacement",
+      "intervention_type": "object_replace"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p01",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:1"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p01",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:1"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p01",
+      "location": "batch_bookshelf_study.jsonl:1",
+      "subtype": "same_affordance_replace",
+      "intervention_subtype": "color"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p02",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:2"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p02",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:2"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p03",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:3"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p03",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:3"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p05",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:5"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p05",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:5"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p05",
+      "side": "source",
+      "location": "lower_shelf_center"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p05",
+      "side": "target",
+      "location": "upper_shelf_center"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p06",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:6"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p06",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:6"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p07",
+      "location": "batch_bookshelf_study.jsonl:7",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs01_book_bookend_plant_p08",
+      "location": "batch_bookshelf_study.jsonl:8",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p01",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:9"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p01",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:9"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p02",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:10"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p02",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:10"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p03",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:11"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p03",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:11"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p03",
+      "location": "batch_bookshelf_study.jsonl:11",
+      "atom": "lamp_1.object=desk lamp -> lamp_1.object=small potted cactus",
+      "intervention": "desk lamp -> potted cactus"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p04",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:12"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs02_magazine_lamp_globe_p04",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:12"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p01",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:14"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p01",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:14"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p01",
+      "location": "batch_bookshelf_study.jsonl:14",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p02",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:15"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p02",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:15"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p04",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:17"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p04",
+      "side": "target",
+      "location": "batch_bookshelf_study.jsonl:17"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p04",
+      "location": "batch_bookshelf_study.jsonl:17",
+      "atom": "picturebook_1.object=picture book -> picturebook_1.object=small potted succulent",
+      "intervention": "picture book -> potted succulent"
+    },
+    {
+      "code": "cot_text_not_canonical",
+      "pair_id": "g1000_bookshelf_study_bs03_picturebook_bin_p05",
+      "side": "source",
+      "location": "batch_bookshelf_study.jsonl:18"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs04_penjar_folder_trophy_p02",
+      "location": "batch_bookshelf_study.jsonl:20",
+      "atom": "trophy_1.object=small trophy -> trophy_1.object=small potted cactus",
+      "intervention": "small trophy -> potted cactus"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs04_penjar_folder_trophy_p04",
+      "side": "source",
+      "location": "lower_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs04_penjar_folder_trophy_p04",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs04_penjar_folder_trophy_p05",
+      "location": "batch_bookshelf_study.jsonl:23",
+      "atom": "folder_1.object=document folder -> folder_1.object=small wooden tray",
+      "intervention": "document folder -> wooden tray"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs05_stationery_box_p01",
+      "location": "batch_bookshelf_study.jsonl:24",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs05_stationery_box_p03",
+      "location": "batch_bookshelf_study.jsonl:26",
+      "atom": "cardboardbox_1.object=open cardboard box -> cardboardbox_1.object=open wicker basket",
+      "intervention": "cardboard box -> wicker basket"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs07_tin_plant_p01",
+      "location": "batch_bookshelf_study.jsonl:32",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs07_tin_plant_p03",
+      "location": "batch_bookshelf_study.jsonl:34",
+      "atom": "tin_1.object=open metal storage tin -> tin_1.object=open ceramic bowl",
+      "intervention": "metal storage tin -> ceramic bowl"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs08_clock_radio_toycar_p05",
+      "side": "source",
+      "location": "lower_shelf_center"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs08_clock_radio_toycar_p05",
+      "side": "target",
+      "location": "upper_shelf_center"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs08_clock_radio_toycar_p07",
+      "location": "batch_bookshelf_study.jsonl:42",
+      "atom": "clock_1.object=digital alarm clock -> clock_1.object=small desk fan",
+      "intervention": "digital alarm clock -> desk fan"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs09_bottle_holder_p01",
+      "location": "batch_bookshelf_study.jsonl:43",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs09_bottle_holder_p03",
+      "location": "batch_bookshelf_study.jsonl:45",
+      "atom": "holder_1.object=open wicker bottle holder -> holder_1.object=open metal wine rack",
+      "intervention": "wicker bottle holder -> metal wine rack"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p01",
+      "location": "batch_bookshelf_study.jsonl:49",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p01",
+      "side": "source",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p01",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p02",
+      "side": "source",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p02",
+      "side": "target",
+      "location": "lower_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p03",
+      "side": "source",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p03",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p04",
+      "location": "batch_bookshelf_study.jsonl:52",
+      "atom": "clock_2.object=small wall clock -> clock_2.object=small framed calendar",
+      "intervention": "wall clock -> framed calendar"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p04",
+      "side": "source",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p04",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p05",
+      "side": "source",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs10_tray_stapler_clock_p05",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs11_mugcollection_folder_p03",
+      "location": "batch_bookshelf_study.jsonl:56",
+      "atom": "folder_2.object=magazine folder -> folder_2.object=small wooden display stand",
+      "intervention": "magazine folder -> wooden display stand"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs11_mugcollection_folder_p06",
+      "side": "source",
+      "location": "lower_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_bookshelf_study_bs11_mugcollection_folder_p06",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_bookshelf_study_bs11_mugcollection_folder_p08",
+      "location": "batch_bookshelf_study.jsonl:61",
+      "atom": "folder_2.object=magazine folder -> folder_2.object=small potted succulent",
+      "intervention": "magazine folder -> potted succulent"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_closet_wardrobe_cw01_shirt_sweater_shoebox_p01",
+      "location": "batch_closet_wardrobe.jsonl:1",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw01_shirt_sweater_shoebox_p04",
+      "location": "batch_closet_wardrobe.jsonl:4",
+      "atom": "shoebox_1.object=open shoe box -> shoebox_1.object=open fabric storage bin",
+      "intervention": "shoe box -> fabric storage bin"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw02_tshirts_jewelrybox_p05",
+      "location": "batch_closet_wardrobe.jsonl:11",
+      "atom": "jewelrybox_1.object=small jewelry box -> jewelrybox_1.object=small wooden trinket box",
+      "intervention": "jewelry box -> wooden trinket box"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_closet_wardrobe_cw03_beanie_hatbox_scarf_p01",
+      "location": "batch_closet_wardrobe.jsonl:13",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw03_beanie_hatbox_scarf_p05",
+      "location": "batch_closet_wardrobe.jsonl:17",
+      "atom": "hatbox_1.object=open round hat box -> hatbox_1.object=open fabric storage basket",
+      "intervention": "hat box -> fabric storage basket"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_closet_wardrobe_cw05_sunglasses_giftbox_tie_p01",
+      "location": "batch_closet_wardrobe.jsonl:26",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw05_sunglasses_giftbox_tie_p04",
+      "location": "batch_closet_wardrobe.jsonl:29",
+      "atom": "giftbox_1.object=open gift box -> giftbox_1.object=open fabric pouch",
+      "intervention": "gift box -> fabric pouch"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_closet_wardrobe_cw06_socks_basket_pajamas_hat_p02",
+      "location": "batch_closet_wardrobe.jsonl:34",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw06_socks_basket_pajamas_hat_p06",
+      "location": "batch_closet_wardrobe.jsonl:38",
+      "atom": "basket_3.object=open drawer organizer basket -> basket_3.object=open wicker drawer tray",
+      "intervention": "fabric drawer organizer basket -> wicker drawer tray"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_closet_wardrobe_cw06_socks_basket_pajamas_hat_p08",
+      "location": "batch_closet_wardrobe.jsonl:40",
+      "atom": "pajamas_1.object=folded pajama set -> pajamas_1.object=small wall-mounted coat hook",
+      "intervention": "pajama set -> coat hook"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_closet_wardrobe_cw06_socks_basket_pajamas_hat_p20",
+      "location": "batch_closet_wardrobe.jsonl:52",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs01_p09",
+      "location": "batch_flower_shop.jsonl:9",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs01_p10",
+      "location": "batch_flower_shop.jsonl:10",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs02_p01",
+      "location": "batch_flower_shop.jsonl:11",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs02_p02",
+      "location": "batch_flower_shop.jsonl:12",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs02_p03",
+      "location": "batch_flower_shop.jsonl:13",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs02_p04",
+      "location": "batch_flower_shop.jsonl:14",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs02_p05",
+      "location": "batch_flower_shop.jsonl:15",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs03_p01",
+      "location": "batch_flower_shop.jsonl:22",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs03_p02",
+      "location": "batch_flower_shop.jsonl:23",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs03_p03",
+      "location": "batch_flower_shop.jsonl:24",
+      "subtype": "containment",
+      "intervention_subtype": "containment_separate_from_to_inside"
+    },
+    {
+      "code": "subtype_inconsistent",
+      "pair_id": "g1000_fs03_p04",
+      "location": "batch_flower_shop.jsonl:25",
+      "subtype": "containment",
+      "intervention_subtype": "containment_inside_to_separate_from"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd01_apple_basket_oranges_p03",
+      "location": "batch_grocery_display.jsonl:3",
+      "atom": "basket_1.object=wicker basket -> basket_1.object=open wooden crate",
+      "intervention": "wicker basket -> wooden crate"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd01_apple_basket_oranges_p06",
+      "location": "batch_grocery_display.jsonl:6",
+      "atom": "oranges_1.object=orange stack -> oranges_1.object=lemon stack",
+      "intervention": "orange -> lemon"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd01_apple_basket_oranges_p09",
+      "location": "batch_grocery_display.jsonl:9",
+      "atom": "apple_1.object=apple -> apple_1.object=green pear",
+      "intervention": "apple -> pear"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd02_bread_basket_croissants_p04",
+      "location": "batch_grocery_display.jsonl:14",
+      "atom": "croissants_1.object=croissant row -> croissants_1.object=baguette row",
+      "intervention": "croissant -> baguette"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd02_bread_basket_croissants_p10",
+      "location": "batch_grocery_display.jsonl:20",
+      "atom": "bread_1.object=bread roll set -> bread_1.object=bagel set",
+      "intervention": "bread roll -> bagel"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd03_cans_bin_jars_p03",
+      "location": "batch_grocery_display.jsonl:24",
+      "atom": "bin_1.object=metal display bin -> bin_1.object=open cardboard display bin",
+      "intervention": "metal display bin -> cardboard display bin"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd03_cans_bin_jars_p04",
+      "location": "batch_grocery_display.jsonl:25",
+      "atom": "jars_1.object=glass jar row -> jars_1.object=plastic bottle row",
+      "intervention": "glass jar -> plastic bottle"
+    },
+    {
+      "code": "changed_values_mismatch_intervention",
+      "pair_id": "g1000_grocery_display_gd03_cans_bin_jars_p10",
+      "location": "batch_grocery_display.jsonl:31",
+      "atom": "cans_1.object=canned soup set -> cans_1.object=canned bean set",
+      "intervention": "canned soup -> canned bean"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps01_p10",
+      "location": "batch_pantry_shelf_closeup.jsonl:10",
+      "source": 24,
+      "target": 25
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps02_p08",
+      "location": "batch_pantry_shelf_closeup.jsonl:18",
+      "source": 24,
+      "target": 25
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps02_p09",
+      "location": "batch_pantry_shelf_closeup.jsonl:19",
+      "source": 25,
+      "target": 24
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p01",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:21"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p01",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:21"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p01",
+      "location": "batch_pantry_shelf_closeup.jsonl:21",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p02",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:22"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p02",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:22"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p02",
+      "location": "batch_pantry_shelf_closeup.jsonl:22",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p03",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:23"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p03",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:23"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p03",
+      "location": "batch_pantry_shelf_closeup.jsonl:23",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p04",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:24"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p04",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:24"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p04",
+      "location": "batch_pantry_shelf_closeup.jsonl:24",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p05",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:25"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p05",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:25"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p05",
+      "location": "batch_pantry_shelf_closeup.jsonl:25",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p06",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:26"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p06",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:26"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p06",
+      "location": "batch_pantry_shelf_closeup.jsonl:26",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p07",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:27"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p07",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:27"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p07",
+      "location": "batch_pantry_shelf_closeup.jsonl:27",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p08",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:28"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p08",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:28"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p08",
+      "location": "batch_pantry_shelf_closeup.jsonl:28",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p09",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:29"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p09",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:29"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p09",
+      "location": "batch_pantry_shelf_closeup.jsonl:29",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p10",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:30"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps03_p10",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:30"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps03_p10",
+      "location": "batch_pantry_shelf_closeup.jsonl:30",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps04_p01",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:31"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps04_p01",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:31"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p01",
+      "location": "batch_pantry_shelf_closeup.jsonl:31",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps04_p02",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:32"
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps04_p02",
+      "side": "target",
+      "location": "batch_pantry_shelf_closeup.jsonl:32"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p02",
+      "location": "batch_pantry_shelf_closeup.jsonl:32",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "background_not_object",
+      "pair_id": "g1000_ps04_p03",
+      "side": "source",
+      "location": "batch_pantry_shelf_closeup.jsonl:33"
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p03",
+      "location": "batch_pantry_shelf_closeup.jsonl:33",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p04",
+      "location": "batch_pantry_shelf_closeup.jsonl:34",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p05",
+      "location": "batch_pantry_shelf_closeup.jsonl:35",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p06",
+      "location": "batch_pantry_shelf_closeup.jsonl:36",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p07",
+      "location": "batch_pantry_shelf_closeup.jsonl:37",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p08",
+      "location": "batch_pantry_shelf_closeup.jsonl:38",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p09",
+      "location": "batch_pantry_shelf_closeup.jsonl:39",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_ps04_p10",
+      "location": "batch_pantry_shelf_closeup.jsonl:40",
+      "source": 1,
+      "target": 28
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_tg02_p07",
+      "location": "batch_toolshed_garage.jsonl:17",
+      "source": 19,
+      "target": 20
+    },
+    {
+      "code": "atom_count_mismatch",
+      "pair_id": "g1000_tg02_p09",
+      "location": "batch_toolshed_garage.jsonl:19",
+      "source": 19,
+      "target": 20
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh01_wrench_crate_boxes_p04",
+      "side": "source",
+      "location": "lower_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh01_wrench_crate_boxes_p04",
+      "side": "target",
+      "location": "upper_shelf_right"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh02_drums_palletcage_p04",
+      "side": "source",
+      "location": "lower_shelf_left"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh02_drums_palletcage_p04",
+      "side": "target",
+      "location": "upper_shelf_left"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh05_cans_bin_labelboxes_p05",
+      "side": "source",
+      "location": "lower_shelf_left"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh05_cans_bin_labelboxes_p05",
+      "side": "target",
+      "location": "upper_shelf_left"
+    },
+    {
+      "code": "location_outside_vocabulary",
+      "pair_id": "g1000_warehouse_shelf_wh07_fasteners_bin_sacks_p15",
+      "side": "source",
+      "location": "lower_shelf_right"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "created_at": "2026-09-22T13:03:53",
+  "sandbox": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/regen_v4_sandbox",
+  "source_image_root_read_only": "experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/source_images",
+  "model": "gemini-3-pro-image",
+  "fallback": null,
+  "plan": {
+    "regen_source_scenes": [],
+    "target_count": 21,
+    "source_count": 0,
+    "spillover": {}
+  },
+  "items": [
+    {
+      "pair_id": "g1000_bathroom_counter__rinsecup_soap_towel__functional_state_006",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 22.2
+    },
+    {
+      "pair_id": "g1000_bedroom_nightstand__glasses_charger_glass__occlusion_state_005",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 26.3
+    },
+    {
+      "pair_id": "g1000_classroom__book_quota__2_to_3_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.0
+    },
+    {
+      "pair_id": "g1000_closet_wardrobe__n3_pants__2_to_1_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 30.5
+    },
+    {
+      "pair_id": "g1000_closet_wardrobe__n3_pants__3_to_2_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 44.4
+    },
+    {
+      "pair_id": "g1000_closet_wardrobe__n4_shoe__2_to_1_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 43.3
+    },
+    {
+      "pair_id": "g1000_closet_wardrobe__shirt_sweater_shoebox__containment_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.8
+    },
+    {
+      "pair_id": "g1000_dining_table__fork_quota__2_to_3_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 26.0
+    },
+    {
+      "pair_id": "g1000_dining_table__fruit_bowl_napkins__containment_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 28.5
+    },
+    {
+      "pair_id": "g1000_dining_table__n1_napkin__2_to_3_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.2
+    },
+    {
+      "pair_id": "g1000_kitchen_counter__bowl_block_mill__occlusion_state_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.3
+    },
+    {
+      "pair_id": "g1000_kitchen_counter__bowl_block_mill__occlusion_state_003",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.7
+    },
+    {
+      "pair_id": "g1000_living_room_play__block_quota__3_to_2_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.1
+    },
+    {
+      "pair_id": "g1000_living_room_play__lego_pillow_train__absolute_horizontal_003",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 37.2
+    },
+    {
+      "pair_id": "g1000_living_room_play__n3_doll__2_to_1_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 25.2
+    },
+    {
+      "pair_id": "g1000_toolshed_garage__hammer_oilcan_basket__material_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.8
+    },
+    {
+      "pair_id": "g1000_warehouse_shelf__bin_drum_strapping__2_to_3_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.6
+    },
+    {
+      "pair_id": "g1000_warehouse_shelf__fasteners_bin_sacks__containment_002",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 42.7
+    },
+    {
+      "pair_id": "g1000_warehouse_shelf__sack_bundle_bin__2_to_1_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 24.5
+    },
+    {
+      "pair_id": "g1000_warehouse_shelf__sack_bundle_bin__2_to_3_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 24.8
+    },
+    {
+      "pair_id": "g1000_warehouse_shelf__wrench_crate_boxes__absolute_vertical_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 30.2
+    }
+  ],
+  "summary": {
+    "planned_sources": 0,
+    "planned_targets": 21,
+    "succeeded": 21,
+    "failed_or_kept_original": 0
+  }
+}

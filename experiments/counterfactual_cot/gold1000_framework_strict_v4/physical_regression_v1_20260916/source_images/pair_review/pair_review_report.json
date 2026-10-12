@@ -1,0 +1,7 @@
+{
+  "pairs": 6,
+  "linked_files": 18,
+  "missing_files": [],
+  "output_dir": "experiments/counterfactual_cot/gold1000_framework_strict_v4/physical_regression_v1_20260916/source_images/pair_review",
+  "link_type": "relative_symlink"
+}

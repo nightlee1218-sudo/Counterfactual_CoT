@@ -1,0 +1,445 @@
+{
+  "schema_version": "counterfactual_scene_repair_round2_v1",
+  "round": 2,
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "previous_batch": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_batch_20240924_v1",
+  "reported_pair_count": 37,
+  "reported_source_required_pair_count": 31,
+  "source_variant_count": 29,
+  "source_scene_count": 29,
+  "selected_target_count_including_variant_spillover": 51,
+  "generation_target_count_excluding_cot_blocked": 44,
+  "spillover_count": 14,
+  "cot_revision_blocked_pair_count": 7,
+  "count_conflict_policy": "按 source COT canonical signature 拆分 source variant；同一 source_scene_id 但 old count/COT 不同的 pair 不共用一张 source。",
+  "source_variant_rows": [
+    {
+      "source_scene_id": "bedroom_nightstand__glasses_charger_glass__v0074",
+      "source_variant_key": "bedroom_nightstand__glasses_charger_glass__v0074__state_c3e46fb61847",
+      "source_cot_sha256": "c3e46fb61847258c9198db2bb3631f6112eb10486f7ba6c2509df749ac4c0233",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_bedroom_nightstand__glasses_charger_glass__occlusion_state_008"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_bedroom_nightstand__glasses_charger_glass__occlusion_state_008"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。初始 source 中 cream ceramic bedside lamp 与 clear water glass 必须完全分离，有明显间隙，两个轮廓完整可见；不要让灯、桌沿或其他结构形成隐性遮挡。"
+    },
+    {
+      "source_scene_id": "bedroom_nightstand__lamp_glass_tray__v0084",
+      "source_variant_key": "bedroom_nightstand__lamp_glass_tray__v0084__state_e81801187e71",
+      "source_cot_sha256": "e81801187e71c5ba8e494b3d586f37e885a3f4014ec564d450d6cc3affe16c9e",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_004"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_004"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。使用完整入框的 compact mini cream ceramic table lamp，保留灯的类别、颜色、陶瓷材质和单个数量；center_region 必须有完整灯体高度的空位，灯不贴边、不切桌面。"
+    },
+    {
+      "source_scene_id": "bedroom_nightstand__lamp_glass_tray__v0087",
+      "source_variant_key": "bedroom_nightstand__lamp_glass_tray__v0087__state_630f994fe032",
+      "source_cot_sha256": "630f994fe0327c7faaf0eb7189fa51f76f9f94f5c1f985ba90992eabf4ff61c5",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_001",
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_002",
+        "g1000_bedroom_nightstand__lamp_glass_tray__absolute_vertical_003"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。使用完整入框的 compact mini cream ceramic table lamp：底座、灯杆和灯罩全部可见，灯不贴边、不被桌面裁断；glass 和 leather tray 保持完整，lower_left 目标区域留出至少一个灯体宽度净空。"
+    },
+    {
+      "source_scene_id": "bookshelf_study__mugcollection_folder__v0161",
+      "source_variant_key": "bookshelf_study__mugcollection_folder__v0161__state_6c0cde0bddc8",
+      "source_cot_sha256": "6c0cde0bddc857198179b68f7c0c4a8748e6af409091d65189440f59bdc5bdfd",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_bookshelf_study__mugcollection_folder__absolute_vertical_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_bookshelf_study__mugcollection_folder__absolute_vertical_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须有两个清晰、可区分且高度足够的 shelf levels；同一个 magazine folder（entity_id=folder_2）处于明确 upper level，lower destination 完全留空，至少容纳一个 folder 高度；folder 不得被 hardcover book 或货架结构压住。"
+    },
+    {
+      "source_scene_id": "bookshelf_study__penjar_folder_trophy__v0128",
+      "source_variant_key": "bookshelf_study__penjar_folder_trophy__v0128__state_3261632dd6ba",
+      "source_cot_sha256": "3261632dd6bae08cc0c6d6fdb6ea258ca44f57e87dde2d0d1d1e8ad2d13704c1",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_bookshelf_study__penjar_folder_trophy__absolute_vertical_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_bookshelf_study__penjar_folder_trophy__absolute_vertical_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。将 intervention entity trophy_1 放在 right_region 的中部或右下部，明确远离 upper_right；upper_right 留出完整实体净空，确保 old right_region 与 new upper_right 可视觉区分。"
+    },
+    {
+      "source_scene_id": "classroom__chair_backpack_notebook__v0216",
+      "source_variant_key": "classroom__chair_backpack_notebook__v0216__state_0c2250b84a81",
+      "source_cot_sha256": "0c2250b84a81738adf653d0fa3f9588708f5d6c42df01ccbc7e9b8bfaec80d91",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_classroom__chair_backpack_notebook__1_to_2_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_classroom__chair_backpack_notebook__1_to_2_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 只放 exactly 1 folded jacket（entity_id=jacket_1），置于单一垂直堆叠区域；jacket 上方预留至少一个 jacket 高度，notebook 必须在旁边且完整可见，不位于堆叠扩展路径下。"
+    },
+    {
+      "source_scene_id": "classroom__n3_chair__v0198",
+      "source_variant_key": "classroom__n3_chair__v0198__state_712e1542a3e9",
+      "source_cot_sha256": "712e1542a3e9a9cb1809b5fb3240e35c8f7f57c9a72b217c037bff56ebe5ce66",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_classroom__n3_chair__3_to_2_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_classroom__n3_chair__3_to_2_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须展示 exactly 3 个可独立辨认、互不混叠的 individual student chair，统一在同一明确区域/行内，保留删除一个后的净空；禁止重复背景椅、重叠成不可数轮廓。"
+    },
+    {
+      "source_scene_id": "closet_wardrobe__beanie_hatbox_scarf__v0289",
+      "source_variant_key": "closet_wardrobe__beanie_hatbox_scarf__v0289__state_4dee21a2d862",
+      "source_cot_sha256": "4dee21a2d86242888f21d614aef0b99b9b908a58dde4e65f99c093ac018c33e8",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_closet_wardrobe__beanie_hatbox_scarf__1_to_2_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_closet_wardrobe__beanie_hatbox_scarf__1_to_2_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 只展示 exactly 1 个清晰 folded scarf（entity_id=scarf_1）；在同一垂直堆叠位置上方预留一个 scarf 高度，context sweater 不占用该净空。若人工确认目标应为 beanie，必须先改写 source/target COT 的 category，再进入生图。"
+    },
+    {
+      "source_scene_id": "closet_wardrobe__n2_sweater__v0326",
+      "source_variant_key": "closet_wardrobe__n2_sweater__v0326__state_05a82e7d2b99",
+      "source_cot_sha256": "05a82e7d2b9959652a67b6c25aecea7bd21d43c0182f73f8828478d4e774ea4d",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_closet_wardrobe__n2_sweater__2_to_3_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_closet_wardrobe__n2_sweater__2_to_3_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须是同一摞内 exactly 2 个 individual folded sweater，层边清晰可数；摞上方预留一件 sweater 的高度，禁止第二摞、第二行或额外衣物。"
+    },
+    {
+      "source_scene_id": "closet_wardrobe__socks_basket_pajamas_hat__v0313",
+      "source_variant_key": "closet_wardrobe__socks_basket_pajamas_hat__v0313__state_c1cd19efd3d5",
+      "source_cot_sha256": "c1cd19efd3d5003749c152dee48470e010782c533318fbbf6079fd93aeae9ae1",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_closet_wardrobe__socks_basket_pajamas_hat__occlusion_state_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_closet_wardrobe__socks_basket_pajamas_hat__occlusion_state_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。按 COT 建立清晰、可判断的指定遮挡关系；hat 必须横向偏移/位于 sweater 侧前方或侧后方，不能正好落在 sweater 垂直投影正上方，也不能与无关衣物混叠；两对象都完整可辨。"
+    },
+    {
+      "source_scene_id": "dining_table__napkin_fill__v0375",
+      "source_variant_key": "dining_table__napkin_fill__v0375__state_839365e7296d",
+      "source_cot_sha256": "839365e7296df1ea0778fbdd564226c7c447022e80fdfa12bb3c29c4e28efd9c",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_dining_table__napkin_fill__3_to_2_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_dining_table__napkin_fill__3_to_2_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须展示 exactly 3 个可独立辨认的 individual napkin，三个折叠层/实例清晰可数，不被盘、碗或彼此完全遮住。"
+    },
+    {
+      "source_scene_id": "dining_table__plate_quota__v0376",
+      "source_variant_key": "dining_table__plate_quota__v0376__state_0cfb20765ea8",
+      "source_cot_sha256": "0cfb20765ea8ef8c56dff9fb8669c1aa6f67c2c64942aad361b5dec51ef31c35",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_dining_table__plate_quota__2_to_3_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_dining_table__plate_quota__2_to_1_001",
+        "g1000_dining_table__plate_quota__2_to_3_001",
+        "g1000_dining_table__plate_quota__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 使用 old count=2 的 dinner plate 状态，两个 plate 清晰可数并在同一目标区域留出第三个 plate 的空位；center_region 的 3 个 water glass 远离该扩展路径且完整可见。"
+    },
+    {
+      "source_scene_id": "grocery_display__biscuit_tea_honey__v0543",
+      "source_variant_key": "grocery_display__biscuit_tea_honey__v0543__state_e18d4057f6a0",
+      "source_cot_sha256": "e18d4057f6a0be8f0dedeb95980cbacca07525decd5e166796661468d1c489a0",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_grocery_display__biscuit_tea_honey__2_to_1_001",
+        "g1000_grocery_display__biscuit_tea_honey__3_to_2_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_grocery_display__biscuit_tea_honey__2_to_1_001",
+        "g1000_grocery_display__biscuit_tea_honey__2_to_3_001",
+        "g1000_grocery_display__biscuit_tea_honey__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。\n\n严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source variant 必须展示 exactly 3 个可数 honey jar（entity_id=honey_3），属于同一明确组且无重复行/隐藏实例；为移除1个保留局部净空，biscuit tin/tea caddy 不变。"
+    },
+    {
+      "source_scene_id": "grocery_display__flowers_vase_plants__v0504",
+      "source_variant_key": "grocery_display__flowers_vase_plants__v0504__state_eec58af9a41f",
+      "source_cot_sha256": "eec58af9a41f3b8cd030330b13cf2bece856051bb99bc4f2052429b5c89ba9e6",
+      "generation_gate": "blocked_cot_revision",
+      "direct_problem_pair_ids": [
+        "g1000_grocery_display__flowers_vase_plants__absolute_horizontal_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_grocery_display__flowers_vase_plants__absolute_horizontal_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。COT 修订为 plants_1（potted plant）count=1 后，source 只保留 exactly 1 个 intervention plant；在 left_region 与 right_region 之间留出完整净空，wooden display crate 不得挡住目标区域。"
+    },
+    {
+      "source_scene_id": "grocery_display__gd04b_flowers_vase_separate__v0507",
+      "source_variant_key": "grocery_display__gd04b_flowers_vase_separate__v0507__state_7e8b02fcbfb7",
+      "source_cot_sha256": "7e8b02fcbfb7643f5b5187b3a1109f673f4e7d822af385d41ffa718c26c74617",
+      "generation_gate": "blocked_cot_revision",
+      "direct_problem_pair_ids": [
+        "g1000_grocery_display__gd04b_flowers_vase_separate__containment_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_grocery_display__gd04b_flowers_vase_separate__containment_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。COT 修订为 flowers_1（tulip flower）count=1 后，source 必须只有 exactly 1 朵 intervention flower 和1个指定 vase，花朵完整可见、与其他花/叶不混叠；为目标位置留出空间。"
+    },
+    {
+      "source_scene_id": "grocery_display__gd05b_milk_crate_separate__v0518",
+      "source_variant_key": "grocery_display__gd05b_milk_crate_separate__v0518__state_6fbb3b28ee50",
+      "source_cot_sha256": "6fbb3b28ee5053959c5f6f5d76e3f52e2b6f66611d5e6a82a8c924ebcd40b3e0",
+      "generation_gate": "blocked_cot_revision",
+      "direct_problem_pair_ids": [
+        "g1000_grocery_display__gd05b_milk_crate_separate__containment_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_grocery_display__gd05b_milk_crate_separate__containment_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。COT 修订为 milk_1（milk carton）count=1 后，source 必须只有 exactly 1 个 intervention milk object，crate 轮廓和开口完整、目标路径无遮挡；禁止第二个 milk 或相似包装干扰。"
+    },
+    {
+      "source_scene_id": "living_room_play__n1_rattle__v0625",
+      "source_variant_key": "living_room_play__n1_rattle__v0625__state_0e22f80c3631",
+      "source_cot_sha256": "0e22f80c363130e93b84b9da3f977c86e4256739e34c9aaaea771205def27a59",
+      "generation_gate": "blocked_cot_revision",
+      "direct_problem_pair_ids": [
+        "g1000_living_room_play__n1_rattle__2_to_1_001",
+        "g1000_living_room_play__n1_rattle__2_to_3_001",
+        "g1000_living_room_play__n1_rattle__3_to_2_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_living_room_play__n1_rattle__2_to_1_001",
+        "g1000_living_room_play__n1_rattle__2_to_3_001",
+        "g1000_living_room_play__n1_rattle__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source variant old count=2，两个 baby rattle 完全分离、轮廓和手柄清晰可数，放在同一明确目标区域，其他玩具远离该区域。\n\n严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source variant old count=2，两个 baby rattle 清晰分离，并在同一目标组内预留第三个实例的空位，不与其他玩具重叠。\n\n严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。在 COT 确认后，source 必须同时展示 rattle_1 的2个 baby rattle（彼此不混叠、作为 must_preserve）以及 exactly 3 个可独立辨认的 foam cube（entity_id=cube_3）；两组分离，不能把 rattle 当成 cube 数量。"
+    },
+    {
+      "source_scene_id": "living_room_play__puzzle_fill__v0630",
+      "source_variant_key": "living_room_play__puzzle_fill__v0630__state_de6ef73a0115",
+      "source_cot_sha256": "de6ef73a0115174acaa29eb1efb87e3779188841c20a530f46a47374bbefa815",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_living_room_play__puzzle_fill__3_to_2_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_living_room_play__puzzle_fill__3_to_2_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须有 exactly 3 块可独立数出的 puzzle pieces，分离摆放、形状边缘清楚，不把一块拼图或一堆碎片误算成3块。"
+    },
+    {
+      "source_scene_id": "office_desk__stand_keyboard_pad__v0642",
+      "source_variant_key": "office_desk__stand_keyboard_pad__v0642__state_9f90a53d8378",
+      "source_cot_sha256": "9f90a53d83788e1dd3a62f7597973ffcf09d2c025cda67eab70962c1eb09120c",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_office_desk__stand_keyboard_pad__occlusion_state_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_office_desk__stand_keyboard_pad__occlusion_state_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须按 COT 显示指定 target 与 reference 的清晰、可判断部分遮挡，约四分之一至三分之一轮廓被遮住；两者都完整可辨，不允许仅接触、左右并排或被第三物体遮挡。"
+    },
+    {
+      "source_scene_id": "pantry_shelf_closeup__cans_open_crate_out__v0712",
+      "source_variant_key": "pantry_shelf_closeup__cans_open_crate_out__v0712__state_9032b930c5b7",
+      "source_cot_sha256": "9032b930c5b748aee618dcfbc112809b857db6899dc8c3d8787057e2a337f7f7",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_pantry_shelf_closeup__cans_open_crate_out__containment_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_pantry_shelf_closeup__cans_open_crate_out__containment_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 中全部 COT-listed cans 在 crate 外且数量清晰可数；crate 开口足够大、前后无遮挡，为将全部 cans 放入后仍露出可验证轮廓预留空间。"
+    },
+    {
+      "source_scene_id": "pantry_shelf_closeup__jars_open_box_out__v0708",
+      "source_variant_key": "pantry_shelf_closeup__jars_open_box_out__v0708__state_0d201320f219",
+      "source_cot_sha256": "0d201320f2199e5f0cce1849810ea089f2ed7c8bfd116d7d72eba8f31892348d",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_pantry_shelf_closeup__jars_open_box_out__containment_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_pantry_shelf_closeup__jars_open_box_out__containment_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 中全部 COT-listed jars 在 box 外且数量清晰；open box 开口和深度足以容纳全部 jars，同时保留可审计的露出轮廓。"
+    },
+    {
+      "source_scene_id": "toolshed_garage__hammer_oilcan_basket__v0733",
+      "source_variant_key": "toolshed_garage__hammer_oilcan_basket__v0733__state_112022bf7965",
+      "source_cot_sha256": "112022bf79651d2b2915e6fe5d9f36793600114f77397cbdb4c4da5191f04ceb",
+      "generation_gate": "blocked_cot_revision",
+      "direct_problem_pair_ids": [
+        "g1000_toolshed_garage__hammer_oilcan_basket__functional_state_002"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_toolshed_garage__hammer_oilcan_basket__functional_state_002"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。先修订 source/target COT：将 oilcan_1 统一改为 compact hinged metal toolbox/tool case（或同等具有明确 open/closed 状态的 garage object），保持 count=1、location=center_region；修订后 source 显示 lid open，target 只改为 lid closed。未完成 COT 修订前禁止生图。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__bag_quota__v0805",
+      "source_variant_key": "warehouse_shelf__bag_quota__v0805__state_6575048eb2c9",
+      "source_cot_sha256": "6575048eb2c9c85c76bf62588015e339689975743404360eef4554efb55575c4",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__bag_quota__3_to_2_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__bag_quota__2_to_1_001",
+        "g1000_warehouse_shelf__bag_quota__2_to_3_001",
+        "g1000_warehouse_shelf__bag_quota__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。按 manifest canonical entity can_2 生成 exactly 3 个 individual paint can，彼此可数、白色金属材质一致但轮廓不混叠；bag_1 作为 must_preserve 的2个 paper bag 保持，不得把 paint can 误生成成 bag。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__box_sack_pallet__v0799",
+      "source_variant_key": "warehouse_shelf__box_sack_pallet__v0799__state_74923db6e54b",
+      "source_cot_sha256": "74923db6e54bc5fc840f751148290b4469e7794c68b161e9fae55aa2b7c75e37",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+        "g1000_warehouse_shelf__box_sack_pallet__2_to_3_001",
+        "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source old count=2 的 pallet 必须分处两个清晰、非重叠的支撑位置/层位；不得上下完全重合或被 box/sack遮挡；保留一个 pallet 删除后的空间。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__box_tote_drum__v0794",
+      "source_variant_key": "warehouse_shelf__box_tote_drum__v0794__state_b730b161dfb7",
+      "source_cot_sha256": "b730b161dfb751b6baa52166ce302468d3d91fc4188e1e37ce8c0cf28df3a9ad",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__box_tote_drum__2_to_1_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+        "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+        "g1000_warehouse_shelf__box_tote_drum__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 只展示一个紧凑、连续的 target group，exactly 2 个 individual target objects 同组相邻、不是两行重复陈列；留出移除一个后的空位，box/tote/drum 不形成同类干扰。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__drum_pallet_tote__v0797",
+      "source_variant_key": "warehouse_shelf__drum_pallet_tote__v0797__state_2a9f9b303fb4",
+      "source_cot_sha256": "2a9f9b303fb468db088866a90ff5c402bc402c7c5e1bb3f441e0001efbc8e0bb",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__drum_pallet_tote__2_to_3_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__drum_pallet_tote__2_to_1_001",
+        "g1000_warehouse_shelf__drum_pallet_tote__2_to_3_001",
+        "g1000_warehouse_shelf__drum_pallet_tote__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source old count=2 的 target object 在同一 pallet 区域清晰可数，并在原 pallet 上方预留一个同尺寸实例的垂直空间；禁止通过缩放现有对象制造空间。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__helmets_gearbin_handtruck__v0770",
+      "source_variant_key": "warehouse_shelf__helmets_gearbin_handtruck__v0770__state_4bada3eaba31",
+      "source_cot_sha256": "4bada3eaba31fb917135279aa64645b7cacea2409992eb325a4294eab4c82661",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__helmets_gearbin_handtruck__2_to_3_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__helmets_gearbin_handtruck__2_to_3_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。在不改变 COT 类别和数量的前提下使用较大的 open plastic gear bin/箱体作为背景容器，source 中 exactly 2 个 helmet 清晰可辨，并为第三个 helmet 预留完整空间；handtruck 不遮挡目标区域。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__helmets_gearbin_handtruck__v0771",
+      "source_variant_key": "warehouse_shelf__helmets_gearbin_handtruck__v0771__state_f290f34f801c",
+      "source_cot_sha256": "f290f34f801c11831f5a76e4731b2b658e44da170269b93c725a345e0355b0b7",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__helmets_gearbin_handtruck__containment_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__helmets_gearbin_handtruck__containment_001"
+      ],
+      "variant_member_count": 1,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source 必须展示 exactly 2 个 helmet 在 gearbin 内，两个都至少露出足够轮廓可数；gearbin 开口足够且目标外部区域留空。"
+    },
+    {
+      "source_scene_id": "warehouse_shelf__sack_bundle_bin__v0796",
+      "source_variant_key": "warehouse_shelf__sack_bundle_bin__v0796__state_16d0289664ac",
+      "source_cot_sha256": "16d0289664acacb9f7c7229164a5c8d498b9685e1490ff48d3d7e90da65b3ada",
+      "generation_gate": "ready",
+      "direct_problem_pair_ids": [
+        "g1000_warehouse_shelf__sack_bundle_bin__2_to_1_001",
+        "g1000_warehouse_shelf__sack_bundle_bin__2_to_3_001"
+      ],
+      "variant_member_pair_ids": [
+        "g1000_warehouse_shelf__sack_bundle_bin__2_to_1_001",
+        "g1000_warehouse_shelf__sack_bundle_bin__2_to_3_001",
+        "g1000_warehouse_shelf__sack_bundle_bin__3_to_2_001"
+      ],
+      "variant_member_count": 3,
+      "source_measure": "严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。\n\n严格以原始 source COT 为语义真值；保留全部 entity_id、category、count、location、attributes、relations、背景、镜头和材质，不添加、删除、复制或合并任何未列出的实体。每个实体必须按 individual instances 清晰可数；不得把一摞、一行、一个容器误当成数量。生成 native 1024x1024 square full-bleed scene，所有对象完整入框，禁止裁切、边框、留白、拼贴、文字、logo、水印和 UI；为本轮 target 操作预留物理净空。source old count=2 的 sack 必须在同一连续目标区域清晰可数，并在原区域旁/上方留出一个同尺寸 sack 的净空；不得出现第二行、第二堆或挤压 bundle/bin。"
+    }
+  ]
+}

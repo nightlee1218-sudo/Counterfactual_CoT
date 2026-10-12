@@ -1,0 +1,15 @@
+counterfactual_cot:
+  dataset_names:
+    - paired_train
+  weight: 1.0
+  is_mandatory: false
+  image_transform_args:
+    max_image_size: 1024
+    min_image_size: 512
+    image_stride: 16
+  vit_image_transform_args:
+    max_image_size: 980
+    min_image_size: 224
+    image_stride: 14
+  num_used_data:
+    - 1000000000

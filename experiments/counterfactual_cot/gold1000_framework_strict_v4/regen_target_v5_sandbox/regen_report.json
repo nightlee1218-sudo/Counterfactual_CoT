@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-09-22T16:47:32",
+  "sandbox": "experiments/counterfactual_cot/gold1000_framework_strict_v4/regen_target_v5_sandbox",
+  "source_image_root_read_only": "experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/source_images",
+  "model": "gemini-3-pro-image",
+  "fallback": null,
+  "plan": {
+    "regen_source_scenes": [],
+    "target_count": 2,
+    "source_count": 0,
+    "spillover": {}
+  },
+  "items": [
+    {
+      "pair_id": "g1000_closet_wardrobe__n3_pants__2_to_1_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 35.0
+    },
+    {
+      "pair_id": "g1000_closet_wardrobe__n3_pants__3_to_2_001",
+      "stage": "target",
+      "status": "success",
+      "model": "gemini-3-pro-image",
+      "latency_s": 27.3
+    }
+  ],
+  "summary": {
+    "planned_sources": 0,
+    "planned_targets": 2,
+    "succeeded": 2,
+    "failed_or_kept_original": 0
+  }
+}

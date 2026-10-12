@@ -1,0 +1,1411 @@
+{
+  "definition": {
+    "left_condition": "same source + Source Prompt + Source CoT(left) + Target CoT(left)",
+    "paired_switch_success": "same seed produces strict left under left CoT and strict right under right CoT",
+    "right_condition": "same source + Source Prompt + Source CoT(left) + Target CoT(right)",
+    "strict_left": "left proxy succeeds and largest lower-image red component centroid x < 270",
+    "strict_right": "right proxy succeeds and largest lower-image red component centroid x >= 810",
+    "warning": "Automatic red and centroid proxies require visual review for exact object count and semantic quality."
+  },
+  "reference_red_stats": {
+    "source": {
+      "red_centroid_new_roi": [
+        991.71,
+        632.18
+      ],
+      "red_centroid_old_roi": [
+        153.5,
+        672.51
+      ],
+      "red_pixels_new_roi": 574,
+      "red_pixels_old_roi": 29780
+    },
+    "target": {
+      "red_centroid_new_roi": [
+        933.84,
+        733.6
+      ],
+      "red_centroid_old_roi": [
+        160.76,
+        630.91
+      ],
+      "red_pixels_new_roi": 19501,
+      "red_pixels_old_roi": 12756
+    }
+  },
+  "rows": [
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          48,
+          635,
+          309,
+          908
+        ],
+        "centroid_x": 178.93989611229938,
+        "centroid_y": 769.1139529449827,
+        "pixels": 55637
+      },
+      "left_new_addition_progress": -0.015427695884186611,
+      "left_old_retention_progress": 2.2976973684210527,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_1234.png",
+      "left_preserve_source_mae": 0.1150628781786152,
+      "left_proxy_success": true,
+      "left_target_mae": 0.18418580597522213,
+      "paired_output_mae": 0.05078030380548215,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          69,
+          689,
+          292,
+          910
+        ],
+        "centroid_x": 179.73498332905874,
+        "centroid_y": 800.1857655809182,
+        "pixels": 38990
+      },
+      "right_new_addition_progress": -0.001796375548158715,
+      "right_old_removal_progress": -0.9014332706766918,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_1234.png",
+      "right_preserve_source_mae": 0.12072424047133502,
+      "right_proxy_success": false,
+      "right_target_mae": 0.25300095502068015,
+      "seed": 1234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          68,
+          626,
+          232,
+          793
+        ],
+        "centroid_x": 149.86360310259036,
+        "centroid_y": 709.0206839358018,
+        "pixels": 20499
+      },
+      "left_new_addition_progress": -0.0030644053468589843,
+      "left_old_retention_progress": 1.1671170112781954,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_2234.png",
+      "left_preserve_source_mae": 0.06708414414349724,
+      "left_proxy_success": true,
+      "left_target_mae": 0.07573002833946078,
+      "paired_output_mae": 0.016619306452134077,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          68,
+          627,
+          242,
+          795
+        ],
+        "centroid_x": 151.1254828073481,
+        "centroid_y": 711.5907677814414,
+        "pixels": 21230
+      },
+      "right_new_addition_progress": 0.00544196121942199,
+      "right_old_removal_progress": -0.17933505639097744,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_2234.png",
+      "right_preserve_source_mae": 0.06731338500976562,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2572620765835631,
+      "seed": 2234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          64,
+          598,
+          267,
+          822
+        ],
+        "centroid_x": 164.6428470355172,
+        "centroid_y": 707.6366492146597,
+        "pixels": 35335
+      },
+      "left_new_addition_progress": -0.0296401965446188,
+      "left_old_retention_progress": 1.6192434210526316,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_3234.png",
+      "left_preserve_source_mae": 0.09693508522183288,
+      "left_proxy_success": true,
+      "left_target_mae": 0.126713965920841,
+      "paired_output_mae": 0.1039834041221469,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          64,
+          598,
+          270,
+          827
+        ],
+        "centroid_x": 166.26864487464297,
+        "centroid_y": 716.3782132656299,
+        "pixels": 37812
+      },
+      "right_new_addition_progress": -0.02699846779732657,
+      "right_old_removal_progress": -0.6352208646616542,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_3234.png",
+      "right_preserve_source_mae": 0.1447646645938649,
+      "right_proxy_success": false,
+      "right_target_mae": 0.30622666302849266,
+      "seed": 3234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          39,
+          653,
+          209,
+          838
+        ],
+        "centroid_x": 123.98541065550454,
+        "centroid_y": 743.3662778884058,
+        "pixels": 24607
+      },
+      "left_new_addition_progress": -0.029851534844402176,
+      "left_old_retention_progress": 1.652138157894737,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_4234.png",
+      "left_preserve_source_mae": 0.1263939203000536,
+      "left_proxy_success": true,
+      "left_target_mae": 0.16546702665441176,
+      "paired_output_mae": 0.025517940521240234,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          32,
+          661,
+          198,
+          843
+        ],
+        "centroid_x": 115.14048948046371,
+        "centroid_y": 751.8267067410906,
+        "pixels": 23290
+      },
+      "right_new_addition_progress": -0.0301157077191314,
+      "right_old_removal_progress": -0.5632636278195489,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_4234.png",
+      "right_preserve_source_mae": 0.12719802856445311,
+      "right_proxy_success": false,
+      "right_target_mae": 0.25457581164790133,
+      "seed": 4234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          55,
+          618,
+          263,
+          835
+        ],
+        "centroid_x": 158.30914799239588,
+        "centroid_y": 722.8144190333545,
+        "pixels": 34718
+      },
+      "left_new_addition_progress": -0.02467374649970941,
+      "left_old_retention_progress": 1.9644031954887218,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_5234.png",
+      "left_preserve_source_mae": 0.0987050449146944,
+      "left_proxy_success": true,
+      "left_target_mae": 0.15492414586684283,
+      "paired_output_mae": 0.04981937408447266,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          55,
+          618,
+          263,
+          833
+        ],
+        "centroid_x": 158.02435303261464,
+        "centroid_y": 722.3157258412735,
+        "pixels": 34739
+      },
+      "right_new_addition_progress": -0.017752417181803773,
+      "right_old_removal_progress": -0.9415531015037594,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_5234.png",
+      "right_preserve_source_mae": 0.09863926008635876,
+      "right_proxy_success": false,
+      "right_target_mae": 0.3056827919155944,
+      "seed": 5234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          58,
+          627,
+          223,
+          801
+        ],
+        "centroid_x": 140.1561058065695,
+        "centroid_y": 709.7407373566632,
+        "pixels": 21889
+      },
+      "left_new_addition_progress": 0.03428963913985312,
+      "left_old_retention_progress": 1.198014567669173,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_6234.png",
+      "left_preserve_source_mae": 0.06900729759066712,
+      "left_proxy_success": true,
+      "left_target_mae": 0.10221808190439262,
+      "paired_output_mae": 0.048168197332644,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          58,
+          631,
+          224,
+          802
+        ],
+        "centroid_x": 139.864084900391,
+        "centroid_y": 711.8226121765034,
+        "pixels": 21484
+      },
+      "right_new_addition_progress": 0.017435409732128704,
+      "right_old_removal_progress": -0.3835173872180451,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_6234.png",
+      "right_preserve_source_mae": 0.07212609683766084,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2574484432444853,
+      "seed": 6234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          29,
+          692,
+          204,
+          864
+        ],
+        "centroid_x": 116.2222082547664,
+        "centroid_y": 778.4288288288288,
+        "pixels": 23865
+      },
+      "left_new_addition_progress": -0.026047445448301367,
+      "left_old_retention_progress": 1.020030545112782,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_7234.png",
+      "left_preserve_source_mae": 0.14781576418409162,
+      "left_proxy_success": true,
+      "left_target_mae": 0.20148779177198223,
+      "paired_output_mae": 0.04586965523514093,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          28,
+          692,
+          204,
+          868
+        ],
+        "centroid_x": 115.20229513629961,
+        "centroid_y": 778.9715800811998,
+        "pixels": 24138
+      },
+      "right_new_addition_progress": 0.013525651186136207,
+      "right_old_removal_progress": -0.022203947368421052,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_7234.png",
+      "right_preserve_source_mae": 0.14880531161439184,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2598008997300092,
+      "seed": 7234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          628,
+          224,
+          790
+        ],
+        "centroid_x": 150.81244662073678,
+        "centroid_y": 705.7457723623527,
+        "pixels": 17563
+      },
+      "left_new_addition_progress": 0.010408411264331379,
+      "left_old_retention_progress": 0.7240366541353384,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_8234.png",
+      "left_preserve_source_mae": 0.03998726863487094,
+      "left_proxy_success": true,
+      "left_target_mae": 0.05664505678064683,
+      "paired_output_mae": 0.008652035395304363,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          75,
+          628,
+          224,
+          791
+        ],
+        "centroid_x": 150.65150364963503,
+        "centroid_y": 704.2397664233577,
+        "pixels": 17125
+      },
+      "right_new_addition_progress": 0.009985734664764621,
+      "right_old_removal_progress": 0.21252349624060152,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_8234.png",
+      "right_preserve_source_mae": 0.03928123174929151,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2522661096909467,
+      "seed": 8234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          40,
+          580,
+          285,
+          838
+        ],
+        "centroid_x": 162.2955521859995,
+        "centroid_y": 702.8434630612417,
+        "pixels": 47484
+      },
+      "left_new_addition_progress": -0.029851534844402176,
+      "left_old_retention_progress": 1.9965343045112782,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_9234.png",
+      "left_preserve_source_mae": 0.12497187595741421,
+      "left_proxy_success": true,
+      "left_target_mae": 0.1589295181573606,
+      "paired_output_mae": 0.02316600388171626,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          37,
+          578,
+          289,
+          840
+        ],
+        "centroid_x": 162.48921199796644,
+        "centroid_y": 704.856512455516,
+        "pixels": 49175
+      },
+      "right_new_addition_progress": -0.02932318909494373,
+      "right_old_removal_progress": -1.0538651315789473,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_9234.png",
+      "right_preserve_source_mae": 0.12432906206916361,
+      "right_proxy_success": false,
+      "right_target_mae": 0.330267333984375,
+      "seed": 9234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          72,
+          657,
+          262,
+          869
+        ],
+        "centroid_x": 166.4838023891476,
+        "centroid_y": 756.2855841263414,
+        "pixels": 29634
+      },
+      "left_new_addition_progress": -0.027843820996460083,
+      "left_old_retention_progress": 1.847685620300752,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_10234.png",
+      "left_preserve_source_mae": 0.10760533201928232,
+      "left_proxy_success": true,
+      "left_target_mae": 0.16788585887235755,
+      "paired_output_mae": 0.05795714808445351,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          78,
+          654,
+          280,
+          869
+        ],
+        "centroid_x": 179.07475453285946,
+        "centroid_y": 758.7089331967953,
+        "pixels": 33202
+      },
+      "right_new_addition_progress": -0.011306599038410735,
+      "right_old_removal_progress": -0.9981203007518797,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_10234.png",
+      "right_preserve_source_mae": 0.10908817964441636,
+      "right_proxy_success": false,
+      "right_target_mae": 0.26678795908011643,
+      "seed": 10234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          35,
+          597,
+          248,
+          827
+        ],
+        "centroid_x": 140.27900780646365,
+        "centroid_y": 708.2410412170623,
+        "pixels": 37533
+      },
+      "left_new_addition_progress": -0.004649442595234321,
+      "left_old_retention_progress": 1.771968984962406,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_11234.png",
+      "left_preserve_source_mae": 0.07626038345636106,
+      "left_proxy_success": true,
+      "left_target_mae": 0.13589043710746018,
+      "paired_output_mae": 0.058610818900314034,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          36,
+          597,
+          257,
+          833
+        ],
+        "centroid_x": 142.66354228191366,
+        "centroid_y": 712.960478672864,
+        "pixels": 38941
+      },
+      "right_new_addition_progress": 0.00021133829978337823,
+      "right_old_removal_progress": -0.8727678571428571,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_11234.png",
+      "right_preserve_source_mae": 0.0944185967538871,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2965136658911611,
+      "seed": 11234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          49,
+          740,
+          164,
+          862
+        ],
+        "centroid_x": 108.00480256136606,
+        "centroid_y": 801.300337958022,
+        "pixels": 11244
+      },
+      "left_new_addition_progress": 0.2242299360701643,
+      "left_old_retention_progress": 0.38445723684210525,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_12234.png",
+      "left_preserve_source_mae": 0.17529775582107843,
+      "left_proxy_success": false,
+      "left_target_mae": 0.2835456100164675,
+      "paired_output_mae": 0.07352576910280714,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          60,
+          724,
+          194,
+          864
+        ],
+        "centroid_x": 127.12147461724416,
+        "centroid_y": 793.6915793714746,
+        "pixels": 14892
+      },
+      "right_new_addition_progress": 0.27907222486395095,
+      "right_old_removal_progress": 0.19231672932330826,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_12234.png",
+      "right_preserve_source_mae": 0.18462662042356004,
+      "right_proxy_success": false,
+      "right_target_mae": 0.23062256457758884,
+      "seed": 12234,
+      "step": 0,
+      "strict_left_position_success": false,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          0,
+          611,
+          224,
+          791
+        ],
+        "centroid_x": 143.2797147385103,
+        "centroid_y": 700.7119651347068,
+        "pixels": 20192
+      },
+      "left_new_addition_progress": 0.021715010302742116,
+      "left_old_retention_progress": 0.9882518796992481,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_13234.png",
+      "left_preserve_source_mae": 0.048613967147527956,
+      "left_proxy_success": true,
+      "left_target_mae": 0.05437006482891008,
+      "paired_output_mae": 0.011508634978649663,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          0,
+          576,
+          224,
+          791
+        ],
+        "centroid_x": 128.28545736652796,
+        "centroid_y": 678.8760490866774,
+        "pixels": 28358
+      },
+      "right_new_addition_progress": 0.028794843345485287,
+      "right_old_removal_progress": -0.04710996240601504,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_13234.png",
+      "right_preserve_source_mae": 0.04820968777525659,
+      "right_proxy_success": false,
+      "right_target_mae": 0.25365079991957723,
+      "seed": 13234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          59,
+          611,
+          233,
+          795
+        ],
+        "centroid_x": 147.02018184042075,
+        "centroid_y": 700.672809556815,
+        "pixels": 24527
+      },
+      "left_new_addition_progress": -0.006181645268663814,
+      "left_old_retention_progress": 1.3026315789473684,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_14234.png",
+      "left_preserve_source_mae": 0.07237944509468827,
+      "left_proxy_success": true,
+      "left_target_mae": 0.09925926058900122,
+      "paired_output_mae": 0.012416820900112974,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          59,
+          611,
+          233,
+          795
+        ],
+        "centroid_x": 146.82242262758763,
+        "centroid_y": 700.802418528387,
+        "pixels": 24395
+      },
+      "right_new_addition_progress": -0.010355576689385533,
+      "right_old_removal_progress": -0.3101503759398496,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_14234.png",
+      "right_preserve_source_mae": 0.07383167790431602,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2602146821863511,
+      "seed": 14234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          52,
+          621,
+          216,
+          800
+        ],
+        "centroid_x": 134.1611199858005,
+        "centroid_y": 708.5488551650692,
+        "pixels": 22536
+      },
+      "left_new_addition_progress": -0.02155650657790458,
+      "left_old_retention_progress": 1.2969924812030076,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_15234.png",
+      "left_preserve_source_mae": 0.08999910541609221,
+      "left_proxy_success": true,
+      "left_target_mae": 0.09797594407025506,
+      "paired_output_mae": 0.02113818000344669,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          51,
+          621,
+          215,
+          799
+        ],
+        "centroid_x": 133.21283768991637,
+        "centroid_y": 708.748062524629,
+        "pixels": 22839
+      },
+      "right_new_addition_progress": -0.019495958155016643,
+      "right_old_removal_progress": -0.31420347744360905,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_15234.png",
+      "right_preserve_source_mae": 0.09122295005648744,
+      "right_proxy_success": false,
+      "right_target_mae": 0.2632078282973346,
+      "seed": 15234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          57,
+          593,
+          272,
+          814
+        ],
+        "centroid_x": 164.08446434910837,
+        "centroid_y": 700.4933504464896,
+        "pixels": 36619
+      },
+      "left_new_addition_progress": -0.013261478311406985,
+      "left_old_retention_progress": 1.7682095864661653,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/left/seed_16234.png",
+      "left_preserve_source_mae": 0.0970345889820772,
+      "left_proxy_success": true,
+      "left_target_mae": 0.13859175139782476,
+      "paired_output_mae": 0.07115397733800552,
+      "paired_switch_success": false,
+      "right_component": {
+        "bbox_ltrb": [
+          56,
+          591,
+          289,
+          837
+        ],
+        "centroid_x": 165.39661238439888,
+        "centroid_y": 707.2782720144753,
+        "pixels": 39792
+      },
+      "right_new_addition_progress": -0.02768531727162255,
+      "right_old_removal_progress": -0.8796992481203008,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000000/right/seed_16234.png",
+      "right_preserve_source_mae": 0.11100300059599034,
+      "right_proxy_success": false,
+      "right_target_mae": 0.31070739147709864,
+      "seed": 16234,
+      "step": 0,
+      "strict_left_position_success": true,
+      "strict_right_position_success": false
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          626,
+          224,
+          791
+        ],
+        "centroid_x": 149.37701379382963,
+        "centroid_y": 709.3657470780246,
+        "pixels": 18994
+      },
+      "left_new_addition_progress": 0.0033814127965340517,
+      "left_old_retention_progress": 0.8636630639097744,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_1234.png",
+      "left_preserve_source_mae": 0.02521247115789675,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03266772475897097,
+      "paired_output_mae": 0.034173022999482994,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          866,
+          614,
+          1023,
+          841
+        ],
+        "centroid_x": 950.5201215198302,
+        "centroid_y": 732.3561113654334,
+        "pixels": 24029
+      },
+      "right_new_addition_progress": 1.262746341205685,
+      "right_old_removal_progress": 1.1880874060150375,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_1234.png",
+      "right_preserve_source_mae": 0.026813985787185968,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06758912778368183,
+      "seed": 1234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.41677671544028,
+        "centroid_y": 709.3681791770113,
+        "pixels": 18931
+      },
+      "left_new_addition_progress": 0.007766682517039151,
+      "left_old_retention_progress": 0.8512687969924813,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_2234.png",
+      "left_preserve_source_mae": 0.025271198796290976,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03242200215657552,
+      "paired_output_mae": 0.033802455079321767,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          854,
+          640,
+          1023,
+          837
+        ],
+        "centroid_x": 940.1033543333901,
+        "centroid_y": 733.5704069470459,
+        "pixels": 23492
+      },
+      "right_new_addition_progress": 1.2619538225814972,
+      "right_old_removal_progress": 1.2007753759398496,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_2234.png",
+      "right_preserve_source_mae": 0.02543963264016544,
+      "right_proxy_success": true,
+      "right_target_mae": 0.05393183465097465,
+      "seed": 2234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.25374077976818,
+        "centroid_y": 709.5223919915701,
+        "pixels": 18980
+      },
+      "left_new_addition_progress": 0.0005811803244042901,
+      "left_old_retention_progress": 0.8590225563909775,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_3234.png",
+      "left_preserve_source_mae": 0.02480018279131721,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03232404671463312,
+      "paired_output_mae": 0.03347262214211857,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          849,
+          637,
+          1020,
+          836
+        ],
+        "centroid_x": 939.2133680481454,
+        "centroid_y": 728.2802936531649,
+        "pixels": 23429
+      },
+      "right_new_addition_progress": 1.2368045649072754,
+      "right_old_removal_progress": 1.160185620300752,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_3234.png",
+      "right_preserve_source_mae": 0.0250332607942469,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06286806592754289,
+      "seed": 3234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          792
+        ],
+        "centroid_x": 149.39435657611267,
+        "centroid_y": 709.5030213861594,
+        "pixels": 19031
+      },
+      "left_new_addition_progress": 0.0006340148993501347,
+      "left_old_retention_progress": 0.8619008458646616,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_4234.png",
+      "left_preserve_source_mae": 0.024294180028578815,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03197500191482843,
+      "paired_output_mae": 0.03543970444623162,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          855,
+          607,
+          1023,
+          843
+        ],
+        "centroid_x": 945.3199250875335,
+        "centroid_y": 736.6583340118883,
+        "pixels": 24562
+      },
+      "right_new_addition_progress": 1.2881069371796905,
+      "right_old_removal_progress": 1.1187147556390977,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_4234.png",
+      "right_preserve_source_mae": 0.026380338855818208,
+      "right_proxy_success": true,
+      "right_target_mae": 0.05658444049311619,
+      "seed": 4234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          74,
+          626,
+          224,
+          792
+        ],
+        "centroid_x": 149.2799726445368,
+        "centroid_y": 709.2379925298543,
+        "pixels": 19009
+      },
+      "left_new_addition_progress": 0.00602314154382628,
+      "left_old_retention_progress": 0.8700070488721805,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_5234.png",
+      "left_preserve_source_mae": 0.024344184351902384,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03203683740952436,
+      "paired_output_mae": 0.03498865389356426,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          856,
+          596,
+          1023,
+          832
+        ],
+        "centroid_x": 948.0636603713189,
+        "centroid_y": 727.9272967349552,
+        "pixels": 24992
+      },
+      "right_new_addition_progress": 1.2850425318328313,
+      "right_old_removal_progress": 1.1353970864661653,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_5234.png",
+      "right_preserve_source_mae": 0.027642227621639474,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06424115498860677,
+      "seed": 5234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.58749867906585,
+        "centroid_y": 709.3568107365529,
+        "pixels": 18926
+      },
+      "left_new_addition_progress": 0.005653299519205368,
+      "left_old_retention_progress": 0.864015507518797,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_6234.png",
+      "left_preserve_source_mae": 0.025130369149002376,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03234138862759459,
+      "paired_output_mae": 0.03446835910572725,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          854,
+          596,
+          1023,
+          837
+        ],
+        "centroid_x": 945.4398898877371,
+        "centroid_y": 731.3072390210332,
+        "pixels": 23249
+      },
+      "right_new_addition_progress": 1.21207798383262,
+      "right_old_removal_progress": 1.1978970864661653,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_6234.png",
+      "right_preserve_source_mae": 0.02618247013466031,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06063444474164177,
+      "seed": 6234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          626,
+          224,
+          791
+        ],
+        "centroid_x": 149.56788759077992,
+        "centroid_y": 709.4073781707189,
+        "pixels": 19002
+      },
+      "left_new_addition_progress": 0.0072383367675807045,
+      "left_old_retention_progress": 0.8567904135338346,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_7234.png",
+      "left_preserve_source_mae": 0.024827788857852712,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03249548369762944,
+      "paired_output_mae": 0.03665165994681564,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          848,
+          641,
+          1023,
+          846
+        ],
+        "centroid_x": 941.3875413450937,
+        "centroid_y": 738.8486981596133,
+        "pixels": 23582
+      },
+      "right_new_addition_progress": 1.2968246420457548,
+      "right_old_removal_progress": 1.1254699248120301,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_7234.png",
+      "right_preserve_source_mae": 0.026476957283768,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06218521641749962,
+      "seed": 7234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          74,
+          626,
+          224,
+          792
+        ],
+        "centroid_x": 149.27215921024995,
+        "centroid_y": 709.5368620037807,
+        "pixels": 19044
+      },
+      "left_new_addition_progress": 0.004438104295450943,
+      "left_old_retention_progress": 0.8679511278195489,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_8234.png",
+      "left_preserve_source_mae": 0.02481672062593348,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03231351889815985,
+      "paired_output_mae": 0.03443234387566062,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          848,
+          596,
+          1023,
+          835
+        ],
+        "centroid_x": 943.7950208120632,
+        "centroid_y": 728.7222178591063,
+        "pixels": 25466
+      },
+      "right_new_addition_progress": 1.315422412426692,
+      "right_old_removal_progress": 1.2005991541353382,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_8234.png",
+      "right_preserve_source_mae": 0.0259612850114411,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06258562125411687,
+      "seed": 8234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.34809128194343,
+        "centroid_y": 709.3373646019561,
+        "pixels": 19018
+      },
+      "left_new_addition_progress": 0.01146510276324827,
+      "left_old_retention_progress": 0.8878054511278195,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_9234.png",
+      "left_preserve_source_mae": 0.025704342711205575,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03253608404421339,
+      "paired_output_mae": 0.03474955839269302,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          853,
+          642,
+          1019,
+          840
+        ],
+        "centroid_x": 938.7611799511212,
+        "centroid_y": 733.7059554945762,
+        "pixels": 23323
+      },
+      "right_new_addition_progress": 1.2456279389232314,
+      "right_old_removal_progress": 1.1346921992481203,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_9234.png",
+      "right_preserve_source_mae": 0.02614448584762274,
+      "right_proxy_success": true,
+      "right_target_mae": 0.05834316178864124,
+      "seed": 9234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.3659536448205,
+        "centroid_y": 709.5845377621275,
+        "pixels": 19027
+      },
+      "left_new_addition_progress": 0.0006868494742959792,
+      "left_old_retention_progress": 0.8280075187969925,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_10234.png",
+      "left_preserve_source_mae": 0.024410268372180414,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03188462724872664,
+      "paired_output_mae": 0.03461143269258387,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          865,
+          616,
+          1023,
+          824
+        ],
+        "centroid_x": 951.0554307789057,
+        "centroid_y": 737.3143922378941,
+        "pixels": 22262
+      },
+      "right_new_addition_progress": 1.171659533999049,
+      "right_old_removal_progress": 1.1432095864661653,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_10234.png",
+      "right_preserve_source_mae": 0.025827660280115464,
+      "right_proxy_success": true,
+      "right_target_mae": 0.07196827308804381,
+      "seed": 10234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.310006299874,
+        "centroid_y": 709.6178076438471,
+        "pixels": 19048
+      },
+      "left_new_addition_progress": 0.0011623606488085803,
+      "left_old_retention_progress": 0.8780545112781954,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_11234.png",
+      "left_preserve_source_mae": 0.023726455838072532,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03202534095913756,
+      "paired_output_mae": 0.034023494346469056,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          850,
+          608,
+          1023,
+          836
+        ],
+        "centroid_x": 939.4991876523152,
+        "centroid_y": 729.902030869212,
+        "pixels": 24620
+      },
+      "right_new_addition_progress": 1.2876314260051778,
+      "right_old_removal_progress": 1.0827067669172932,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_11234.png",
+      "right_preserve_source_mae": 0.02533871893789254,
+      "right_proxy_success": true,
+      "right_target_mae": 0.057122903711655564,
+      "seed": 11234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          626,
+          224,
+          791
+        ],
+        "centroid_x": 149.36718832055456,
+        "centroid_y": 709.5158596786052,
+        "pixels": 19042
+      },
+      "left_new_addition_progress": 0.002747397897183917,
+      "left_old_retention_progress": 0.8720042293233082,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_12234.png",
+      "left_preserve_source_mae": 0.02527014040479473,
+      "left_proxy_success": true,
+      "left_target_mae": 0.0324867472929113,
+      "paired_output_mae": 0.03459416183770871,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          861,
+          644,
+          1023,
+          838
+        ],
+        "centroid_x": 946.1185727911211,
+        "centroid_y": 736.2823636521287,
+        "pixels": 23066
+      },
+      "right_new_addition_progress": 1.2394462936545676,
+      "right_old_removal_progress": 1.0965695488721805,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_12234.png",
+      "right_preserve_source_mae": 0.025693158542408664,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06397337820015701,
+      "seed": 12234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          791
+        ],
+        "centroid_x": 149.3155985489722,
+        "centroid_y": 709.3632301140844,
+        "pixels": 19021
+      },
+      "left_new_addition_progress": 0.011412268188302425,
+      "left_old_retention_progress": 0.8806978383458647,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_13234.png",
+      "left_preserve_source_mae": 0.025424691742541743,
+      "left_proxy_success": true,
+      "left_target_mae": 0.032469468958237595,
+      "paired_output_mae": 0.03359047010833142,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          853,
+          627,
+          1023,
+          834
+        ],
+        "centroid_x": 941.4428139120341,
+        "centroid_y": 734.494921858807,
+        "pixels": 24123
+      },
+      "right_new_addition_progress": 1.2756908120674169,
+      "right_old_removal_progress": 1.1109609962406015,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_13234.png",
+      "right_preserve_source_mae": 0.026132822971717984,
+      "right_proxy_success": true,
+      "right_target_mae": 0.0575779073378619,
+      "seed": 13234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          627,
+          224,
+          792
+        ],
+        "centroid_x": 149.36388566606897,
+        "centroid_y": 709.342210737264,
+        "pixels": 18962
+      },
+      "left_new_addition_progress": 0.006974163892851482,
+      "left_old_retention_progress": 0.8866306390977443,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_14234.png",
+      "left_preserve_source_mae": 0.024680367638083064,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03263574862012676,
+      "paired_output_mae": 0.03794015248616536,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          848,
+          613,
+          1023,
+          842
+        ],
+        "centroid_x": 944.9960449043186,
+        "centroid_y": 731.9329231752627,
+        "pixels": 25031
+      },
+      "right_new_addition_progress": 1.2937074021239499,
+      "right_old_removal_progress": 1.0867011278195489,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_14234.png",
+      "right_preserve_source_mae": 0.028387239867565677,
+      "right_proxy_success": true,
+      "right_target_mae": 0.06048520780077168,
+      "seed": 14234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          626,
+          224,
+          791
+        ],
+        "centroid_x": 149.35318813959591,
+        "centroid_y": 709.5525059039622,
+        "pixels": 19055
+      },
+      "left_new_addition_progress": 0.004807946320071855,
+      "left_old_retention_progress": 0.8811677631578947,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_15234.png",
+      "left_preserve_source_mae": 0.024631696588852826,
+      "left_proxy_success": true,
+      "left_target_mae": 0.032297429851457185,
+      "paired_output_mae": 0.03392478718477137,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          858,
+          644,
+          1023,
+          837
+        ],
+        "centroid_x": 944.5039961142757,
+        "centroid_y": 731.3773568243034,
+        "pixels": 22647
+      },
+      "right_new_addition_progress": 1.2006657156443177,
+      "right_old_removal_progress": 1.1580709586466165,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_15234.png",
+      "right_preserve_source_mae": 0.025760882508520988,
+      "right_proxy_success": true,
+      "right_target_mae": 0.060405731201171875,
+      "seed": 15234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    },
+    {
+      "left_component": {
+        "bbox_ltrb": [
+          75,
+          626,
+          224,
+          791
+        ],
+        "centroid_x": 149.49592684080517,
+        "centroid_y": 709.6327849897514,
+        "pixels": 19027
+      },
+      "left_new_addition_progress": 0.005864637818988746,
+      "left_old_retention_progress": 0.8875704887218046,
+      "left_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/left/seed_16234.png",
+      "left_preserve_source_mae": 0.024450204886642155,
+      "left_proxy_success": true,
+      "left_target_mae": 0.03232561373243145,
+      "paired_output_mae": 0.034479833116718366,
+      "paired_switch_success": true,
+      "right_component": {
+        "bbox_ltrb": [
+          851,
+          626,
+          1019,
+          837
+        ],
+        "centroid_x": 936.1388828703904,
+        "centroid_y": 737.432811890627,
+        "pixels": 23077
+      },
+      "right_new_addition_progress": 1.2541343054895124,
+      "right_old_removal_progress": 1.1341635338345866,
+      "right_path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/outputs/cf_singlepair_fullL0-27_lora_r8_dualTargetCoT1024_fsdpFullShard_overfit_v4/evaluation_dual_target_cot_switch/step_000500/right/seed_16234.png",
+      "right_preserve_source_mae": 0.025647657057818244,
+      "right_proxy_success": true,
+      "right_target_mae": 0.0561254763135723,
+      "seed": 16234,
+      "step": 500,
+      "strict_left_position_success": true,
+      "strict_right_position_success": true
+    }
+  ],
+  "status": "completed",
+  "summaries": {
+    "0": {
+      "left_proxy_successes": 15,
+      "mean_left_preserve_source_mae": 0.09707211606642778,
+      "mean_left_target_mae": 0.13773877176583982,
+      "mean_paired_output_mae": 0.042430473133629444,
+      "mean_right_preserve_source_mae": 0.10347387463438744,
+      "mean_right_target_mae": 0.2723897485172047,
+      "num_seeds": 16,
+      "paired_switch_successes": 0,
+      "right_proxy_successes": 0,
+      "strict_left_position_successes": 15,
+      "strict_right_position_successes": 0
+    },
+    "500": {
+      "left_proxy_successes": 16,
+      "mean_left_preserve_source_mae": 0.02481220399632174,
+      "mean_left_target_mae": 0.03232731655532238,
+      "mean_paired_output_mae": 0.034708919478397736,
+      "mean_right_preserve_source_mae": 0.02617892400891173,
+      "mean_right_target_mae": 0.061038871606191,
+      "num_seeds": 16,
+      "paired_switch_successes": 16,
+      "right_proxy_successes": 16,
+      "strict_left_position_successes": 16,
+      "strict_right_position_successes": 16
+    }
+  }
+}

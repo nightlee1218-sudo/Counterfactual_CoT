@@ -1,0 +1,23 @@
+{
+  "audit_date": "2026-09-28",
+  "audited_pairs": 49,
+  "pass_round2": 33,
+  "pass_round3": 9,
+  "to_replace_into_1000": 42,
+  "deleted_round2": 1,
+  "deleted_round3": 6,
+  "deleted_total": 7,
+  "deleted_pair_ids": [
+    "g1000_office_desk__stand_keyboard_pad__occlusion_state_002",
+    "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+    "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+    "g1000_warehouse_shelf__box_tote_drum__3_to_2_001",
+    "g1000_warehouse_shelf__drum_pallet_tote__2_to_3_001"
+  ],
+  "untouched_1000_pairs": 951,
+  "final_dataset_size_if_applied": 993,
+  "replacement_jsonl": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/final_replacement_20260928.jsonl",
+  "status_jsonl": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_status_20260928_final.jsonl"
+}

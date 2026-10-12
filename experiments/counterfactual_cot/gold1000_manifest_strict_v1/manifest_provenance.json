@@ -1,0 +1,8 @@
+{
+  "schema_version": "gold1000_strict_v1",
+  "source_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_manifest 2",
+  "records": 1000,
+  "generation_ready": true,
+  "validation_report": "strict_audit.json",
+  "note": "Validated successfully by validate_strict_gold1000.py on this strict manifest."
+}

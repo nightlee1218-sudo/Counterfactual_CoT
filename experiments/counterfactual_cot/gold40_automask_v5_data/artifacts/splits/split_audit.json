@@ -1,0 +1,102 @@
+{
+  "created_at": "2026-09-10T08:08:02.699536+00:00",
+  "input": {
+    "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/gold40_source_target_automask_v5.jsonl",
+    "sha256": "3f7bb1846fe31dfcba67371b2c69bd03671dc43bad4fc3677b25661fc50ec8a2"
+  },
+  "leakage_check": {
+    "assigned_source_scenes": 10,
+    "overlapping_source_scene_ids": [],
+    "passed": true,
+    "unique_source_scenes": 10
+  },
+  "outputs": {
+    "test": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/splits/test.jsonl",
+    "train": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/splits/train.jsonl",
+    "val": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/splits/val.jsonl"
+  },
+  "parameters": {
+    "group_key": "source_scene_id",
+    "scene_counts": {
+      "test": 2,
+      "train": 6,
+      "val": 2
+    },
+    "seed": 20260910,
+    "whole_source_scene": true
+  },
+  "schema": {
+    "human_review_used": false,
+    "mask_provenance": {
+      "kind": "automatic_rgb_difference_mask",
+      "semantic_annotation": false,
+      "state_specific": false
+    }
+  },
+  "smoke_train": {
+    "intervention_type_counts": {
+      "attribute_replace": 2,
+      "count_change": 2,
+      "object_replace": 2,
+      "spatial_position_change": 2
+    },
+    "pair_count": 8,
+    "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/splits/smoke_train_8_pairs.jsonl",
+    "scene_count": 2,
+    "source_scene_ids": [
+      "city_street",
+      "classroom"
+    ]
+  },
+  "splits": {
+    "test": {
+      "intervention_type_counts": {
+        "attribute_replace": 2,
+        "count_change": 2,
+        "object_replace": 2,
+        "spatial_position_change": 2
+      },
+      "pair_count": 8,
+      "scene_count": 2,
+      "source_scene_ids": [
+        "living_room_play",
+        "seaside_path"
+      ]
+    },
+    "train": {
+      "intervention_type_counts": {
+        "attribute_replace": 6,
+        "count_change": 6,
+        "object_replace": 6,
+        "spatial_position_change": 5,
+        "spatial_relation_change": 1
+      },
+      "pair_count": 24,
+      "scene_count": 6,
+      "source_scene_ids": [
+        "city_street",
+        "classroom",
+        "flower_shop",
+        "garden_animals",
+        "grocery_display",
+        "lakeside_birds"
+      ]
+    },
+    "val": {
+      "intervention_type_counts": {
+        "attribute_replace": 2,
+        "count_change": 2,
+        "object_replace": 2,
+        "spatial_position_change": 1,
+        "spatial_relation_change": 1
+      },
+      "pair_count": 8,
+      "scene_count": 2,
+      "source_scene_ids": [
+        "home_kitchen",
+        "library_table"
+      ]
+    }
+  },
+  "status": "complete"
+}

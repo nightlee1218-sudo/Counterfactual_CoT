@@ -1,0 +1,126 @@
+{
+  "created_at": "2026-09-28",
+  "mode": "read_only_listing",
+  "final_pair_count": 991,
+  "asset_batch_counts": {
+    "baseline": 731,
+    "v1": 31,
+    "v3": 187,
+    "round2": 33,
+    "round3": 9
+  },
+  "deleted_pair_ids": [
+    "g1000_bedroom_nightstand__glasses_charger_glass__occlusion_state_005",
+    "g1000_living_room_play__ball_quota__3_to_2_001",
+    "g1000_office_desk__stand_keyboard_pad__occlusion_state_002",
+    "g1000_warehouse_shelf__box_sack_pallet__2_to_1_001",
+    "g1000_warehouse_shelf__box_sack_pallet__3_to_2_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_1_001",
+    "g1000_warehouse_shelf__box_tote_drum__2_to_3_001",
+    "g1000_warehouse_shelf__box_tote_drum__3_to_2_001",
+    "g1000_warehouse_shelf__drum_pallet_tote__2_to_3_001"
+  ],
+  "missing_files": [],
+  "missing_file_count": 0,
+  "pairs_without_mask": [],
+  "quality_local_failed_count": 14,
+  "quality_local_failed": [
+    [
+      "g1000_bedroom_nightstand__lamp_clock_book__functional_state_010",
+      "baseline",
+      "global_rerender_suspected"
+    ],
+    [
+      "g1000_city_street__mailbox_planter_signpost__shape_divergent_replace_005",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_dining_table__fruit_bowl_napkins__absolute_horizontal_002",
+      "baseline",
+      "global_rerender_suspected"
+    ],
+    [
+      "g1000_office_desk__lamp_holder_notebook__functional_state_001",
+      "baseline",
+      "global_rerender_suspected"
+    ],
+    [
+      "g1000_parking_lot__car_cart_cone__absolute_horizontal_001",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__seesaw_climber_sandbox__absolute_horizontal_001",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__seesaw_climber_sandbox__absolute_horizontal_002",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__seesaw_climber_sandbox__absolute_horizontal_004",
+      "baseline",
+      "global_rerender_suspected,mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__seesaw_climber_sandbox__shape_divergent_replace_001",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__seesaw_climber_sandbox__shape_divergent_replace_003",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__slide_swing_bench__absolute_horizontal_001",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__slide_swing_bench__absolute_horizontal_004",
+      "baseline",
+      "mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__slide_swing_bench__shape_divergent_replace_002",
+      "baseline",
+      "global_rerender_suspected,mask_area_outside_recommended_range"
+    ],
+    [
+      "g1000_playground__slide_swing_bench__shape_divergent_replace_003",
+      "baseline",
+      "global_rerender_suspected,mask_area_outside_recommended_range"
+    ]
+  ],
+  "scene_source_conflict_count": 2,
+  "scene_source_conflicts": {
+    "living_room_play__ball_quota__v0623": {
+      "pair_count": 2,
+      "variants": {
+        "7e142b23709c": [
+          "g1000_living_room_play__ball_quota__2_to_1_001"
+        ],
+        "7106783b6455": [
+          "g1000_living_room_play__ball_quota__2_to_3_001"
+        ]
+      }
+    },
+    "warehouse_shelf__tool_bin_paint__v0798": {
+      "pair_count": 3,
+      "variants": {
+        "dfdfa7adcdf8": [
+          "g1000_warehouse_shelf__tool_bin_paint__2_to_1_001",
+          "g1000_warehouse_shelf__tool_bin_paint__3_to_2_001"
+        ],
+        "4250f267ba3f": [
+          "g1000_warehouse_shelf__tool_bin_paint__2_to_3_001"
+        ]
+      }
+    }
+  },
+  "manifest_jsonl": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/final_training_manifest_20260928.jsonl"
+}

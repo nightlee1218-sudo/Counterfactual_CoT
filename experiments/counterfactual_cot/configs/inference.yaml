@@ -1,0 +1,21 @@
+model_path: /dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT
+manifest: experiments/counterfactual_cot/manifests/manifest_test.jsonl
+output_dir: experiments/counterfactual_cot/outputs/inference
+modes:
+  - direct
+  - self_cot
+  - oracle_cot
+  - counterfactual_edit
+  - conflict_cot
+  - random_cot
+  - shuffled_cot
+  - synonym_cot
+seeds: [0, 1, 2, 3]
+generation:
+  cfg_text_scale: 4.0
+  cfg_img_scale: 2.0
+  cfg_interval: [0.0, 1.0]
+  timestep_shift: 3.0
+  num_timesteps: 50
+  cfg_renorm_min: 0.0
+  cfg_renorm_type: text_channel

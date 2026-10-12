@@ -1,0 +1,9 @@
+thresholds:
+  preservation_score: 0.8
+  locality_score: 0.7
+bootstrap:
+  num_samples: 10000
+  seed: 0
+external_benchmarks:
+  r2i_result: experiments/counterfactual_cot/outputs/r2i/result.json
+  geneval_result: experiments/counterfactual_cot/outputs/geneval/result.json

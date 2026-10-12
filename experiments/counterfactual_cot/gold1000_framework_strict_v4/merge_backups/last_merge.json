@@ -1,0 +1,73 @@
+{
+  "merge_order": [
+    "n3",
+    "v5",
+    "v4",
+    "pattern"
+  ],
+  "selected_counts": {
+    "v4": 13,
+    "v5": 10,
+    "pattern": 10,
+    "n3": 3
+  },
+  "selected_total": 36,
+  "scene_updates": [
+    "bathroom_counter__rinsecup_soap_towel__v0045",
+    "bathroom_counter__rinsecup_soap_towel__v0046",
+    "bathroom_counter__rinsecup_soap_towel__v0047",
+    "bedroom_nightstand__glasses_charger_glass__v0069",
+    "closet_wardrobe__n3_pants__v0330",
+    "kitchen_counter__bowl_block_mill__v0590",
+    "kitchen_counter__bowl_block_mill__v0594",
+    "warehouse_shelf__bin_drum_strapping__v0800",
+    "warehouse_shelf__fasteners_bin_sacks__v0778"
+  ],
+  "kept_original": [
+    "g1000_bathroom_counter__rinsecup_soap_towel__functional_state_005",
+    "g1000_flower_shop__tulip_pot_ribbon__pattern_006",
+    "g1000_flower_shop__tulip_pot_ribbon__pattern_007",
+    "g1000_flower_shop__tulip_pot_ribbon__pattern_008"
+  ],
+  "selected_pairs": [
+    "g1000_bathroom_counter__rinsecup_soap_towel__functional_state_002",
+    "g1000_bathroom_counter__rinsecup_soap_towel__functional_state_003",
+    "g1000_bathroom_counter__rinsecup_soap_towel__functional_state_006",
+    "g1000_bedroom_nightstand__glasses_charger_glass__occlusion_state_005",
+    "g1000_classroom__book_quota__2_to_3_002",
+    "g1000_closet_wardrobe__n3_pants__2_to_1_001",
+    "g1000_closet_wardrobe__n3_pants__2_to_3_001",
+    "g1000_closet_wardrobe__n3_pants__3_to_2_001",
+    "g1000_closet_wardrobe__n4_shoe__2_to_1_001",
+    "g1000_closet_wardrobe__shirt_sweater_shoebox__containment_002",
+    "g1000_dining_table__fork_quota__2_to_3_001",
+    "g1000_dining_table__fruit_bowl_napkins__containment_002",
+    "g1000_dining_table__n1_napkin__2_to_3_001",
+    "g1000_flower_shop__orchid_stand_gift__pattern_003",
+    "g1000_flower_shop__orchid_stand_gift__pattern_004",
+    "g1000_flower_shop__peony_crate_pot__pattern_004",
+    "g1000_flower_shop__peony_crate_pot__pattern_005",
+    "g1000_flower_shop__peony_crate_pot__pattern_006",
+    "g1000_flower_shop__peony_crate_potd__pattern_002",
+    "g1000_flower_shop__rose_vase_wrap__pattern_002",
+    "g1000_flower_shop__sunflower_basket_card__pattern_005",
+    "g1000_flower_shop__sunflower_basket_card__pattern_006",
+    "g1000_flower_shop__tulip_pot_ribbon__pattern_005",
+    "g1000_kitchen_counter__bowl_block_mill__occlusion_state_001",
+    "g1000_kitchen_counter__bowl_block_mill__occlusion_state_003",
+    "g1000_living_room_play__block_quota__3_to_2_001",
+    "g1000_living_room_play__lego_pillow_train__absolute_horizontal_003",
+    "g1000_living_room_play__n3_doll__2_to_1_001",
+    "g1000_toolshed_garage__hammer_oilcan_basket__material_002",
+    "g1000_warehouse_shelf__bin_drum_strapping__2_to_1_001",
+    "g1000_warehouse_shelf__bin_drum_strapping__2_to_3_001",
+    "g1000_warehouse_shelf__bin_drum_strapping__3_to_2_001",
+    "g1000_warehouse_shelf__fasteners_bin_sacks__containment_002",
+    "g1000_warehouse_shelf__sack_bundle_bin__2_to_1_001",
+    "g1000_warehouse_shelf__sack_bundle_bin__2_to_3_001",
+    "g1000_warehouse_shelf__wrench_crate_boxes__absolute_vertical_001"
+  ],
+  "backup": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/merge_backups/20260922_171859",
+  "manifest_sha256_before": "7d6f0c9e56e1e9c15be69c835eeeab5fb515de9b1801c37cf973f904258c62e5",
+  "manifest_sha256_after": "ae390f87ec6f7a1df0783edff6ac6d260c579d48d2e340b4f3ed0064c3bcf1b5"
+}

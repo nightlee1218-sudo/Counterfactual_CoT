@@ -1,0 +1,7 @@
+{
+  "batch_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/repair_batch_20260924_round2_strict_atomic_v4/manifest.jsonl",
+  "batch_manifest_sha256": "d4474e8026a28fba7b6ef8c7e00e6374399be3888e4053a158050bf676bb6bd3",
+  "original_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/full_1000_20260918/gold1000.generated.jsonl",
+  "pair_count": 49,
+  "page_count": 5
+}

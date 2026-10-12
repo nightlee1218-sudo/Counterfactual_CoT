@@ -1,0 +1,6 @@
+{
+  "audit_jsonl": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold1000_framework_strict_v4/qwen_audit_pilot20_v2.jsonl",
+  "audit_sha256": "cce450b3566dd7afc416ebec2b554add4cce31e5d992de6a71624911cc8738ab",
+  "pairs": 20,
+  "pages": 2
+}

@@ -1,0 +1,7 @@
+{
+  "pairs": 30,
+  "linked_files": 90,
+  "missing_files": [],
+  "output_dir": "experiments/counterfactual_cot/gold1000_framework_strict_v4/smoke_2_each_subtype_v4_stable_20260916/pair_review",
+  "link_type": "relative_symlink"
+}

@@ -1,0 +1,54 @@
+{
+  "classroom_object_replace_contract": {
+    "new_value": "globe",
+    "old_value": "chair"
+  },
+  "human_review_accepted_required": true,
+  "intervention_type_counts": {
+    "attribute_replace": 1,
+    "count_change": 1,
+    "object_replace": 1,
+    "spatial_position_change": 2,
+    "spatial_relation_change": 1
+  },
+  "output_manifests": {
+    "cot_core_v1": {
+      "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/data/sentinel6_final/sentinel6_gold40_final__profile=cot_core_v1.jsonl",
+      "record_count": 6,
+      "rendered_prompts": {
+        "cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: Create a single natural 1024x1024 image of a quiet city street at early evening in clear weather. Exactly one yellow car is fully visible in the left_region of the image. Exactly one street lamp is fully visible in the center of the image. The car and the street lamp are separate, complete, unobstructed, and countable. Do not add any other car, vehicle, street lamp, poster car, reflected car, cropped car, or object partly outside the frame. Keep the composition simple with open street space between the left car and the centered lamp.\nTarget CoT: car_1.object=car; car_1.count=1; car_1.location=right_region; car_1.attribute.color=yellow; street_lamp_1.object=street lamp; street_lamp_1.count=1; street_lamp_1.location=center; background.scene=quiet city street; background.time=early evening; background.weather=clear\nGenerate the target image by strictly following Target CoT.",
+        "cf_source_classroom_object_replace_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: Three blue chairs are in the center area, beside the school desk. One school desk is in the center area. The scene takes place in a tidy classroom, with a pale wooden floor, under daylight.\nTarget CoT: chair_1.object=globe; chair_1.count=3; chair_1.location=center; chair_1.attribute.color=blue; chair_1.relation.0=beside:desk_1; desk_1.object=school desk; desk_1.count=1; desk_1.location=center; background.floor=pale wooden floor; background.lighting=daylight; background.scene=tidy classroom\nGenerate the target image by strictly following Target CoT.",
+        "cf_source_home_kitchen_spatial_relation_change_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: One green cup is in the upper-left area, beside the plate. One plate is in the center area. The scene takes place in a bright home kitchen, on a wooden counter, under soft daylight.\nTarget CoT: cup_1.object=cup; cup_1.count=1; cup_1.location=upper-left; cup_1.attribute.color=green; cup_1.relation.0=in_front_of:plate_1; plate_1.object=plate; plate_1.count=1; plate_1.location=center; background.lighting=soft daylight; background.scene=bright home kitchen; background.surface=wooden counter\nGenerate the target image by strictly following Target CoT.",
+        "cf_source_library_table_attribute_replace_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: Two red books are in the upper-left area, beside the reading lamp. One reading lamp is in the upper-right area. The scene takes place in a quiet library, on a dark wooden table, under focused reading light.\nTarget CoT: book_1.object=book; book_1.count=2; book_1.location=upper-left; book_1.attribute.color=blue; book_1.relation.0=beside:lamp_1; lamp_1.object=reading lamp; lamp_1.count=1; lamp_1.location=upper-right; background.lighting=focused reading light; background.scene=quiet library; background.surface=dark wooden table\nGenerate the target image by strictly following Target CoT.",
+        "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: One red toy ball must be fully visible, separate and unobstructed in the left_region area. One gray sofa must be fully visible, separate and unobstructed in the center area. The scene takes place in a cozy living room, with a light rug, under warm indoor light. All listed objects must be complete and countable. Do not add any extra instance of the target object in the background, reflection, poster, screen, outside the frame, or partially cropped at the edge. The gray sofa must stay centered and clearly separate from the ball.\nTarget CoT: ball_1.object=toy ball; ball_1.count=1; ball_1.location=right_region; ball_1.attribute.color=red; sofa_1.object=gray sofa; sofa_1.count=1; sofa_1.location=center; background.floor=light rug; background.lighting=warm indoor light; background.scene=cozy living room\nGenerate the target image by strictly following Target CoT.",
+        "cf_source_seaside_path_count_change_0000": "[MODE=COUNTERFACTUAL_EDIT_COT_CORE]\nSource Prompt: One green bicycle is in the lower-left area, near the wooden sign. One wooden sign is in the upper-left area. The scene takes place in a seaside path, with blue ocean in the background, in sunny weather.\nTarget CoT: bicycle_1.object=bicycle; bicycle_1.count=2; bicycle_1.location=lower-left; bicycle_1.attribute.color=green; bicycle_1.relation.0=near:sign_1; sign_1.object=wooden sign; sign_1.count=1; sign_1.location=upper-left; background.background=blue ocean; background.scene=seaside path; background.weather=sunny\nGenerate the target image by strictly following Target CoT."
+      },
+      "sha256": "30df3437e1e8de611e6e4b99a8d58bdbc2c5511aeae231e0335998938072639c"
+    },
+    "delta_only_v2": {
+      "path": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/data/sentinel6_final/sentinel6_gold40_final__profile=delta_only_v2.jsonl",
+      "record_count": 6,
+      "rendered_prompts": {
+        "cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nMove the car_1 from left region to right region.\nRemove the car_1 from left region and preserve its original count at right region.\nPreserve: car_1.category, car_1.count, car_1.attributes.color, street_lamp_1.category, street_lamp_1.count, street_lamp_1.location, background.scene, background.time, background.weather.\nUse the provided source image as the visual anchor.",
+        "cf_source_classroom_object_replace_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nReplace the chair with globe.\nPreserve the original count and placement, and do not retain the old chair.\nPreserve: chair_1.count, chair_1.location, chair_1.attributes.color, chair_1.relations.0.predicate, chair_1.relations.0.target, desk_1.category, desk_1.count, desk_1.location, background.floor, background.lighting, background.scene.\nUse the provided source image as the visual anchor.",
+        "cf_source_home_kitchen_spatial_relation_change_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nChange the relation of the cup_1 to the the referenced object from beside to in front of.\nThe final relation must be in front of, not beside; preserve both objects and their counts.\nPreserve: cup_1.category, cup_1.count, cup_1.location, cup_1.attributes.color, cup_1.relations.0.target, plate_1.category, plate_1.count, plate_1.location, background.lighting, background.scene, background.surface.\nUse the provided source image as the visual anchor.",
+        "cf_source_library_table_attribute_replace_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nChange the color of the book_1 from red to blue.\nThe final book_1 must have blue color and must not retain the old red color.\nPreserve: book_1.category, book_1.count, book_1.location, book_1.relations.0.predicate, book_1.relations.0.target, lamp_1.category, lamp_1.count, lamp_1.location, background.lighting, background.scene, background.surface.\nUse the provided source image as the visual anchor.",
+        "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nMove the ball_1 from left region to right region.\nRemove the ball_1 from left region and preserve its original count at right region.\nPreserve: ball_1.category, ball_1.count, ball_1.attributes.color, sofa_1.category, sofa_1.count, sofa_1.location, background.scene, background.floor, background.lighting.\nUse the provided source image as the visual anchor.",
+        "cf_source_seaside_path_count_change_0000": "[MODE=COUNTERFACTUAL_EDIT_DELTA_ONLY_V2]\nChange the number of bicycle_1 instances from 1 to 2.\nThe final image must contain exactly 2 bicycle_1 instances, not 1.\nPreserve: bicycle_1.category, bicycle_1.location, bicycle_1.attributes.color, bicycle_1.relations.0.predicate, bicycle_1.relations.0.target, sign_1.category, sign_1.count, sign_1.location, background.background, background.scene, background.weather.\nUse the provided source image as the visual anchor."
+      },
+      "sha256": "dc218ec4a1df82a2419d0c6be212b4a5aed71a8d3fa78b9e0d3d59b493547644"
+    }
+  },
+  "pair_ids_in_order": [
+    "cf_source_library_table_attribute_replace_0000",
+    "cf_source_seaside_path_count_change_0000",
+    "cf_source_classroom_object_replace_0000",
+    "cf_source_city_street_absolute_position_change_v4_absolute_region_review_fix_v6_short_0000",
+    "cf_source_home_kitchen_spatial_relation_change_0000",
+    "cf_source_living_room_play_absolute_position_change_v4_absolute_region_replacement_v4_0000"
+  ],
+  "schema": "sentinel6_gold40_final_v1",
+  "source_manifest": "/group/40016/niightli/BAGEL/experiments/counterfactual_cot/gold40_final/manifest/intervention_pairs_gold40_final.jsonl",
+  "source_manifest_sha256": "e74a0dc713cd99628d4df296a54c9c367913682d3a88ed030ff12de321d3587c",
+  "status": "frozen"
+}

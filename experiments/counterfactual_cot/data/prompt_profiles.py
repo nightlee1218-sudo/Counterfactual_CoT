@@ -138,23 +138,42 @@ def _render_delta_instruction(pair: Dict[str, Any]) -> str:
     new_value = _readable(intervention.get("new_value", "the target state"))
     field = str(intervention.get("field", "state"))
 
-    if intervention_type == "attribute_replace":
+    # New-schema intervention types map onto the same delta semantics:
+    #   category_replacement                -> object replacement (replace category of an entity)
+    #   attribute_intervention              -> attribute replacement
+    #   instance_cardinality_intervention   -> count change
+    #   spatial_geometric_intervention      -> position move, or relation change when field == "relations"
+    if intervention_type == "attribute_replace" or (
+        intervention_type == "attribute_intervention" and field.startswith("attributes.")
+    ):
         attribute = _readable(field.removeprefix("attributes."))
         action = f"Change the {attribute} of the {entity} from {old_value} to {new_value}."
         completion = f"The final {entity} must have {new_value} {attribute} and must not retain the old {old_value} {attribute}."
-    elif intervention_type == "count_change":
+    elif intervention_type == "count_change" or intervention_type == "instance_cardinality_intervention":
         action = f"Change the number of {entity} instances from {old_value} to {new_value}."
         completion = f"The final image must contain exactly {new_value} {entity} instances, not {old_value}."
-    elif intervention_type == "object_replace":
+    elif intervention_type == "object_replace" or intervention_type == "category_replacement":
         action = f"Replace the {old_value} with {new_value}."
         completion = f"Preserve the original count and placement, and do not retain the old {old_value}."
-    elif intervention_type == "spatial_position_change":
+    elif intervention_type == "spatial_position_change" or (
+        intervention_type == "spatial_geometric_intervention" and field == "location"
+    ):
         action = f"Move the {entity} from {old_value} to {new_value}."
         completion = f"Remove the {entity} from {old_value} and preserve its original count at {new_value}."
-    elif intervention_type == "spatial_relation_change":
+    elif intervention_type == "spatial_relation_change" or (
+        intervention_type == "spatial_geometric_intervention" and field == "relations"
+    ):
         relation_target = _relation_target_label(pair, entity_id, field)
-        action = f"Change the relation of the {entity} to the {relation_target} from {old_value} to {new_value}."
-        completion = f"The final relation must be {new_value}, not {old_value}; preserve both objects and their counts."
+        if ":" in str(new_value) or ":" in str(old_value):
+            # containment-style values like "inside:box_1" / "separate_from:box_1"
+            old_value = _readable(str(old_value).split(":", 1)[0])
+            new_value = _readable(str(new_value).split(":", 1)[0])
+            relation_target = relation_target or "the referenced object"
+            action = f"Change the relation of the {entity} to the {relation_target} from {old_value} to {new_value}."
+            completion = f"The final relation must be {new_value}, not {old_value}; preserve both objects and their counts."
+        else:
+            action = f"Change the relation of the {entity} to the {relation_target} from {old_value} to {new_value}."
+            completion = f"The final relation must be {new_value}, not {old_value}; preserve both objects and their counts."
     else:
         raise ValueError(f"delta_only_v2 does not support intervention type {intervention_type!r}")
 
