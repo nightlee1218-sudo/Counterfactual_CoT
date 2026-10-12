@@ -1,0 +1,26 @@
+{
+  "seed": 1234,
+  "source": "T2I-CompBench (Karine-Huang/T2I-CompBench, examples/dataset/*.txt)",
+  "subsets": {
+    "attribute_binding": {
+      "count": 150,
+      "categories": {
+        "color": 50,
+        "shape": 50,
+        "texture": 50
+      }
+    },
+    "spatial_relations": {
+      "count": 150,
+      "categories": {
+        "spatial": 150
+      }
+    },
+    "counting": {
+      "count": 150,
+      "categories": {
+        "numeracy": 150
+      }
+    }
+  }
+}
