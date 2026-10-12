@@ -17,9 +17,12 @@ __pycache__/
 *.mp4
 outputs/
 checkpoints/
-evaluation/
 logs/
 *.log
+
+# Heavy review reports and tabular exports (HTML contact sheets, CSV audits)
+*.html
+*.csv
 
 # Local datasets, manifests and temporary storage
 models/
@@ -29,6 +32,17 @@ images_gold*/
 reruns/
 manual_candidates/
 *.jsonl
+*.bak
+*.bak_*
+
+# Heavy annotation/judge artifacts (code under evaluation/ is tracked)
+experiments/counterfactual_cot/evaluation/human_annotation_package/
+experiments/counterfactual_cot/evaluation/judge_v1_calibration_plan/
+experiments/counterfactual_cot/evaluation/judge_v1_calibration_plan_v2/
+experiments/counterfactual_cot/evaluation/judge_v1_precheck/
+
+# Watchdog/progress scratch
+wb_*_progress.txt
 
 # Local environments and secrets
 .venv/
@@ -37,3 +51,4 @@ venv/
 .idea/
 .vscode/
 .DS_Store
+.codewiki/
