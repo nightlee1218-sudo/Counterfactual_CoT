@@ -2,7 +2,10 @@
 """E1 CLIP-T scoring: text-image alignment (CLIPScore) for base vs final991.
 
 Model: OpenAI CLIP ViT-L/14 loaded from local weights
-(/group/40016/niightli/univfd/clip_cache/ViT-L-14.pt) via open_clip — no download.
+(/group/40016/niightli/univfd/clip_cache/ViT-L-14_state_dict.pt — plain
+state_dict converted from the original TorchScript archive by
+convert_clip_jit_to_statedict.py; the JIT archive itself cannot be loaded by
+torch>=2.6 default weights_only=True) via open_clip — no download.
 CLIPScore = 2.5 * max(cos(prompt_emb, image_emb), 0)  (Hessel et al., 2021).
 Raw cosine is also reported.
 
@@ -26,7 +29,7 @@ import torch.nn.functional as F
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_WEIGHTS = Path("/group/40016/niightli/univfd/clip_cache/ViT-L-14.pt")
+DEFAULT_WEIGHTS = Path("/group/40016/niightli/univfd/clip_cache/ViT-L-14_state_dict.pt")
 
 
 def main() -> None:
@@ -42,7 +45,7 @@ def main() -> None:
     import open_clip
 
     print(json.dumps({"event": "clip_load_start", "weights": str(args.weights), "device": dev}), flush=True)
-    model, _, preprocess = open_clip.create_model_and_transforms("ViT-L-14", pretrained=str(args.weights))
+    model, _, preprocess = open_clip.create_model_and_transforms("ViT-L-14", pretrained=str(args.weights), force_quick_gelu=True)
     tokenizer = open_clip.get_tokenizer("ViT-L-14")
     model = model.eval().to(dev)
     print(json.dumps({"event": "clip_load_done"}), flush=True)
