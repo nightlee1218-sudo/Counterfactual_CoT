@@ -60,6 +60,7 @@ if str(BAGEL_ROOT) not in sys.path:
     sys.path.insert(0, str(BAGEL_ROOT))
 
 from experiments.counterfactual_cot.full_backbone_lora_region1024_fsdp_v3 import train as v3_runtime
+from experiments.counterfactual_cot.full_backbone_lora_dual_target_cot1024_fsdp_v4 import train as v4_runtime
 from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5 import train as v5_runtime
 from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5.paired_data import (
     STATE_IDS,
@@ -661,7 +662,7 @@ def main() -> None:
         else:
             align_hooks = AlignHookManager([], [])
         target_cache = AlignTargetCache(tokenizer)
-        hooks, bridge_report = v5_runtime._install_bridge_output_cast_hooks(model)
+        hooks, bridge_report = v4_runtime._install_bridge_output_cast_hooks(model)
         fsdp = v3_runtime._fsdp_model(model, [parameter for _, parameter in trainable], device)
         activated = v3_runtime._apply_activation_checkpointing(fsdp, layers)
         if activated != v5_runtime.EXPECTED_ACTIVATION_CHECKPOINTS:
@@ -792,9 +793,9 @@ def main() -> None:
                     "history": history,
                 }
                 if v5_runtime._rank0():
-                    v5_runtime._atomic_save(args.output_dir / "checkpoints" / "latest.pt", payload)
+                    v3_runtime._atomic_save(args.output_dir / "checkpoints" / "latest.pt", payload)
                     if step == args.steps:
-                        v5_runtime._atomic_save(args.output_dir / "checkpoints" / f"step_{step:06d}.pt", payload)
+                        v3_runtime._atomic_save(args.output_dir / "checkpoints" / f"step_{step:06d}.pt", payload)
                 v5_runtime._barrier()
         v5_runtime._atomic_json(
             args.output_dir / "final_report.json",

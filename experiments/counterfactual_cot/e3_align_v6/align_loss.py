@@ -317,8 +317,14 @@ class AlignHookManager:
             config = self._config
             if config is None:
                 return
-            if layer_index in self.stash:
-                return  # first-write-wins: recompute during backward must not swap tensors
+            # Recompute pass (NO_REENTRANT activation-checkpointing backward)
+            # re-executes this hook with the stash already populated: we MUST
+            # re-run the identical extraction ops so the recomputed graph saves
+            # exactly the same tensors as the original forward (otherwise torch
+            # raises CheckpointError: "a different number of tensors was saved
+            # during the original forward and recomputation"), but keep
+            # first-write-wins and do NOT swap the stashed tensors.
+            recompute_pass = layer_index in self.stash
             hidden = output[0] if isinstance(output, (tuple, list)) else output
             if not torch.is_tensor(hidden) or hidden.dim() != 2:
                 raise RuntimeError(f"align L{layer_index}: unexpected layer output {type(hidden)}")
@@ -332,7 +338,8 @@ class AlignHookManager:
             if config["detach_mu"]:
                 mu_in = mu_in.detach()
                 mu_out = mu_out.detach()
-            self.stash[layer_index] = (h_tok, mu_in, mu_out)
+            if not recompute_pass:
+                self.stash[layer_index] = (h_tok, mu_in, mu_out)
 
         return hook
 
