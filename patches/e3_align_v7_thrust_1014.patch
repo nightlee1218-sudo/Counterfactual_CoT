@@ -1,0 +1,2878 @@
+diff --git a/experiments/counterfactual_cot/e3_align_v7/README.md b/experiments/counterfactual_cot/e3_align_v7/README.md
+new file mode 100644
+index 0000000..753bdbe
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_align_v7/README.md
+@@ -0,0 +1,116 @@
++# E3 v7: thrust-fixed token-region alignment (lambda 0.3 + temperature tau + strength reg + plateau guard)
++
++v6 completed 2973 steps but its target-state align loss hugged the
++log(2)=0.6931 plateau: 1683/2973 macro steps inside 0.69+-0.005 and the
++margin improved only 0.001 -> 0.017 — the alignment objective had no
++usable gradient at the margins the run actually sat at.  v7 fixes the
++thrust with four parameterised changes; everything else is v6-verbatim.
++
++## Files
++
++| file | role |
++|---|---|
++| `train_v7.py` | trainer core (from `train_v6.py`, cp + targeted diffs: +262/-53) |
++| `align_objective.py` | v6 spatial objective + live region-tensor stash for the strength regularizer |
++| `selftest_v7.py` | CPU suite: 24 tests ALL PASS (incl. temperature/strength/plateau numerics) |
++| `run_v7.sh` | launcher: `selftest\|preflight\|smoke\|train\|status`, plateau ALERT surfaced |
++| `README.md` | this file |
++
++`align_loss.py` is NOT copied: v7 imports it from `e3_align_v6.align_loss`
++unchanged — the v7 temperature is exactly that module's `margin_scale`
++(= 1/tau), so the battle-tested NO_REENTRANT AC hook code stays
++single-sourced.  `exp/e3-align-v7` is branched from `exp/e3-align-v6`, so
++both directories always coexist in this branch and on the server tree.
++
++## The four changes (all switchable)
++
++### 1. lambda 0.1 -> 0.3 (`--align-lambda`, default 0.3)
++
++### 2. Temperature in L_align (`--align-tau`, default 0.1)
++
++```
++L_align = -log sigmoid((cos(h_tok, mu_in) - cos(h_tok, mu_out)) / tau)
++```
++
++The v6 margin scale was 1.0; v7 uses margin scale = 1/tau = 10.
++Math: d(-log sigmoid(m/tau))/dm = -(1/tau)·sigmoid(-m/tau); at the small
++v6-observed margins (m ~ 0.001-0.006) this is ~1/(2·tau), i.e. the plateau
++gradient is amplified by ~1/tau = 10x.  Verified in selftest 21 at m=0.005:
++tau=0.1 -> |grad| 4.875 vs untampered 0.4987 = 9.77x; **combined with
++lambda 0.1->0.3 the effective align-gradient scale-up vs v6 is ~29x**
++(the "tens of times" magnitude).  Note: the *pure* temperature amplification
++limit at m->0 is exactly 1/tau = 10x, not 20x — reaching ~20x would need
++tau~0.05 (`--align-tau 0.05`).  `--align-margin-scale` remains as an
++explicit ablation override (default None = 1/tau).
++
++### 3. Explicit strength regularizer (`--strength-reg on|off`, default on)
++
++```
++L_str = w_s * | edit_mse / outside_mse.detach() - strength_target |
++        w_s = 0.05 (--strength-weight), target = 1.0 (--strength-target)
++```
++
++This REPLACES v6's proven-ineffective edit/outside loss-weight rebalancing
++(0.4/0.6): with strength-reg on the region weights are forced back to the
++v5 0.5/0.5 and `--edit-loss-weight != 0.5` is rejected by the CLI.  The
++strength estimate is built from the per-branch edit/outside mask MSE
++statistics training already computes every step (target_state branch only;
++v6 observed edit/outside ~ 2, i.e. under-applying the edit).  The outside
++term is the DETACHED anchor — the regularizer can never be reduced by
++worsening the outside region (selftest 22/23 verify value, gradient
++directions and the anchor property).  The live tensors come from the v7
++objective's `branch_region_tensors` stash.  `--mask-debias` is kept
++(default on) and `--overshoot-fix off` still reproduces v5 exactly.
++
++### 4. Plateau watchdog (`--plateau-guard on|off`, default on)
++
++If the target-state align loss of NON-SKIPPED branches never leaves
++`0.69+-0.005` (`--plateau-center`/`--plateau-eps`) within
++`--plateau-window` (1000) consecutive steps AND shows no downward trend
++(mean second-half drop >= `--plateau-trend-eps` 1e-4 counts as leaving):
++rank 0 writes an ALERT block into `--progress-file`
++(`wb_e3_progress_v7.txt`), saves an emergency `latest.pt`, writes
++final_report with status `plateau_alert_stopped` + a `plateau_alert`
++payload, and training stops — no more 16h runs on a dead loss.
++`run_v7.sh`'s watchdog stops overwriting the progress file once the alert
++lands and surfaces it.  History is re-seeded on resume, and skipped
++branches (align_skipped=1, which log align_loss 0.0) are excluded.
++
++## What is v6-verbatim
++
++Layers 13/6/16/14, gold40 data + strict seed audits, per-state matched
++noise at 0.5 branch scale, full-layer LoRA r8/a16 fp32 masters, FSDP
++FULL_SHARD world_size=2, mandatory 28-layer NO_REENTRANT activation
++checkpointing (hook recompute parity — selftest 11), 16384-token packing,
++general-T2I replay, warm start (`--init-trainable-from`, v5/v6/v7 keys all
++load), debug AMP dtype mode, resume guard (now also guarding tau +
++strength + plateau keys), atomic saves, final_report history.
++
++New metrics in history rows: `target_state_strength_est`,
++`target_state_strength_reg_loss`; final_report gains `strength_reg`,
++`plateau_guard`, `plateau_alert` sections.
++
++## Run (GPU instance, 2x A100)
++
++```bash
++bash run_v7.sh selftest   # CPU only (24 tests)
++bash run_v7.sh preflight
++bash run_v7.sh smoke      # 2 steps, throwaway dir
++bash run_v7.sh train      # 2973 steps + watchdog; ALERT path included
++bash run_v7.sh status
++```
++
++Overrides via `EXTRA_ARGS` (e.g. `--align-tau 0.05`, `--strength-reg off`,
++`--init-trainable-from .../final991.../latest.pt`).  Default run trains
++from base weights (same as v6); the checkpoint format is
++`gold40_automask_v7_align_fsdp`.
++
++## Selftest summary
++
++24 tests ALL PASS, including the two requested numerical verifications:
++- temperature: grad at m=0.005 amplified 9.77x (limit 1/tau=10x); with
++  lambda 0.3 vs v6's 0.1: ~29x total;
++- strength: L_str value from live objective tensors == w_s*|E/O-1| built
++  from the logged statistics; under-edit gradient reduces edit_mse; the
++  outside anchor receives NO gradient;
++- plateau: band escape / trend escape / window / alert payload semantics.
+diff --git a/experiments/counterfactual_cot/e3_align_v7/align_objective.py b/experiments/counterfactual_cot/e3_align_v7/align_objective.py
+new file mode 100644
+index 0000000..4632a72
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_align_v7/align_objective.py
+@@ -0,0 +1,207 @@
++"""E3 v7 spatial objective: v5 automask partition + strength-regularizer stash.
++
++Same public API as the v6 objective (drop-in for the v5 trainer's
++``_load_objective``: ``OBJECTIVE_ID``, ``build_paired_automask_objective``,
++``paired_automask_forward_loss``), with ONE addition for the v7 trainer:
++
++* ``branch_region_tensors`` / ``clear_branch_tensors``: each forward stashes
++  the LIVE (autograd-connected) ``edit_region`` / ``outside_region`` scalar
++  tensors of that branch, so the v7 trainer can compose the differentiable
++  strength regularizer
++
++      L_str = w_s * | edit_mse / outside_mse.detach() - strength_target |
++
++  from the in/out mask MSE decomposition that training already computes
++  every step.  The outside term is the DETACHED anchor: the regularizer can
++  never be reduced by worsening the outside region (gradient reaches only
++  the edit side).
++
++Differences from the v5 objective (inherited from v6, unchanged):
++
++* ``configure_overshoot`` sets two anti-over-edit switches (both default off
++  until configured; the v7 trainer configures them from CLI args):
++
++  - ``edit_weight``: rebalances the region loss to ``ew * edit + (1-ew) *
++    outside``.  v5 hardcodes 0.5/0.5; v6 shipped 0.4/0.6, which the v6
++    evaluation could not confirm as effective — with ``--strength-reg on``
++    (the v7 default) the trainer therefore forces this back to 0.5 and uses
++    the explicit strength regularizer instead (spec: replace the ineffective
++    in-mask loss weight rebalancing).
++  - ``debias``: computes each region loss as the unweighted per-token mean over
++    the hard region membership (``w_edit >= 0.5``) instead of the
++    continuous-mass mean.  The v5 continuous mean lets the 9px-dilated mask
++    halo blend weakly-masked tokens into both regions, diluting the edit-region
++    signal and under-penalizing halo spillover; the hard partition gives halo
++    tokens full outside pressure.  Empty hard regions fall back to the
++    continuous form for that call and flag it in metrics.
++
++* Region-loss identity is re-audited per call: continuous mode keeps the v5
++  mass-weighted recomposition check; hard mode uses the exact count identity
++  ``native == (n_in/N)*mean_in + (n_out/N)*mean_out``.
++
++The shared spatial partition itself (64x64 row-major edit/outside weights with
++strict mask provenance + SHA256 audit) is reused verbatim from the v5 module.
++"""
++from __future__ import annotations
++
++from typing import Any, Dict, Mapping, Tuple
++
++import torch
++
++from experiments.counterfactual_cot.gold40_automask_v5_data.automask_objective import (
++    AutomaskObjectiveValidationError,
++    EXPECTED_TARGET_TOKENS,
++    FLOW_CHANNELS,
++    _validate_partition,
++    build_paired_automask_objective as _v5_build_paired,
++    automask_forward_loss as _v5_forward,
++)
++
++__all__ = [
++    "OBJECTIVE_ID",
++    "configure_overshoot",
++    "overshoot_state",
++    "build_paired_automask_objective",
++    "paired_automask_forward_loss",
++    "branch_region_tensors",
++    "clear_branch_tensors",
++]
++
++OBJECTIVE_ID = "gold40_v7_automask_edit_outside_debias_strength_v1"
++HARD_IN_THRESHOLD = 0.5
++
++_STATE: Dict[str, Any] = {"edit_weight": 0.5, "debias": False}
++# v7 addition: live (autograd-connected) region tensors per branch, consumed
++# by the trainer's strength regularizer and cleared after the branch backward.
++_LAST_EXTRACT: Dict[str, Tuple[torch.Tensor, torch.Tensor]] = {}
++
++
++def branch_region_tensors(branch_id: str) -> Tuple[torch.Tensor, torch.Tensor] | None:
++    """Live (edit_region, outside_region) tensors of that branch, or None."""
++    return _LAST_EXTRACT.get(branch_id)
++
++
++def clear_branch_tensors() -> None:
++    _LAST_EXTRACT.clear()
++
++
++def configure_overshoot(edit_weight: float = 0.5, debias: bool = False) -> Dict[str, Any]:
++    """Set the anti-overshoot switches (called once by the v6 trainer per rank)."""
++    edit_weight = float(edit_weight)
++    if not (0.0 < edit_weight < 1.0):
++        raise AutomaskObjectiveValidationError(f"edit_weight must be in (0, 1), got {edit_weight}")
++    _STATE["edit_weight"] = edit_weight
++    _STATE["debias"] = bool(debias)
++    return overshoot_state()
++
++
++def overshoot_state() -> Dict[str, Any]:
++    return {"edit_weight": _STATE["edit_weight"], "debias": _STATE["debias"]}
++
++
++def build_paired_automask_objective(record: Mapping[str, Any]):
++    """Identical audited partition to v5 (shared by both branches)."""
++    return _v5_build_paired(record)
++
++
++def _hard_region_losses(per_token: torch.Tensor, weights: Mapping[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, int, int, str]:
++    hard_in = weights["edit"] >= HARD_IN_THRESHOLD
++    n_in = int(hard_in.sum())
++    n_out = int(per_token.numel() - n_in)
++    if n_in == 0 or n_out == 0:
++        edit_region = (per_token * weights["edit"]).sum() / weights["edit"].sum()
++        outside_region = (per_token * weights["outside"]).sum() / weights["outside"].sum()
++        return edit_region, outside_region, n_in, n_out, "debias_fallback_continuous"
++    edit_region = per_token[hard_in].mean()
++    outside_region = per_token[~hard_in].mean()
++    return edit_region, outside_region, n_in, n_out, "hard_partition"
++
++
++def _continuous_region_losses(per_token: torch.Tensor, weights: Mapping[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
++    edit_region = (per_token * weights["edit"]).sum() / weights["edit"].sum()
++    outside_region = (per_token * weights["outside"]).sum() / weights["outside"].sum()
++    return edit_region, outside_region
++
++
++def paired_automask_forward_loss(
++    model: torch.nn.Module,
++    data: Dict[str, Any],
++    branch_id: str,
++    branch_weights_cpu: Mapping[str, Mapping[str, torch.Tensor]],
++    autocast_context: Any,
++) -> Tuple[torch.Tensor, Dict[str, float]]:
++    """One paired branch with the v6 region-loss configuration."""
++    if branch_id not in branch_weights_cpu:
++        raise AutomaskObjectiveValidationError(f"Unknown paired branch: {branch_id}")
++    weights = branch_weights_cpu.get(branch_id)
++    if weights is None:
++        raise AutomaskObjectiveValidationError(f"No automatic-mask weights supplied for {branch_id}")
++    partition_error = _validate_partition(weights)
++    edit_weight = float(_STATE["edit_weight"])
++    debias = bool(_STATE["debias"])
++    with autocast_context(model):
++        output = model(**data)
++    mse = output.get("mse")
++    if mse is None or mse.ndim != 2 or tuple(mse.shape) != (EXPECTED_TARGET_TOKENS, FLOW_CHANNELS):
++        raise RuntimeError(
++            f"Expected branch target-flow MSE [{EXPECTED_TARGET_TOKENS}, {FLOW_CHANNELS}], "
++            f"got {None if mse is None else list(mse.shape)}"
++        )
++    per_token = mse.float().mean(dim=-1)
++    device, dtype = per_token.device, per_token.dtype
++    on_device = {
++        label: weights[label].to(device=device, dtype=dtype)
++        for label in ("edit", "outside")
++    }
++
++    region_mode = "continuous"
++    if debias:
++        edit_region, outside_region, n_in, n_out, region_mode = _hard_region_losses(per_token, on_device)
++        if region_mode == "hard_partition":
++            recomposed = (n_in * edit_region + n_out * outside_region) / EXPECTED_TARGET_TOKENS
++        else:
++            recomposed = sum(
++                (on_device[label].sum() / EXPECTED_TARGET_TOKENS) * region
++                for label, region in (("edit", edit_region), ("outside", outside_region))
++            )
++    else:
++        edit_region, outside_region = _continuous_region_losses(per_token, on_device)
++        recomposed = sum(
++            (on_device[label].sum() / EXPECTED_TARGET_TOKENS) * region
++            for label, region in (("edit", edit_region), ("outside", outside_region))
++        )
++
++    native = per_token.mean()
++    recomposition_error = torch.abs(recomposed - native)
++    tolerance = 2e-6 * torch.maximum(native.detach().abs(), torch.ones_like(native))
++    if recomposition_error.detach() > tolerance:
++        raise RuntimeError(
++            f"v6 region partition failed to recompose native target-flow MSE: {float(recomposition_error)}"
++        )
++
++    region_loss = edit_weight * edit_region + (1.0 - edit_weight) * outside_region
++    ce = output.get("ce")
++    ce_loss = ce.float().mean() if ce is not None else torch.zeros_like(region_loss)
++    total = region_loss + ce_loss
++    # v7: expose the live region tensors for the trainer's strength regularizer
++    _LAST_EXTRACT[branch_id] = (edit_region, outside_region)
++    return total, {
++        "total": float(total.detach().cpu()),
++        "region_mse": float(region_loss.detach().cpu()),
++        "native_mse": float(native.detach().cpu()),
++        "edit_mse": float(edit_region.detach().cpu()),
++        "outside_mse": float(outside_region.detach().cpu()),
++        "weighted_edit_mse": float((edit_weight * edit_region).detach().cpu()),
++        "weighted_outside_mse": float(((1.0 - edit_weight) * outside_region).detach().cpu()),
++        "native_recomposition_error": float(recomposition_error.detach().cpu()),
++        "token_partition_max_error": partition_error,
++        "ce": float(ce_loss.detach().cpu()),
++        "region_mode": region_mode,
++        "edit_weight": edit_weight,
++        "debias": float(debias),
++    }
++
++
++def _v5_reference_forward_loss(model, data, weights_cpu, autocast_context):
++    """Direct v5 reference for the CPU selftest (identical numbers when ew=0.5)."""
++    return _v5_forward(model, data, weights_cpu, autocast_context)
+diff --git a/experiments/counterfactual_cot/e3_align_v7/run_v7.sh b/experiments/counterfactual_cot/e3_align_v7/run_v7.sh
+new file mode 100644
+index 0000000..55c51f1
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_align_v7/run_v7.sh
+@@ -0,0 +1,166 @@
++#!/usr/bin/env bash
++# E3 v7: AutoMask dual SFT + thrust-fixed alignment loss — launcher.
++#
++# Usage on the 2x A100 GPU machine (mounts /group):
++#   bash /group/40016/niightli/BAGEL/experiments/counterfactual_cot/e3_align_v7/run_v7.sh
++# Optional stages:
++#   bash run_v7.sh selftest   # CPU mock suite (no GPU needed)
++#   bash run_v7.sh preflight  # GPU machine: full manifest/objective audit, no training
++#   bash run_v7.sh smoke     # 2 optimizer steps into a throwaway output dir
++#   bash run_v7.sh train     # full 2973-step run in the background + watchdog
++#   bash run_v7.sh status    # tail the last training log lines + progress file
++#
++# v7 defaults: lambda=0.3, tau=0.1 (margin scale 1/tau=10), strength-reg on
++# (w_s=0.05, replaces v6's edit-weight rebalancing; region weights back to
++# 0.5/0.5), plateau-guard on (1000-step window around 0.69+-0.005 -> ALERT +
++# emergency checkpoint + stop), align layers 13/6/16/14, overshoot debias on,
++# general replay off.
++# Override with EXTRA_ARGS, e.g.:
++#   EXTRA_ARGS="--align-tau 0.05 --strength-reg off" bash run_v7.sh smoke
++#   EXTRA_ARGS="--init-trainable-from <final991 latest.pt>" bash run_v7.sh train
++set -uo pipefail
++
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++CFCOT="$(cd "$HERE/.." && pwd)"
++OUT="$CFCOT/outputs/gold40_automask_v7_align_fsdp_full_shard"
++SMOKE_OUT="$CFCOT/outputs/gold40_automask_v7_align_smoke"
++PROGRESS="$CFCOT/wb_e3_progress_v7.txt"
++PY=python3
++MODEL_DIR="/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT"
++MANIFEST="$CFCOT/final991_automask_v5_data/artifacts/splits/train.jsonl"
++STEPS="${E3_STEPS:-2973}"
++STAGE="${1:-train}"
++EXTRA_ARGS="${EXTRA_ARGS:-}"
++
++mkdir -p "$OUT/logs" 2>/dev/null || true
++
++write_progress() {
++  local tmp="$PROGRESS.tmp"
++  { echo "updated: $(date '+%F %T') (stage=$1)"; shift
++    for line in "$@"; do echo "$line"; done; } > "$tmp" && mv "$tmp" "$PROGRESS"
++}
++
++die() { write_progress "ERROR" "error: $*"; echo "[E3 FATAL] $*" >&2; exit 1; }
++
++gpu_preflight() {
++  command -v nvidia-smi >/dev/null || die "nvidia-smi not found (need the 2x A100 machine)"
++  nvidia-smi --L | head -2
++  [ -f "$MODEL_DIR/ema.safetensors" ] && [ -f "$MODEL_DIR/ae.safetensors" ] || die "BAGEL weights missing: $MODEL_DIR"
++  [ -f "$MANIFEST" ] || die "train manifest missing: $MANIFEST"
++}
++
++launch() { # out_dir steps extra...
++  local out_dir="$1"; shift
++  local steps="$1"; shift
++  mkdir -p "$out_dir" "$out_dir/logs"
++  local log
++  log="$out_dir/logs/train_$(date '+%Y%m%d_%H%M%S').log"
++  echo "[E3] torchrun 2-GPU -> $log"
++  nohup $PY -m torch.distributed.run --standalone --nproc_per_node=2 \
++    "$HERE/train_v7.py" --activation-checkpointing \
++      --manifest "$MANIFEST" --output-dir "$out_dir" --steps "$steps" \
++      --progress-file "$PROGRESS" $EXTRA_ARGS "$@" \
++    > "$log" 2>&1 &
++  echo $! > "$out_dir/train.pid"
++  echo "[E3] pid=$(cat "$out_dir/train.pid") log=$log"
++}
++
++watch_train() { # out_dir
++  local out_dir="$1"
++  local pid
++  pid=$(cat "$out_dir/train.pid" 2>/dev/null) || die "no train.pid under $out_dir"
++  while kill -0 "$pid" 2>/dev/null; do
++    # plateau ALERT path: the trainer writes stage=ALERT into the progress
++    # file itself; stop watchdog overwrites so the alert survives.
++    if [ -f "$out_dir/final_report.json" ] \
++      && grep -q '"status": "plateau_alert_stopped"' "$out_dir/final_report.json" 2>/dev/null; then
++      break
++    fi
++    local log last step peak align margin strength
++    log=$(ls -t "$out_dir/logs/"train_*.log 2>/dev/null | head -1)
++    last=$(grep '"event": "macro_step"' "$log" 2>/dev/null | tail -1)
++    step=$(echo "$last" | grep -o '"step": [0-9]*' | cut -d' ' -f2 | tail -1)
++    peak=$(echo "$last" | grep -o '"gpu_peak_reserved_gib": [0-9.]*' | cut -d' ' -f2 | tail -1)
++    margin=$(echo "$last" | grep -o '"target_state_align_margin": [-0-9.e]*' | cut -d' ' -f2 | tail -1)
++    align=$(echo "$last" | grep -o '"target_state_align_loss": [0-9.e]*' | cut -d' ' -f2 | tail -1)
++    strength=$(echo "$last" | grep -o '"target_state_strength_est": [-0-9.e]*' | cut -d' ' -f2 | tail -1)
++    write_progress "train" \
++      "step: ${step:-0}/${STEPS}  peak_gib: ${peak:-n/a}" \
++      "target align: loss=${align:-n/a} margin=${margin:-n/a}" \
++      "strength_est: ${strength:-n/a}" \
++      "log: $log"
++    sleep 30
++  done
++  local log
++  log=$(ls -t "$out_dir/logs/"train_*.log 2>/dev/null | head -1)
++  if grep -q '"status": "plateau_alert_stopped"' "$out_dir/final_report.json" 2>/dev/null; then
++    # the trainer already wrote stage=ALERT into $PROGRESS; surface it and
++    # stop without overwriting the alert block.
++    echo "[E3] PLATEAU ALERT — training stopped by plateau_guard; see $PROGRESS"
++    echo "[E3] alert details: $out_dir/final_report.json (plateau_alert) + emergency latest.pt"
++    tail -20 "$log" 2>/dev/null
++    return 0
++  fi
++  if grep -q '"status": "completed"' "$out_dir/final_report.json" 2>/dev/null; then
++    write_progress "DONE" "final_report: $out_dir/final_report.json" "log: $log"
++    echo "[E3] TRAIN DONE"
++  else
++    write_progress "ERROR" "trainer exited without final_report; inspect $log"
++    tail -20 "$log" 2>/dev/null
++    return 1
++  fi
++}
++
++stage_selftest() {
++  write_progress "selftest" "CPU mock suite running ..."
++  $PY "$HERE/selftest_v7.py" 2>&1 | tee "$HERE/selftest_last.log" | grep -E "^(PASS|FAIL|ALL)" \
++    || die "selftest failed; see $HERE/selftest_last.log"
++  write_progress "selftest_done" "all CPU mock tests passed"
++}
++
++stage_preflight() {
++  gpu_preflight
++  write_progress "preflight" "manifest + objective audit running ..."
++  $PY "$HERE/train_v7.py" --preflight-only --manifest "$MANIFEST" --output-dir "$OUT" $EXTRA_ARGS \
++    2>&1 | tee "$OUT/logs/preflight.log" | tail -5 \
++    || die "preflight failed; see $OUT/logs/preflight.log"
++  echo "[E3] preflight OK -> $OUT/preflight.json"
++}
++
++stage_smoke() {
++  gpu_preflight
++  write_progress "smoke" "2 optimizer steps, fresh output dir ..."
++  launch "$SMOKE_OUT" 2 --checkpoint-every 2 --resume none
++  watch_train "$SMOKE_OUT" || die "smoke failed"
++  echo "[E3] smoke artifacts: $SMOKE_OUT/final_report.json"
++}
++
++stage_train() {
++  gpu_preflight
++  if [ -f "$OUT/final_report.json" ] && grep -q '"status": "completed"' "$OUT/final_report.json"; then
++    echo "[E3] already complete, skip"; write_progress "DONE" "final_report: $OUT/final_report.json"; return 0
++  fi
++  launch "$OUT" "$STEPS" --checkpoint-every 200
++  watch_train "$OUT" || die "training failed"
++}
++
++stage_status() {
++  echo "== progress file =="; cat "$PROGRESS" 2>/dev/null || echo "(none)"
++  local log
++  log=$(ls -t "$OUT/logs/"train_*.log 2>/dev/null | head -1)
++  if [ -n "${log:-}" ]; then
++    echo "== last 5 macro steps ($log) =="
++    grep '"event": "macro_step"' "$log" | tail -5
++  else
++    echo "(no train log under $OUT/logs)"
++  fi
++}
++
++case "$STAGE" in
++  selftest) stage_selftest ;;
++  preflight) stage_preflight ;;
++  smoke) stage_smoke ;;
++  train) stage_train ;;
++  status) stage_status ;;
++  *) die "unknown stage: $STAGE (selftest|preflight|smoke|train|status)" ;;
++esac
+diff --git a/experiments/counterfactual_cot/e3_align_v7/selftest_v7.py b/experiments/counterfactual_cot/e3_align_v7/selftest_v7.py
+new file mode 100644
+index 0000000..bc37470
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_align_v7/selftest_v7.py
+@@ -0,0 +1,878 @@
++#!/usr/bin/env python3
++"""CPU selftest for the E3 v7 thrust-fixed alignment trainer (no GPU, no model weights).
++
++Covers the v6 acceptance axes plus the four v7 changes:
++
++1. loss numerical correctness: sigmoid-margin math, monotonicity, weighted
++   means, hard/continuous region identities, v5-objective equivalence when the
++   anti-overshoot switches are off;
++2. TEMPERATURE GRADIENT NUMERICS: at the v6-observed plateau margins
++   (m=0.005), tau=0.1 amplifies d(-log sigmoid(m/tau))/dm by ~1/tau = ~10x
++   vs the untampered (scale 1.0) gradient; combined with lambda 0.1 -> 0.3
++   the effective align-gradient scale-up vs v6 defaults is ~30x;
++3. STRENGTH REGULARIZER NUMERICS: L_str = w_s*|E/O.detach() - 1| value and
++   gradient directions, the detached-anchor property (outside term has no
++   grad), and the live region-tensor stash of the v7 objective;
++4. PLATEAU GUARD: pure plateau_check semantics (band escape, trend escape,
++   window, alert payload);
++plus gradient flow (detach_mu; NON-REENTRANT activation checkpointing +
++forward-hook parity — the mechanism train_v7 relies on) and CLI/wiring.
++
++Run:  python3 selftest_v7.py      (exit 0 = all pass)
++"""
++from __future__ import annotations
++
++import copy
++import json
++import math
++import sys
++import traceback
++from contextlib import nullcontext
++from pathlib import Path
++from typing import Any, Dict, List, Tuple
++from unittest import mock
++
++import torch
++from torch import nn
++
++BAGEL_ROOT = Path(__file__).resolve().parents[3]
++if str(BAGEL_ROOT) not in sys.path:
++    sys.path.insert(0, str(BAGEL_ROOT))
++
++from experiments.counterfactual_cot.e3_align_v6 import align_loss as AL
++from experiments.counterfactual_cot.e3_align_v7 import align_objective as OBJ
++from experiments.counterfactual_cot.e3_align_v7 import train_v7
++
++V5_MANIFEST = BAGEL_ROOT / "experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/gold40_source_target_automask_v5.jsonl"
++LOCAL_LLM = BAGEL_ROOT / "models/BAGEL-7B-MoT"
++
++
++class MockTokenizer:
++    """Char-level fallback so span tests still run without the real tokenizer."""
++
++    def encode(self, text: str) -> List[int]:
++        return [ord(ch) % 100_000 for ch in text]
++
++    def decode(self, ids: List[int]) -> str:
++        return "".join(chr(int(i)) if 0 <= int(i) < 0x10FFFF else "?" for i in ids)
++
++
++_COUNTING = {"encode": 0}
++
++
++class CountingTokenizer(MockTokenizer):
++    def __init__(self, inner: Any) -> None:
++        self.inner = inner
++
++    def encode(self, text: str) -> List[int]:
++        _COUNTING["encode"] += 1
++        return self.inner.encode(text)
++
++    def decode(self, ids: List[int]) -> str:
++        return self.inner.decode(ids)
++
++
++def _load_tokenizer() -> Tuple[Any, str]:
++    if (LOCAL_LLM / "tokenizer.json").is_file():
++        try:
++            from experiments.counterfactual_cot.training.smoke_train import _load_tokenizer as _load
++
++            tokenizer, _, _ = _load(str(LOCAL_LLM))
++            return tokenizer, "real"
++        except Exception as exc:  # noqa: BLE001
++            print(f"  [warn] real tokenizer load failed ({exc!r}); using mock")
++    return MockTokenizer(), "mock"
++
++
++def _first_manifest_record() -> Dict[str, Any]:
++    with V5_MANIFEST.open("r", encoding="utf-8") as handle:
++        return json.loads(handle.readline())
++
++
++def _render_prompt(record: Dict[str, Any], state_id: str) -> str:
++    from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5.paired_data import render_state_prompt
++
++    return render_state_prompt(record, state_id)
++
++
++# ---------------------------------------------------------------------------
++# 1. span locating
++# ---------------------------------------------------------------------------
++def test_find_changed_occurrences() -> None:
++    prompt = "Source CoT: a.object=left_region; b.count=2\nTarget CoT: a.object=right_region; b.count=2"
++    occ = AL.find_changed_occurrences(prompt, "right_region")
++    assert occ == [(prompt.find("=right_region") + 1, prompt.find("=right_region") + 1 + len("right_region"))], occ
++    assert AL.find_changed_occurrences(prompt, "missing_value") == []
++    both = AL.find_changed_occurrences(prompt, "b.count")  # not anchored -> plain fallback hits
++    assert both, "fallback substring path should hit"
++
++
++def test_target_cot_occurrences() -> None:
++    record = _first_manifest_record()
++    for state_id, value_key in (("source_state", "old_value"), ("target_state", "new_value")):
++        value = record["intervention"][value_key]
++        prompt = _render_prompt(record, state_id)
++        spans, source = AL.target_cot_occurrences(prompt, value)
++        assert spans, f"{state_id}: value {value!r} not located in prompt"
++        assert source == "target_cot", source
++        marker = prompt.rfind("Target CoT:")
++        for start, _end in spans:
++            assert start >= marker + len("Target CoT:"), "occurrence must be inside the Target CoT line"
++        # the other state's value must not be picked up in the target prompt's Target CoT line
++    other = record["intervention"]["old_value" if record["intervention"].get("old_value") != record["intervention"].get("new_value") else "new_value"]
++    prompt = _render_prompt(record, "target_state")
++    spans, source = AL.target_cot_occurrences(prompt, other)
++    if spans:
++        assert source in ("target_cot", "full_prompt")
++    else:
++        assert source == "none"
++
++
++def test_state_changed_value() -> None:
++    record = _first_manifest_record()
++    old_value = record["intervention"].get("old_value")
++    new_value = record["intervention"].get("new_value")
++    if old_value != new_value:
++        assert AL.state_changed_value(record, "source_state") == str(old_value)
++        assert AL.state_changed_value(record, "target_state") == str(new_value)
++    assert AL.state_changed_value({"intervention": {}}, "target_state") is None
++
++
++def test_span_to_token_range_real_tokenizer() -> None:
++    tokenizer, kind = _load_tokenizer()
++    record = _first_manifest_record()
++    value = str(record["intervention"]["new_value"])
++    prompt = _render_prompt(record, "target_state")
++    spans, source = AL.changed_token_spans(tokenizer, prompt, value)
++    assert spans and source == "target_cot", (spans, source)
++    text_ids = tokenizer.encode(prompt)
++    covered = "".join(tokenizer.decode(text_ids[a:b]) for a, b in spans)
++    assert value.lower() in covered.lower().replace(" ", ""), (value, covered[:200])
++    print(f"    tokenizer={kind} spans={spans} covered={covered.strip()[:60]!r}")
++
++
++def test_target_cache() -> None:
++    tokenizer = CountingTokenizer(MockTokenizer())
++    cache = AL.AlignTargetCache(tokenizer, capacity=2)
++    prompt = "Target CoT: a.object=right_region"
++    n_occurrences = len(AL.find_changed_occurrences(prompt, "right_region"))
++    assert n_occurrences >= 1
++    _COUNTING["encode"] = 0
++    entry1 = cache.entry("p1", "target_state", prompt, "right_region")
++    entry2 = cache.entry("p1", "target_state", prompt, "right_region")
++    assert entry1 is entry2
++    assert entry1["spans"], "span must be located for a cache entry"
++    expected_encodes = 1 + 2 * n_occurrences  # prompt encode + start/end prefix encodes per occurrence
++    assert _COUNTING["encode"] == expected_encodes, (_COUNTING["encode"], expected_encodes)
++    before = _COUNTING["encode"]
++    cache.entry("p2", "target_state", prompt, "right_region")  # capacity 2 -> evicts p1
++    cache.entry("p3", "target_state", prompt, "right_region")
++    assert _COUNTING["encode"] > before, "cache misses must re-encode"
++
++
++# ---------------------------------------------------------------------------
++# 2. packed layout
++# ---------------------------------------------------------------------------
++def _synthetic_packed(prompt_text_ids: List[int], n_vae: int = 4096, n_vit: int = 4900):
++    so_i, eo_i, bos, eos = 151666, 151667, 151643, 151645  # arbitrary distinct ids
++    # text channel order: SOI/EOI(src vae) SOI/EOI(vit) bos prompt eos SOI/EOI(tgt vae)
++    packed_text_ids = [so_i, eo_i, so_i, eo_i, bos] + list(prompt_text_ids) + [eos, so_i, eo_i]
++    vit_last = 4098 + n_vit  # vit tokens occupy 4099..vit_last
++    packed_vit = list(range(4099, vit_last + 1))
++    text_len = len(prompt_text_ids)
++    mse_start = vit_last + text_len + 5  # EOI + bos + eos + SOI + 1 (first latent)
++    mse = list(range(mse_start, mse_start + n_vae))
++    return packed_text_ids, packed_vit, mse
++
++
++def test_derive_prompt_layout() -> None:
++    prompt_ids = [11, 12, 13, 14, 15, 16]
++    packed_text_ids, packed_vit, mse = _synthetic_packed(prompt_ids)
++    layout = AL.derive_prompt_layout(packed_text_ids, packed_vit, mse, prompt_ids)
++    assert layout["n_text"] == 6, layout
++    assert layout["bos_pos"] == 4098 + 4900 + 2, layout  # vit EOI then bos
++    assert mse[0] == layout["bos_pos"] + 6 + 2 + 1  # prompt + eos + SOI + 1
++    try:
++        AL.derive_prompt_layout(packed_text_ids, packed_vit, mse, prompt_ids[:-1])
++        raise AssertionError("mismatched prompt ids must raise")
++    except RuntimeError:
++        pass
++    try:
++        AL.derive_prompt_layout(packed_text_ids, packed_vit, mse, prompt_ids[:-1] + [99])
++        raise AssertionError("different prompt ids must raise")
++    except RuntimeError:
++        pass
++    try:
++        AL.derive_prompt_layout(packed_text_ids[:4], packed_vit, mse, prompt_ids)
++        raise AssertionError("short packed ids must raise")
++    except RuntimeError:
++        pass
++
++
++def test_region_vectors_and_token_index() -> None:
++    edit = torch.tensor([0.0, 1.0, 0.5, 0.5])
++    outside = 1.0 - edit
++    mse_positions = torch.tensor([6, 7, 8, 9])
++    w_in, w_out = AL.build_region_weight_vectors(edit, outside, 12, mse_positions, torch.device("cpu"), torch.float32)
++    assert w_in.tolist() == [0.0] * 6 + [0.0, 1.0, 0.5, 0.5] + [0.0, 0.0]
++    assert torch.allclose(w_in[mse_positions] + w_out[mse_positions], torch.ones(4)), "partition at latent positions"
++    assert float(w_in.sum()) == 2.0 and float(w_out.sum()) == 2.0
++    outside_mask = torch.ones(12, dtype=torch.bool)
++    outside_mask[mse_positions] = False
++    assert float(w_in[outside_mask].abs().sum()) == 0.0 and float(w_out[outside_mask].abs().sum()) == 0.0
++    index = AL.build_token_index([(1, 2), (4, 5)], bos_pos=100, device=torch.device("cpu"))
++    assert index.tolist() == [102, 105], index.tolist()
++    try:
++        AL.build_token_index([], 100, torch.device("cpu"))
++        raise AssertionError("empty spans must raise")
++    except RuntimeError:
++        pass
++
++
++def test_weighted_mean() -> None:
++    torch.manual_seed(7)
++    hidden = torch.randn(64, 8)
++    weights = torch.rand(64)
++    reference = (hidden * weights[:, None]).sum(0) / weights.sum()
++    got = AL._weighted_mean(hidden, weights)
++    assert torch.allclose(got, reference, atol=1e-6)
++    got_bf16 = AL._weighted_mean(hidden.bfloat16(), weights.bfloat16()).float()
++    assert torch.allclose(got_bf16, reference, atol=5e-2), "bf16 GEMV should stay within 5% of fp32 reference"
++
++
++# ---------------------------------------------------------------------------
++# 3. loss math
++# ---------------------------------------------------------------------------
++def _make_stash(sign: float, dtype: torch.dtype = torch.float32, requires_grad: bool = True):
++    """Deterministic construction: rows are distinct unit basis vectors e_0..e_4
++    (dim 8); mu_in is +/- the all-ones direction (cos = +/- 1/sqrt(8) per row);
++    mu_out is e_7 (orthogonal to every row, cos = 0).  Margin per row is
++    therefore exactly sign / sqrt(8) before margin_scale."""
++    rows = torch.zeros(5, 8, dtype=dtype)
++    for i in range(5):
++        rows[i, i] = 1.0
++    mu_in = torch.full((8,), sign / math.sqrt(8.0), dtype=dtype)
++    mu_out = torch.zeros(8, dtype=dtype)
++    mu_out[7] = 1.0
++    if requires_grad:
++        rows.requires_grad_(True)
++        mu_in.requires_grad_(True)
++        mu_out.requires_grad_(True)
++    return rows, mu_in, mu_out
++
++
++def test_align_loss_math() -> None:
++    unit = 1.0 / math.sqrt(8.0)
++    # exact identity: loss == -log sigmoid(margin), margin == sign/sqrt(8)
++    rows, mu_in, mu_out = _make_stash(+1.0)
++    loss, metrics = AL.align_loss_from_stash({13: (rows, mu_in, mu_out)}, [13], 1.0)
++    assert math.isclose(metrics["align_margin"], unit, rel_tol=1e-5), metrics["align_margin"]
++    assert math.isclose(loss.item(), -math.log(math.exp(unit) / (1 + math.exp(unit))), rel_tol=1e-5)
++    assert math.isclose(metrics["align_cos_in"], unit, rel_tol=1e-5)
++    assert math.isclose(metrics["align_cos_out"], 0.0, abs_tol=1e-6)
++
++    # sign ordering + bounds
++    _, metrics_positive = AL.align_loss_from_stash({6: _make_stash(+1.0)}, [6], 1.0)
++    _, metrics_negative = AL.align_loss_from_stash({6: _make_stash(-1.0)}, [6], 1.0)
++    assert metrics_positive["align_margin"] > 0 > metrics_negative["align_margin"]
++    assert 0.0 < metrics_positive["align_loss"] < math.log(2.0) < metrics_negative["align_loss"]
++
++    # margin scale = inverse temperature
++    _, metrics_scaled = AL.align_loss_from_stash({6: _make_stash(+1.0)}, [6], 5.0)
++    assert math.isclose(metrics_scaled["align_margin"], 5.0 * unit, rel_tol=1e-5)
++    assert metrics_scaled["align_loss"] < metrics_positive["align_loss"]
++
++    # bf16 stash tolerated
++    loss_bf16, metrics_bf16 = AL.align_loss_from_stash({16: _make_stash(+1.0, dtype=torch.bfloat16)}, [16], 1.0)
++    assert torch.isfinite(loss_bf16) and metrics_bf16["align_skipped"] == 0
++    assert abs(metrics_bf16["align_margin"] - unit) < 1e-2
++
++    # multi-layer averaging
++    loss_multi, metrics_multi = AL.align_loss_from_stash(
++        {13: _make_stash(+1.0), 6: _make_stash(+1.0), 16: _make_stash(-1.0), 14: _make_stash(+1.0)},
++        [13, 6, 16, 14],
++        1.0,
++    )
++    assert metrics_multi["align_layers_used"] == 4
++    assert all(f"align_margin_L{index}" in metrics_multi for index in (13, 6, 16, 14))
++    expected = sum(metrics_multi[f"align_margin_L{index}"] for index in (13, 6, 16, 14)) / 4
++    assert math.isclose(metrics_multi["align_margin"], expected, rel_tol=1e-5)
++
++    # skip paths
++    loss_none, metrics_none = AL.align_loss_from_stash({}, [13], 1.0)
++    assert loss_none is None and metrics_none["align_skipped"] == 1
++    empty = AL.empty_align_metrics("lambda_zero")
++    assert empty["align_loss"] == 0.0 and empty["align_skip_reason"] == "lambda_zero"
++    try:
++        AL.align_loss_from_stash({13: (rows, mu_in, mu_out)}, [13], 0.0)
++        raise AssertionError("non-positive scale must raise")
++    except ValueError:
++        pass
++
++
++def test_align_grad_flow_and_detach() -> None:
++    rows, mu_in, mu_out = _make_stash(+1.0)
++    loss, _ = AL.align_loss_from_stash({13: (rows, mu_in, mu_out)}, [13], 1.0)
++    loss.backward()
++    assert rows.grad is not None and torch.isfinite(rows.grad).all()
++    assert mu_in.grad is not None and mu_out.grad is not None
++    assert torch.isfinite(mu_in.grad).all() and torch.isfinite(mu_out.grad).all()
++    # detached mu: gradient still reaches the token side
++    rows2, mu_in2, mu_out2 = _make_stash(+1.0)
++    mu_in2, mu_out2 = mu_in2.detach(), mu_out2.detach()
++    loss2, _ = AL.align_loss_from_stash({13: (rows2, mu_in2, mu_out2)}, [13], 1.0)
++    loss2.backward()
++    assert rows2.grad is not None and torch.isfinite(rows2.grad).all()
++    assert torch.allclose(rows2.grad, rows.grad, atol=1e-6), "detached mu must not change token-side grads"
++
++
++# ---------------------------------------------------------------------------
++# 4. activation-checkpointing parity (the mechanism train_v7 depends on)
++# ---------------------------------------------------------------------------
++class _Block(nn.Module):
++    def __init__(self, dim: int) -> None:
++        super().__init__()
++        self.fc1 = nn.Linear(dim, dim)
++        self.fc2 = nn.Linear(dim, dim)
++
++    def forward(self, x: torch.Tensor) -> torch.Tensor:
++        return x + self.fc2(torch.nn.functional.gelu(self.fc1(x)))
++
++
++class _Stack(nn.Module):
++    def __init__(self, dim: int, depth: int) -> None:
++        super().__init__()
++        self.blocks = nn.ModuleList([_Block(dim) for _ in range(depth)])
++
++    def forward(self, x: torch.Tensor) -> torch.Tensor:
++        for block in self.blocks:
++            x = block(x)
++        return x
++
++
++def _ac_parity_inner() -> None:
++    from functools import partial
++
++    from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
++        CheckpointImpl,
++        apply_activation_checkpointing,
++        checkpoint_wrapper,
++    )
++
++    torch.manual_seed(0)
++    dim, seq_len = 8, 16
++    baseline = _Stack(dim, 3)
++    wrapped = copy.deepcopy(baseline)
++    apply_activation_checkpointing(
++        wrapped,
++        checkpoint_wrapper_fn=partial(checkpoint_wrapper, checkpoint_impl=CheckpointImpl.NO_REENTRANT),
++        check_fn=lambda module: isinstance(module, _Block),
++    )
++    n_wrapped = sum(1 for module in wrapped.modules() if type(module).__name__ == "CheckpointWrapper")
++    assert n_wrapped == 3, f"expected 3 checkpoint wrappers, got {n_wrapped}"
++    assert sum(1 for module in wrapped.modules() if isinstance(module, _Block)) == 3
++
++    token_index = torch.tensor([2, 5, 7])
++    weights_in = torch.zeros(seq_len)
++    weights_in[10:] = torch.rand(6)
++    weights_out = torch.zeros(seq_len)
++    weights_out[:5] = torch.rand(5)
++    assert weights_in.sum() > 0 and weights_out.sum() > 0
++
++    hooks = AL.AlignHookManager([wrapped.blocks[1]], [1])
++    hooks.install()
++    hooks.configure_forward(token_index, weights_in, weights_out, detach_mu=False)
++
++    x = torch.randn(seq_len, dim, requires_grad=True)
++    out_wrapped = wrapped(x)
++    assert hooks.configured and 1 in hooks.stash
++    h_tok, mu_in, mu_out = hooks.stash[1]
++    assert h_tok.requires_grad and mu_in.requires_grad and mu_out.requires_grad, \
++        "hook tensors must stay autograd-connected under NON_REENTRANT activation checkpointing"
++    assert h_tok.shape == (3, dim)
++    stash_id = id(h_tok)
++    sft_wrapped = out_wrapped.square().mean()
++    align_wrapped, metrics = AL.align_loss_from_stash(hooks.stash, [1], 1.0)
++    assert align_wrapped is not None and metrics["align_tokens"] == 3
++    (sft_wrapped + 0.1 * align_wrapped).backward()
++    assert id(hooks.stash[1][0]) == stash_id, "recompute during backward must not swap stashed tensors"
++
++    # baseline (no checkpointing) reproduces identical gradients
++    x_base = x.detach().clone().requires_grad_(True)
++    hidden = baseline.blocks[0](x_base)
++    mid = baseline.blocks[1](hidden)
++    reference_h_tok = mid.index_select(0, token_index)
++    reference_mu_in = AL._weighted_mean(mid, weights_in)
++    reference_mu_out = AL._weighted_mean(mid, weights_out)
++    ref_stash = {1: (reference_h_tok, reference_mu_in, reference_mu_out)}
++    ref_align, _ = AL.align_loss_from_stash(ref_stash, [1], 1.0)
++    out_baseline = baseline.blocks[2](mid)
++    (out_baseline.square().mean() + 0.1 * ref_align).backward()
++
++    assert torch.allclose(x_base.grad, x.grad, atol=1e-5), "input grads diverge between AC and baseline"
++    for (name_a, param_a), (name_b, param_b) in zip(baseline.named_parameters(), wrapped.named_parameters()):
++        assert name_a == _strip_wrapper_names(name_b), (name_a, name_b)
++        assert param_a.grad is not None and param_b.grad is not None, name_a
++        assert torch.allclose(param_a.grad, param_b.grad, atol=1e-5), f"grad mismatch at {name_a}"
++    print("    AC parity: input + all block params match non-checkpointed baseline (atol 1e-5)")
++
++
++def _strip_wrapper_names(name: str) -> str:
++    for fragment in ("_checkpoint_wrapped_module.", "_fsdp_wrapped_module."):
++        name = name.replace(fragment, "")
++    return name.replace("..", ".").strip(".")
++
++
++def test_hook_noop_when_unconfigured() -> None:
++    torch.manual_seed(1)
++    stack = _Stack(8, 2)
++    hooks = AL.AlignHookManager([stack.blocks[1]], [1])
++    hooks.install()
++    out = stack(torch.randn(16, 8))
++    out.sum().backward()
++    assert hooks.stash == {} and hooks.hook_calls == 1, "unconfigured hooks must stash nothing"
++    hooks.remove()
++    out = stack(torch.randn(16, 8))
++    assert hooks.hook_calls == 1, "removed hooks must not fire"
++
++
++# ---------------------------------------------------------------------------
++# 5. objective module
++# ---------------------------------------------------------------------------
++class _MockModel(nn.Module):
++    def __init__(self, mse: torch.Tensor, ce: torch.Tensor) -> None:
++        super().__init__()
++        self._mse = mse
++        self._ce = ce
++
++    def forward(self, **data: Any) -> Dict[str, torch.Tensor]:
++        return {"mse": self._mse, "ce": self._ce}
++
++
++def _craft_weights() -> Dict[str, torch.Tensor]:
++    torch.manual_seed(11)
++    edit = torch.zeros(4096)
++    edit[100:160] = torch.linspace(0.2, 1.0, 60)  # a soft mask blob
++    edit[200:220] = 1.0
++    outside = 1.0 - edit
++    return {"edit": edit, "outside": outside}
++
++
++def test_objective_matches_v5_when_switches_off() -> None:
++    from experiments.counterfactual_cot.gold40_automask_v5_data.automask_objective import automask_forward_loss as v5_forward
++
++    torch.manual_seed(5)
++    mse = torch.rand(4096, 64)
++    ce = torch.rand(())
++    weights = _craft_weights()
++    model = _MockModel(mse, ce)
++    v5_total, v5_metrics = v5_forward(model, {}, weights, lambda _m: nullcontext())
++    OBJ.configure_overshoot(edit_weight=0.5, debias=False)
++    v6_total, v6_metrics = OBJ.paired_automask_forward_loss(model, {}, "target_state", {"source_state": weights, "target_state": weights}, lambda _m: nullcontext())
++    assert math.isclose(v5_total.item(), v6_total.item(), rel_tol=1e-6), (v5_total.item(), v6_total.item())
++    for key in ("edit_mse", "outside_mse", "native_mse", "ce", "total"):
++        assert math.isclose(v5_metrics[key], v6_metrics[key], rel_tol=1e-6), key
++    assert v6_metrics["region_mode"] == "continuous" and v6_metrics["edit_weight"] == 0.5
++
++
++def test_objective_debias_and_rebalance() -> None:
++    torch.manual_seed(6)
++    mse = torch.rand(4096, 64)
++    ce = torch.rand(())
++    weights = _craft_weights()
++    per_token = mse.mean(-1)
++    hard_in = weights["edit"] >= OBJ.HARD_IN_THRESHOLD
++    n_in = int(hard_in.sum())
++    model = _MockModel(mse, ce)
++    OBJ.configure_overshoot(edit_weight=0.4, debias=True)
++    total, metrics = OBJ.paired_automask_forward_loss(model, {}, "target_state", {"source_state": weights, "target_state": weights}, lambda _m: nullcontext())
++    assert metrics["region_mode"] == "hard_partition"
++    assert metrics["edit_weight"] == 0.4
++    expected_edit = per_token[hard_in].mean().item()
++    expected_outside = per_token[~hard_in].mean().item()
++    assert math.isclose(metrics["edit_mse"], expected_edit, rel_tol=1e-6)
++    assert math.isclose(metrics["outside_mse"], expected_outside, rel_tol=1e-6)
++    assert math.isclose(metrics["region_mse"], 0.4 * expected_edit + 0.6 * expected_outside, rel_tol=1e-6)
++    # exact count identity backs the internal recomposition check
++    native = per_token.mean().item()
++    assert math.isclose(native, (n_in * expected_edit + (4096 - n_in) * expected_outside) / 4096, rel_tol=1e-6)
++    assert n_in > 0
++
++
++def test_objective_debias_fallback_and_validation() -> None:
++    torch.manual_seed(7)
++    mse = torch.rand(4096, 64)
++    weights = {"edit": torch.full((4096,), 0.9), "outside": torch.full((4096,), 0.1)}
++    model = _MockModel(mse, torch.rand(()))
++    OBJ.configure_overshoot(edit_weight=0.4, debias=True)
++    _, metrics = OBJ.paired_automask_forward_loss(model, {}, "target_state", {"source_state": weights, "target_state": weights}, lambda _m: nullcontext())
++    assert metrics["region_mode"] == "debias_fallback_continuous", "empty hard outside region must fall back"
++    for bad in (0.0, 1.0, -0.2, 1.5):
++        try:
++            OBJ.configure_overshoot(edit_weight=bad, debias=False)
++            raise AssertionError(f"edit_weight={bad} must raise")
++        except Exception as exc:  # noqa: BLE001
++            assert "edit_weight" in str(exc)
++    OBJ.configure_overshoot(edit_weight=0.4, debias=False)
++    try:
++        OBJ.paired_automask_forward_loss(model, {}, "unknown_state", {"target_state": weights}, lambda _m: nullcontext())
++        raise AssertionError("unknown branch must raise")
++    except Exception:  # noqa: BLE001
++        pass
++
++
++def test_objective_build_matches_v5_partition() -> None:
++    from experiments.counterfactual_cot.gold40_automask_v5_data.automask_objective import build_paired_automask_objective as v5_build
++
++    record = _first_manifest_record()
++    spec, branch_weights = OBJ.build_paired_automask_objective(record)
++    spec_ref, branch_ref = v5_build(record)
++    assert spec["objective_id"] == spec_ref["objective_id"]
++    assert set(branch_weights) == set(branch_ref) == {"source_state", "target_state"}
++    assert branch_weights["source_state"]["edit"] is branch_weights["target_state"]["edit"]
++    assert torch.equal(branch_weights["target_state"]["edit"], branch_ref["target_state"]["edit"])
++    assert torch.equal(branch_weights["target_state"]["outside"], branch_ref["target_state"]["outside"])
++    assert spec["token_grid_hw"] == [64, 64]
++    edit_mass = float(branch_weights["target_state"]["edit"].sum())
++    print(f"    partition OK: edit_mass={edit_mass:.1f} tokens of 4096")
++
++
++# ---------------------------------------------------------------------------
++# 6. replay records + CLI
++# ---------------------------------------------------------------------------
++def test_validate_replay_record() -> None:
++    ok = {"pair_id": "g1", "source": {"prompt": "a cat", "cot_text": "", "image": "/tmp/x.png"}}
++    assert OBJ is not None and AL.validate_replay_record(ok)["pair_id"] == "g1"
++    for bad in (
++        {"pair_id": "", "source": {"prompt": "a", "cot_text": "", "image": "x"}},
++        {"pair_id": "g", "source": {"prompt": "a", "cot_text": "", "image": ""}},
++        {"pair_id": "g", "source": {"cot_text": "", "image": "x"}},
++        {"pair_id": "g"},
++    ):
++        try:
++            AL.validate_replay_record(bad)
++            raise AssertionError(f"bad record must raise: {bad}")
++        except ValueError:
++            pass
++
++
++def test_cli_defaults_and_guards() -> None:
++    base = ["train_v7.py", "--activation-checkpointing"]  # mandatory for any real (non-preflight) run
++    with mock.patch.object(sys, "argv", base):
++        args = train_v7._parse_args()
++    # v7 thrust defaults
++    assert args.align_lambda == 0.3, args.align_lambda
++    assert args.align_tau == 0.1 and args.effective_margin_scale == 10.0
++    assert args.align_margin_scale == 10.0, "args.align_margin_scale must carry the effective scale"
++    assert args.align_layers_list == [13, 6, 16, 14]
++    assert args.align_detach_mu is False
++    # strength regularizer defaults (replaces the v6 edit-weight rebalance)
++    assert args.strength_reg == "on" and args.strength_reg_on is True
++    assert args.strength_weight == 0.05 and args.strength_target == 1.0
++    assert args.effective_edit_weight == 0.5, "strength-reg on forces v5 0.5/0.5 region weights"
++    assert args.effective_mask_debias is True
++    # plateau watchdog defaults
++    assert args.plateau_guard == "on" and args.plateau_guard_on is True
++    assert args.plateau_window == 1000 and args.plateau_center == 0.69
++    assert args.plateau_eps == 0.005 and args.plateau_trend_eps == 1e-4
++    assert str(args.progress_file).endswith("wb_e3_progress_v7.txt")
++    assert args.general_replay_manifest is None and args.general_replay_every == 4
++    assert args.init_trainable_from is None
++    assert args.steps == 2973 and args.checkpoint_every == 200
++    with mock.patch.object(sys, "argv", ["train_v7.py", "--preflight-only"]):
++        args_preflight = train_v7._parse_args()
++    assert args_preflight.align_lambda == 0.3  # preflight-only may omit the AC flag
++    # explicit margin-scale ablation overrides 1/tau
++    with mock.patch.object(sys, "argv", base + ["--align-margin-scale", "2.0"]):
++        assert train_v7._parse_args().effective_margin_scale == 2.0
++    # strength-reg off restores the v6-style rebalance path
++    with mock.patch.object(sys, "argv", base + ["--strength-reg", "off", "--edit-loss-weight", "0.4"]):
++        args_v6_style = train_v7._parse_args()
++    assert args_v6_style.strength_reg_on is False and args_v6_style.effective_edit_weight == 0.4
++    with mock.patch.object(sys, "argv", base + ["--overshoot-fix", "off"]):
++        args_off = train_v7._parse_args()
++    assert args_off.effective_edit_weight == 0.5 and args_off.effective_mask_debias is False
++    with mock.patch.object(sys, "argv", base + ["--align-layers", "5"]):
++        assert train_v7._parse_args().align_layers_list == [5]
++    with mock.patch.object(sys, "argv", base + ["--align-lambda", "0"]):
++        assert train_v7._parse_args().align_lambda == 0.0  # lambda=0 disables alignment entirely
++    for bad_argv in (
++        ["--align-layers", "5,5"],
++        ["--align-layers", "99"],
++        ["--align-layers", ""],
++        ["--align-lambda", "-0.1"],
++        ["--align-tau", "0"],
++        ["--align-tau", "-0.5"],
++        ["--align-margin-scale", "0"],
++        ["--edit-loss-weight", "1.0"],
++        ["--edit-loss-weight", "0.4"],  # rejected: strength-reg on replaces the rebalance
++        ["--strength-weight", "-0.01"],
++        ["--strength-target", "0"],
++        ["--plateau-window", "0"],
++        ["--plateau-eps", "0"],
++        ["--plateau-trend-eps", "-1"],
++        ["--general-replay-every", "0"],
++    ):
++        try:
++            with mock.patch.object(sys, "argv", base + bad_argv):
++                train_v7._parse_args()
++            raise AssertionError(f"bad args must exit: {bad_argv}")
++        except SystemExit:
++            pass
++    try:
++        with mock.patch.object(sys, "argv", ["train_v7.py"]):  # missing mandatory AC flag
++            train_v7._parse_args()
++        raise AssertionError("missing --activation-checkpointing must exit")
++    except SystemExit:
++        pass
++
++
++def test_resume_guard_keys_cover_align_config() -> None:
++    for key in ("align_lambda", "align_layers", "align_margin_scale", "align_tau", "align_detach_mu",
++                "strength_reg", "strength_weight", "strength_target", "plateau_guard",
++                "overshoot_edit_weight", "overshoot_mask_debias", "general_replay_manifest",
++                "general_replay_every", "init_trainable_from"):
++        assert key in train_v7.RESUME_GUARD_KEYS, key
++
++
++# ---------------------------------------------------------------------------
++# 7. integration: v6-style combined step on a toy stack
++# ---------------------------------------------------------------------------
++def test_combined_step_metrics_and_grads() -> None:
++    from functools import partial
++
++    from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
++        CheckpointImpl,
++        apply_activation_checkpointing,
++        checkpoint_wrapper,
++    )
++
++    torch.manual_seed(9)
++    seq_len, dim = 24, 8
++    stack = _Stack(dim, 3)
++    apply_activation_checkpointing(
++        stack,
++        checkpoint_wrapper_fn=partial(checkpoint_wrapper, checkpoint_impl=CheckpointImpl.NO_REENTRANT),
++        check_fn=lambda module: isinstance(module, _Block),
++    )
++    token_index = torch.tensor([3, 4, 11])
++    w_in = torch.zeros(seq_len)
++    w_in[16:24] = torch.rand(8)
++    w_out = torch.zeros(seq_len)
++    w_out[0:8] = torch.rand(8)
++    hooks = AL.AlignHookManager([stack.blocks[2]], [2])
++    hooks.install()
++    hooks.configure_forward(token_index, w_in, w_out, detach_mu=False)
++    data = {"sequence_length": seq_len}
++    x = torch.randn(seq_len, dim, requires_grad=True)
++
++    def forward_loss(model, batch_data, state_id, branch_weights, autocast):
++        with autocast(model):
++            out = model(**batch_data)
++        sft = out.square().mean()
++        return sft, {"total": float(sft.detach())}
++
++    class _Ctx:
++        def __call__(self, _model):
++            return nullcontext()
++
++    sft_loss, metrics = forward_loss(stack, {"x": x}, "target_state", {}, _Ctx())
++    align_loss, align_metrics = AL.align_loss_from_stash(hooks.stash, [2], 1.0)
++    assert align_loss is not None
++    for key in ("align_loss", "align_margin", "align_cos_in", "align_cos_out", "align_tokens", "align_layers_used", "align_margin_L2"):
++        assert key in align_metrics, key
++    total = sft_loss + 0.3 * align_loss  # v7 thrust lambda
++    total.backward()
++    assert x.grad is not None and torch.isfinite(x.grad).all()
++    for name, param in stack.named_parameters():
++        assert param.grad is not None, f"missing grad: {name}"
++    hooks.clear()
++    assert hooks.stash == {} and not hooks.configured
++    row = {"target_state_align_loss": align_metrics["align_loss"]}
++    json.dumps(row)  # history rows must serialize
++    print(f"    combined step: sft={float(sft_loss):.4f} align={align_metrics['align_loss']:.4f} margin={align_metrics['align_margin']:+.4f}")
++
++
++# ---------------------------------------------------------------------------
++# 8. v7 thrust fixes: temperature gradient, strength regularizer, plateau guard
++# ---------------------------------------------------------------------------
++def test_temperature_gradient_magnitude() -> None:
++    """tau=0.1 vs tau=1 at the v6-observed margin m=0.005.
++
++    d(-log sigmoid(m/tau))/dm = -(1/tau) * sigmoid(-m/tau); at small |m| the
++    amplification vs the untampered gradient (1-softmax terms equal ~0.5) is
++    ~1/tau = 10x.  Combined with lambda 0.1 -> 0.3 the total-loss align
++    gradient scale-up vs v6 defaults is ~3 * 10 = ~30x.
++    """
++    margin = 0.005
++    m = torch.tensor(margin, requires_grad=True)
++    loss_tau = -torch.nn.functional.logsigmoid(m / 0.1)
++    loss_tau.backward()
++    grad_tau = abs(float(m.grad))
++    m2 = torch.tensor(margin, requires_grad=True)
++    loss_plain = -torch.nn.functional.logsigmoid(m2 / 1.0)
++    loss_plain.backward()
++    grad_plain = abs(float(m2.grad))
++    expected_tau = (1 / 0.1) * torch.sigmoid(torch.tensor(-margin / 0.1)).item()
++    expected_plain = torch.sigmoid(torch.tensor(-margin)).item()
++    assert math.isclose(grad_tau, expected_tau, rel_tol=1e-6), (grad_tau, expected_tau)
++    assert math.isclose(grad_plain, expected_plain, rel_tol=1e-6), (grad_plain, expected_plain)
++    ratio = grad_tau / grad_plain
++    assert 9.0 <= ratio <= 10.5, f"temperature amplification should be ~1/tau=10x, got {ratio:.3f}"
++    # lambda-scaled total-loss gradient vs v6 defaults: 0.3*grad_tau vs 0.1*grad_plain
++    combined = (0.3 * grad_tau) / (0.1 * grad_plain)
++    assert 28.0 <= combined <= 32.0, f"expected ~30x (3*lambda * 10x temp), got {combined:.2f}"
++    print(f"    grad(m=0.005): tau=0.1 -> {grad_tau:.4f}, no temp -> {grad_plain:.4f} "
++          f"(x{ratio:.2f}); with lambda 0.3 vs v6 lambda 0.1: x{combined:.1f}")
++
++    # real-path check through align_loss_from_stash: same amplification on the
++    # mu_in gradient when margin_scale = 1/tau instead of 1.0.
++    # Construction: rows are unit basis vectors e_0..e_4; mu_in is a UNIT vector
++    # with mu_in[i] = 0.005 for i in 0..4 (cos_in = 0.005 per row) and the norm
++    # carried by the last 3 components; mu_out = e_7 is orthogonal to every row
++    # (cos_out = 0) -> margin is exactly 0.005 before margin_scale.
++    small = 0.005
++    tail = math.sqrt((1.0 - 5.0 * small * small) / 3.0)
++    rows = torch.zeros(5, 8)
++    for i in range(5):
++        rows[i, i] = 1.0
++    mu_out = torch.zeros(8)
++    mu_out[7] = 1.0
++
++    def _mu_in_grad(scale: float) -> float:
++        rows_leaf = rows.clone().requires_grad_(True)
++        mu_in = torch.tensor([small] * 5 + [tail] * 3, requires_grad=True)
++        loss, metrics = AL.align_loss_from_stash({13: (rows_leaf, mu_in, mu_out)}, [13], scale)
++        assert math.isclose(metrics["align_margin"], scale * small, rel_tol=1e-6), metrics["align_margin"]
++        assert math.isclose(metrics["align_cos_out"], 0.0, abs_tol=1e-6)
++        loss.backward()
++        return float(mu_in.grad.abs().sum())
++
++    grad_scale10 = _mu_in_grad(10.0)
++    grad_scale1 = _mu_in_grad(1.0)
++    ratio_real = grad_scale10 / grad_scale1
++    assert 9.0 <= ratio_real <= 10.5, f"real-path amplification {ratio_real:.3f} should be ~10x"
++
++
++def test_strength_reg_math() -> None:
++    """L_str = w_s * |E/O.detach() - target|: values, signs, detached anchor."""
++    w_s, target = 0.05, 1.0
++    # under-edit regime (v6 observed E/O ~ 2): pushes E down, O untouched
++    edit = torch.tensor(0.6, requires_grad=True)
++    outside = torch.tensor(0.3, requires_grad=True)
++    strength = edit / outside.detach()
++    loss = w_s * torch.abs(strength - target)
++    assert math.isclose(float(loss), 0.05 * (0.6 / 0.3 - 1.0), rel_tol=1e-6)
++    loss.backward()
++    assert edit.grad is not None and float(edit.grad) > 0, "under-edit: gradient must reduce edit_mse"
++    assert outside.grad is None, "detached anchor: no gradient may reach the outside region"
++    # over-fit side (E < O): two-sided pull back up (bounded by w_s; SFT dominates)
++    edit2 = torch.tensor(0.3, requires_grad=True)
++    outside2 = torch.tensor(0.6, requires_grad=True)
++    loss2 = w_s * torch.abs(edit2 / outside2.detach() - target)
++    assert math.isclose(float(loss2), 0.05 * 0.5, rel_tol=1e-6)
++    loss2.backward()
++    assert float(edit2.grad) < 0, "over side resists further edit-region reduction"
++
++
++def test_strength_reg_real_path() -> None:
++    """The v7 objective exposes live region tensors; the trainer formula agrees."""
++    torch.manual_seed(12)
++    mse = torch.rand(4096, 64, requires_grad=True)
++    ce = torch.rand(())
++    weights = _craft_weights()
++    model = _MockModel(mse, ce)
++    OBJ.configure_overshoot(edit_weight=0.5, debias=False)
++    OBJ.clear_branch_tensors()
++    total, metrics = OBJ.paired_automask_forward_loss(
++        model, {}, "target_state", {"source_state": weights, "target_state": weights},
++        lambda _m: nullcontext(),
++    )
++    extracted = OBJ.branch_region_tensors("target_state")
++    assert extracted is not None, "forward must stash the live region tensors"
++    edit_region, outside_region = extracted
++    assert edit_region.requires_grad and outside_region.requires_grad, "stash must stay autograd-connected"
++    strength = edit_region / outside_region.detach().clamp_min(1e-6)
++    loss_str = 0.05 * torch.abs(strength - 1.0)
++    assert math.isclose(
++        float(loss_str.detach()),
++        0.05 * abs(metrics["edit_mse"] / metrics["outside_mse"] - 1.0),
++        rel_tol=1e-5,
++    ), "regularizer value must match the logged edit/outside statistics"
++    (total + loss_str).backward()
++    assert mse.grad is not None and torch.isfinite(mse.grad).all(), "L_str gradient must reach the mse leaf"
++    # stash hygiene: clearing drops the entries; unknown branches return None
++    OBJ.clear_branch_tensors()
++    assert OBJ.branch_region_tensors("target_state") is None
++    assert OBJ.branch_region_tensors("source_state") is None, "only requested branches are stashed"
++
++
++def test_plateau_guard_semantics() -> None:
++    check = train_v7.plateau_check
++    window = [0.6920 + 0.0001 * (i % 7) for i in range(1000)]  # all inside [0.685, 0.695]
++    alert = check(window, center=0.69, eps=0.005, trend_eps=1e-4)
++    assert alert is not None and alert["window"] == 1000
++    assert math.isclose(alert["band"][0], 0.685) and math.isclose(alert["band"][1], 0.695)
++    assert alert["values_min"] >= 0.685 and alert["values_max"] <= 0.695
++    # any escape from the band -> no alert (something moved)
++    escaped = list(window)
++    escaped[500] = 0.5
++    assert check(escaped, 0.69, 0.005, 1e-4) is None
++    escaped_hi = list(window)
++    escaped_hi[500] = 0.696  # just above the upper band edge
++    assert check(escaped_hi, 0.69, 0.005, 1e-4) is None
++    # downward trend within the band -> no alert (leaving the plateau)
++    declining = [0.6945 - 0.000009 * i for i in range(1000)]  # all in band, drop ~0.009
++    assert check(declining, 0.69, 0.005, 1e-4) is None
++    # noise-level drift (< trend_eps) still counts as stuck
++    drift = [0.6900 - 0.00000004 * i for i in range(1000)]  # drop 4e-5 < 1e-4
++    assert check(drift, 0.69, 0.005, 1e-4) is not None
++    # too few values -> no alert
++    assert check([0.692], 0.69, 0.005, 1e-4) is None
++    assert check([], 0.69, 0.005, 1e-4) is None
++
++
++TESTS = [
++    ("find_changed_occurrences", test_find_changed_occurrences),
++    ("target_cot_occurrences", test_target_cot_occurrences),
++    ("state_changed_value", test_state_changed_value),
++    ("span_to_token_range (real tokenizer)", test_span_to_token_range_real_tokenizer),
++    ("AlignTargetCache", test_target_cache),
++    ("derive_prompt_layout", test_derive_prompt_layout),
++    ("region vectors + token index", test_region_vectors_and_token_index),
++    ("_weighted_mean fp32/bf16", test_weighted_mean),
++    ("align loss math", test_align_loss_math),
++    ("align grad flow + detach_mu", test_align_grad_flow_and_detach),
++    ("AC parity (non-reentrant + hooks)", _ac_parity_inner),
++    ("hook no-op when unconfigured", test_hook_noop_when_unconfigured),
++    ("objective == v5 (switches off)", test_objective_matches_v5_when_switches_off),
++    ("objective debias + rebalance", test_objective_debias_and_rebalance),
++    ("objective debias fallback + validation", test_objective_debias_fallback_and_validation),
++    ("objective partition == v5", test_objective_build_matches_v5_partition),
++    ("validate_replay_record", test_validate_replay_record),
++    ("CLI defaults + guards", test_cli_defaults_and_guards),
++    ("resume guard keys", test_resume_guard_keys_cover_align_config),
++    ("combined step metrics + grads", test_combined_step_metrics_and_grads),
++    ("temperature gradient magnitude (tau vs none)", test_temperature_gradient_magnitude),
++    ("strength reg math (value + detach anchor)", test_strength_reg_math),
++    ("strength reg real path (objective stash)", test_strength_reg_real_path),
++    ("plateau guard semantics", test_plateau_guard_semantics),
++]
++
++
++def main() -> None:
++    failures = 0
++    for index, (name, func) in enumerate(TESTS, 1):
++        try:
++            func()
++            print(f"PASS {index:02d}/{len(TESTS)} {name}")
++        except Exception:  # noqa: BLE001
++            failures += 1
++            print(f"FAIL {index:02d}/{len(TESTS)} {name}")
++            traceback.print_exc()
++    print(f"{'ALL PASS' if failures == 0 else f'{failures} FAILURES'} ({len(TESTS)} tests)")
++    sys.exit(1 if failures else 0)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_align_v7/train_v7.py b/experiments/counterfactual_cot/e3_align_v7/train_v7.py
+new file mode 100644
+index 0000000..a0162a1
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_align_v7/train_v7.py
+@@ -0,0 +1,1029 @@
++#!/usr/bin/env python3
++"""Gold40 AutoMask-v7: v6 paired SFT + thrust-fixed token-region alignment.
++
++Extends the v6 trainer (e3_align_v6, which completed 2973 steps but whose
++target-state align loss hugged the log(2)=0.6931 plateau — 1683/2973 macro
++steps inside 0.69+-0.005, margin improving only 0.001 -> 0.017) with
++three parameterised thrust/overshoot fixes; everything else is v6-verbatim:
++
++1. Alignment loss with temperature (E3 v7): on the E2-winning layers
++   (13/6/16/14), ``L_total = L_SFT + lambda * L_align + [strength-reg]``
++   with
++
++   ``L_align = -log sigmoid((cos(h_tok, mu_in) - cos(h_tok, mu_out)) / tau)``.
++
++   * ``lambda = 0.3`` by default (v6: 0.1), ``--align-lambda``.
++   * ``tau = 0.1`` by default (v6 had no temperature: scale 1.0), ``--align-tau``.
++     The margin scale is 1/tau (= 10.0): the sigmoid plateau gradient wrt the
++     margin is (1/tau) * sigmoid(-m/tau) ~ 1/(2 tau) at the small v6-observed
++     margins m~0.001-0.006, i.e. ~10x the untampered gradient; together with
++     lambda 0.1->0.3 the effective align-gradient scale-up vs v6 is ~30x.
++     ``--align-margin-scale`` remains as an explicit ablation override
++     (default None = 1/tau).
++   * ``--align-layers`` / ``--align-detach-mu`` unchanged from v6.
++   * h_tok/mu_in/mu_out extraction, forward hooks + NON-REENTRANT activation
++     checkpointing recompute parity: reused verbatim from e3_align_v6.align_loss.
++
++2. Explicit strength regularizer (``--strength-reg on|off``, default on),
++   replacing v6's edit/outside loss-weight rebalancing (0.4/0.6), which the
++   v6 evaluation could not confirm effective:
++
++   ``L_str = w_s * | edit_mse / outside_mse.detach() - strength_target |``
++
++   with ``w_s = 0.05`` (``--strength-weight``) and ``strength_target = 1.0``
++   (``--strength-target``).  The strength estimate is built from the
++   per-branch edit/outside mask MSE statistics the trainer already computes
++   every step (target_state branch only); the outside term is the DETACHED
++   anchor, so the regularizer can never be reduced by worsening the outside
++   region.  With strength-reg on the effective region loss weight is forced
++   back to the v5 0.5/0.5 (``--edit-loss-weight`` != 0.5 is rejected).
++
++3. Plateau watchdog (``--plateau-guard on|off``, default on): if the
++   target-state align loss never leaves ``0.69+-0.005``
++   (``--plateau-center``/``--plateau-eps``) within ``--plateau-window``
++   (default 1000) consecutive non-skipped steps and shows no downward
++   trend (``--plateau-trend-eps`` 1e-4), rank 0 writes an ALERT to
++   ``--progress-file``, saves an emergency latest.pt, writes final_report
++   with status ``plateau_alert_stopped`` and stops training.
++
++4. v6 features kept unchanged: anti-over-edit switches (``--overshoot-fix``
++   master + ``--mask-debias``; the 0.4/0.6 edit weight is dead code with
++   strength-reg on), optional general-T2I replay, optional warm start
++   (``--init-trainable-from``, v5/v6 keys both load), matched-noise dual
++   states, full-layer LoRA r8/a16 fp32 masters, FSDP FULL_SHARD world_size=2,
++   mandatory 28-layer activation checkpointing, 16384-token packing,
++   deterministic per-step seeding, strict audits, resume guard, final_report.
++"""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import importlib
++import json
++import random
++import sys
++import time
++from pathlib import Path
++from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
++from unittest import mock
++
++import numpy as np
++import torch
++import torch.distributed as dist
++
++BAGEL_ROOT = Path(__file__).resolve().parents[3]
++if str(BAGEL_ROOT) not in sys.path:
++    sys.path.insert(0, str(BAGEL_ROOT))
++
++from experiments.counterfactual_cot.full_backbone_lora_region1024_fsdp_v3 import train as v3_runtime
++from experiments.counterfactual_cot.full_backbone_lora_dual_target_cot1024_fsdp_v4 import train as v4_runtime
++from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5 import train as v5_runtime
++from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5.paired_data import (
++    STATE_IDS,
++    build_state_dataset,
++    load_automask_manifest,
++    prompt_audit,
++    render_state_prompt,
++)
++from experiments.counterfactual_cot.datasets.bagel_manifest_dataset import CounterfactualCoTDataset
++from experiments.counterfactual_cot.e3_align_v6.align_loss import (
++    ALIGN_DEFAULT_LAYERS,
++    ALIGN_MIN_REGION_MASS,
++    AlignHookManager,
++    AlignTargetCache,
++    align_loss_from_stash,
++    build_region_weight_vectors,
++    build_token_index,
++    derive_prompt_layout,
++    empty_align_metrics,
++    state_changed_value,
++    target_cot_occurrences,
++    validate_replay_record,
++)
++
++EXPERIMENT_NAME = "gold40_automask_v7_align_fsdp_full_shard"
++DEFAULT_MODEL = Path("/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT")
++DEFAULT_OUTPUT = BAGEL_ROOT / "experiments/counterfactual_cot/outputs" / EXPERIMENT_NAME
++DEFAULT_MANIFEST = BAGEL_ROOT / "experiments/counterfactual_cot/final991_automask_v5_data/artifacts/splits/train.jsonl"
++DEFAULT_OBJECTIVE_MODULE = "experiments.counterfactual_cot.e3_align_v7.align_objective"
++DEFAULT_PROGRESS = BAGEL_ROOT / "experiments/counterfactual_cot/wb_e3_progress_v7.txt"
++CHECKPOINT_FORMAT = "gold40_automask_v7_align_fsdp"
++REPLAY_NOISE_SHAPE = (4096, 64)
++RESUME_GUARD_KEYS = (
++    "manifest",
++    "objective_id",
++    "objective_module",
++    "record_count",
++    "align_lambda",
++    "align_layers",
++    "align_margin_scale",
++    "align_tau",
++    "align_detach_mu",
++    "strength_reg",
++    "strength_weight",
++    "strength_target",
++    "plateau_guard",
++    "overshoot_edit_weight",
++    "overshoot_mask_debias",
++    "general_replay_manifest",
++    "general_replay_every",
++    "init_trainable_from",
++)
++
++
++# v7: the objective module (loaded in main via --objective-module) exposes the
++# live edit/outside region tensors used by the strength regularizer; _run_state
++# reads them through this holder to keep its v6 signature unchanged.
++_STRENGTH_STATE: Dict[str, Any] = {"objective_module": None}
++
++
++def _parse_align_layers(value: str) -> List[int]:
++    parts = [chunk.strip() for chunk in str(value).split(",") if chunk.strip()]
++    if not parts:
++        raise argparse.ArgumentTypeError("align layers must be a comma-separated list like 13,6,16,14")
++    try:
++        layers = [int(chunk) for chunk in parts]
++    except ValueError as exc:
++        raise argparse.ArgumentTypeError(f"align layers must be integers: {value!r}") from exc
++    if any(layer < 0 or layer > 27 for layer in layers):
++        raise argparse.ArgumentTypeError("align layers must be decoder layer indices in [0, 27]")
++    if len(set(layers)) != len(layers):
++        raise argparse.ArgumentTypeError(f"align layers must be unique: {value!r}")
++    return layers
++
++
++def _parse_args() -> argparse.Namespace:
++    parser = argparse.ArgumentParser(description=EXPERIMENT_NAME)
++    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST, help="AutoMask-v5 ready paired JSONL (final991 train split by default)")
++    parser.add_argument("--objective-module", default=DEFAULT_OBJECTIVE_MODULE)
++    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
++    parser.add_argument("--llm-path", type=Path, default=DEFAULT_MODEL)
++    parser.add_argument("--vae-path", type=Path, default=DEFAULT_MODEL / "ae.safetensors")
++    parser.add_argument("--checkpoint-path", type=Path, default=DEFAULT_MODEL / "ema.safetensors")
++    parser.add_argument("--steps", type=int, default=2973, help="optimizer steps; 2973 mirrors the final991 v5 run")
++    parser.add_argument("--lr", type=float, default=3e-5)
++    parser.add_argument("--weight-decay", type=float, default=0.0)
++    parser.add_argument("--max-grad-norm", type=float, default=1.0)
++    parser.add_argument("--lora-r", type=int, default=8)
++    parser.add_argument("--lora-alpha", type=int, default=16)
++    parser.add_argument("--lora-dropout", type=float, default=0.0)
++    parser.add_argument("--trainable-name-regex", default=v5_runtime.DEFAULT_TRAINABLE_REGEX)
++    parser.add_argument("--checkpoint-every", type=int, default=200)
++    parser.add_argument("--seed", type=int, default=1234)
++    parser.add_argument("--activation-checkpointing", action="store_true")
++    parser.add_argument("--preflight-only", action="store_true")
++    parser.add_argument("--precision", default="bf16", choices=("bf16",))
++    parser.add_argument("--image-size", type=int, default=1024)
++    parser.add_argument("--vit-image-size", type=int, default=980)
++    parser.add_argument("--vit-min-image-size", type=int, default=980)
++    parser.add_argument("--expected-num-tokens", type=int, default=16384)
++    parser.add_argument("--max-num-tokens-per-sample", type=int, default=16384)
++    parser.add_argument("--max-num-tokens", type=int, default=16384)
++    parser.add_argument("--num-samples", type=int, default=1)
++    parser.add_argument(
++        "--variant",
++        default="paired_cf_mvp",
++        choices=("paired_cf_mvp",),
++        help="Internal BAGEL dataset variant; locked independently of the AutoMask-v5 experiment name.",
++    )
++    parser.add_argument("--run-name", default="automask_v7_align", help="Human-readable experiment label recorded in artifacts.")
++    parser.add_argument("--min-gpu-memory-gib", type=float, default=38.0)
++    parser.add_argument("--max-peak-reserved-gib", type=float, default=38.5)
++    parser.add_argument(
++        "--resume",
++        default="auto",
++        help="Resume source: 'auto' reuses the newest usable checkpoint under --output-dir, "
++        "'none' forces a fresh run, or an explicit checkpoint path.",
++    )
++    # ---- E3 alignment (v7: lambda 0.3 + temperature tau 0.1) ----
++    parser.add_argument("--align-lambda", type=float, default=0.3, help="L_total = L_SFT + lambda * L_align + strength-reg (v7 default 0.3, v6 used 0.1)")
++    parser.add_argument(
++        "--align-layers",
++        type=_parse_align_layers,
++        default=list(ALIGN_DEFAULT_LAYERS),
++        help="decoder layers used for the alignment loss (default 13,6,16,14; pass one index for a single-layer ablation)",
++    )
++    parser.add_argument("--align-tau", type=float, default=0.1, help="temperature tau in -log sigmoid(margin/tau); margin scale = 1/tau = 10 (v6 had no temperature: scale 1.0)")
++    parser.add_argument("--align-margin-scale", type=float, default=None, help="explicit ablation override of the margin scale; default None = 1/--align-tau")
++    parser.add_argument("--align-detach-mu", action="store_true", help="stop gradients on mu_in/mu_out (latent side frozen in the align term)")
++    # ---- strength regularizer (v7; replaces v6's edit/outside loss-weight rebalancing) ----
++    parser.add_argument("--strength-reg", choices=("on", "off"), default="on", help="on: L_str = w_s*|edit_mse/outside_mse.detach()-1| on the target_state branch (region weights forced back to v5 0.5/0.5)")
++    parser.add_argument("--strength-weight", type=float, default=0.05, help="w_s of the strength regularizer")
++    parser.add_argument("--strength-target", type=float, default=1.0, help="target of |edit_mse/outside_mse.detach() - target|")
++    # ---- plateau watchdog (v7) ----
++    parser.add_argument("--plateau-guard", choices=("on", "off"), default="on", help="stop training with an ALERT if the target align loss never leaves the plateau within --plateau-window steps")
++    parser.add_argument("--plateau-window", type=int, default=1000, help="consecutive non-skipped align losses examined by the plateau guard")
++    parser.add_argument("--plateau-center", type=float, default=0.69, help="plateau center (log 2 = 0.6931 sits inside the default band)")
++    parser.add_argument("--plateau-eps", type=float, default=0.005, help="plateau half-width: band = center +- eps")
++    parser.add_argument("--plateau-trend-eps", type=float, default=1e-4, help="a mean second-half drop >= this counts as 'leaving the plateau' (no alert)")
++    parser.add_argument("--progress-file", type=Path, default=DEFAULT_PROGRESS, help="watchdog progress file written by run_v7.sh; plateau alerts are appended here atomically")
++    # ---- anti-over-edit ----
++    parser.add_argument("--overshoot-fix", choices=("on", "off"), default="on", help="master switch; 'off' reproduces the v5 objective exactly")
++    parser.add_argument("--edit-loss-weight", type=float, default=0.5, help="edit region weight when overshoot-fix=on (outside gets 1-w); v7 default 0.5 (the v6 0.4 rebalance is dead with --strength-reg on; pass 0.4 only together with --strength-reg off)")
++    parser.add_argument("--mask-debias", choices=("on", "off"), default="on", help="hard-region unweighted means instead of continuous mask-mass means")
++    # ---- general replay / warm start ----
++    parser.add_argument("--general-replay-manifest", type=Path, default=None, help="optional general-T2I JSONL; default off")
++    parser.add_argument("--general-replay-every", type=int, default=4, help="one replay micro-step every N macro steps")
++    parser.add_argument("--init-trainable-from", type=Path, default=None, help="optional v5/v6 trainable_state_dict checkpoint for a warm start")
++    args = parser.parse_args()
++
++    locks = {
++        "image_size": 1024,
++        "vit_image_size": 980,
++        "vit_min_image_size": 980,
++        "expected_num_tokens": 16384,
++        "max_num_tokens_per_sample": 16384,
++        "max_num_tokens": 16384,
++        "num_samples": 1,
++        "lora_dropout": 0.0,
++    }
++    bad = {key: getattr(args, key) for key, expected in locks.items() if getattr(args, key) != expected}
++    if bad or args.steps < 1 or args.checkpoint_every < 1:
++        parser.error(f"locked Gold40 AutoMask-v6 configuration invalid: {bad}")
++    if not args.preflight_only and not args.activation_checkpointing:
++        parser.error("--activation-checkpointing is mandatory for 1024 FSDP")
++    if args.align_lambda < 0.0:
++        parser.error("--align-lambda must be >= 0")
++    if args.align_tau <= 0.0:
++        parser.error("--align-tau must be > 0")
++    if args.align_margin_scale is not None and args.align_margin_scale <= 0.0:
++        parser.error("--align-margin-scale must be > 0 (or omit it: default = 1/--align-tau)")
++    if args.strength_weight < 0.0 or args.strength_target <= 0.0:
++        parser.error("--strength-weight must be >= 0 and --strength-target must be > 0")
++    if args.plateau_window < 1 or args.plateau_eps <= 0.0 or args.plateau_trend_eps < 0.0:
++        parser.error("--plateau-window must be >= 1, --plateau-eps > 0, --plateau-trend-eps >= 0")
++    if not (0.0 < args.edit_loss_weight < 1.0):
++        parser.error("--edit-loss-weight must be in (0, 1)")
++    if args.general_replay_every < 1:
++        parser.error("--general-replay-every must be >= 1")
++
++    args.strength_reg_on = args.strength_reg == "on"
++    if args.strength_reg_on and args.overshoot_fix == "on" and args.edit_loss_weight != 0.5:
++        parser.error(
++            "--strength-reg on replaces the v6 edit/outside loss-weight rebalancing: "
++            "keep --edit-loss-weight at 0.5 (default for v7 runs), or pass --strength-reg off"
++        )
++    args.effective_edit_weight = (
++        0.5 if args.strength_reg_on
++        else (args.edit_loss_weight if args.overshoot_fix == "on" else 0.5)
++    )
++    args.effective_margin_scale = (
++        args.align_margin_scale if args.align_margin_scale is not None else 1.0 / args.align_tau
++    )
++    # args.align_margin_scale keeps pointing at the EFFECTIVE scale so the
++    # v6 plan/guard/loss code paths stay untouched.
++    args.align_margin_scale = args.effective_margin_scale
++    args.effective_mask_debias = args.mask_debias == "on" and args.overshoot_fix == "on"
++    args.plateau_guard_on = args.plateau_guard == "on"
++    args.align_layers_list = list(args.align_layers)
++    return args
++
++
++def _align_readiness_audit(records: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
++    """String-level check that each state's changed value occurs in its Target CoT line."""
++    ready = {state: 0 for state in STATE_IDS}
++    missing: List[Dict[str, str]] = []
++    for record in records:
++        for state in STATE_IDS:
++            value = state_changed_value(record, state)
++            reason = "no_intervention_value" if not value else ""
++            if not reason:
++                prompt = render_state_prompt(record, state)
++                occurrences, source = target_cot_occurrences(prompt, value)
++                if occurrences:
++                    ready[state] += 1
++                    continue
++                reason = f"span_not_found({source})"
++            missing.append({"pair_id": record.get("pair_id", ""), "state": state, "reason": reason})
++    return {
++        "ready_counts": ready,
++        "record_count": len(records),
++        "missing_count": len(missing),
++        "missing_sample": missing[:20],
++    }
++
++
++def _preflight(args: argparse.Namespace) -> Tuple[List[Dict[str, Any]], Dict[str, Any], Any, Any]:
++    v5_runtime._validate_model_files(args)
++    objective_id, build_objective, forward_loss = v5_runtime._load_objective(args.objective_module)
++    objective_module = importlib.import_module(args.objective_module)
++    if hasattr(objective_module, "configure_overshoot"):
++        objective_module.configure_overshoot(
++            edit_weight=args.effective_edit_weight,
++            debias=args.effective_mask_debias,
++        )
++    records, audits = load_automask_manifest(args.manifest, require_files=True)
++    objective_specs = {record["pair_id"]: build_objective(record)[0] for record in records}
++    replay_plan: Dict[str, Any] = {"enabled": args.general_replay_manifest is not None, "manifest": None, "record_count": 0}
++    if args.general_replay_manifest is not None:
++        replay_records = [json.loads(line) for line in Path(args.general_replay_manifest).read_text(encoding="utf-8").splitlines() if line.strip()]
++        for record in replay_records:
++            validate_replay_record(record)
++        replay_plan.update(manifest=str(args.general_replay_manifest), record_count=len(replay_records), every=args.general_replay_every)
++    plan = {
++        "experiment_name": EXPERIMENT_NAME,
++        "manifest": str(args.manifest.resolve()),
++        "record_count": len(records),
++        "pair_ids": [item["pair_id"] for item in audits],
++        "source_scene_ids": [item["source_scene_id"] for item in audits],
++        "automask_only": True,
++        "human_review_required": False,
++        "paired_structure": list(STATE_IDS),
++        "objective_id": objective_id,
++        "objective_module": args.objective_module,
++        "objective": objective_specs,
++        "prompt_sha256": prompt_audit(records),
++        "timestep_mixture": v5_runtime.MIXTURE,
++        "matched_pack_seed_raw_timestep_noise": True,
++        "per_branch_loss_scale": 0.5,
++        "optimizer_steps_per_macro_step": 1,
++        "fsdp": {
++            "world_size": 2,
++            "strategy": "FULL_SHARD",
++            "fp32_lora_and_bridge_masters": True,
++            "activation_checkpointing_layers": v5_runtime.EXPECTED_ACTIVATION_CHECKPOINTS,
++        },
++        "align": {
++            "lambda": args.align_lambda,
++            "layers": args.align_layers_list,
++            "margin_scale": args.effective_margin_scale,
++            "tau": args.align_tau,
++            "detach_mu": bool(args.align_detach_mu),
++            "formula": "-log sigmoid((cos(h_tok, mu_in) - cos(h_tok, mu_out))/tau), margin scale = 1/tau, mean over tokens x layers, per branch scaled 0.5",
++            "readiness": _align_readiness_audit(records),
++        },
++        "overshoot": {
++            "master": args.overshoot_fix,
++            "edit_weight": args.effective_edit_weight,
++            "mask_debias": args.effective_mask_debias,
++        },
++        "strength_reg": {
++            "enabled": args.strength_reg_on,
++            "weight": args.strength_weight,
++            "target": args.strength_target,
++            "estimate": "target_state edit_mse / outside_mse.detach()",
++            "formula": "L_str = w_s * |edit_mse/outside_mse.detach() - target| (target_state branch only, added before the 0.5 branch scale)",
++            "replaces_v6_edit_weight_rebalance": True,
++        },
++        "plateau_guard": {
++            "enabled": args.plateau_guard_on,
++            "window": args.plateau_window,
++            "center": args.plateau_center,
++            "eps": args.plateau_eps,
++            "trend_eps": args.plateau_trend_eps,
++            "action": "ALERT to --progress-file + emergency latest.pt + final_report status plateau_alert_stopped",
++            "watches": "target_state align loss of non-skipped branches",
++        },
++        "replay": replay_plan,
++        "init_trainable_from": str(args.init_trainable_from) if args.init_trainable_from else None,
++        "args": v5_runtime._serializable_args(args),
++    }
++    v5_runtime._atomic_json(args.output_dir / "preflight.json", plan)
++    return records, plan, build_objective, forward_loss
++
++
++def _resolve_resume(args: argparse.Namespace) -> Optional[Path]:
++    candidates: List[Path] = []
++    if args.resume != "none":
++        if args.resume != "auto":
++            candidates.append(Path(args.resume))
++        else:
++            candidates.append(args.output_dir / "checkpoints" / "latest.pt")
++            candidates.extend(sorted((args.output_dir / "checkpoints").glob("step_*.pt"), reverse=True))
++    for candidate in candidates:
++        try:
++            if not candidate.is_file():
++                continue
++            payload = torch.load(candidate, map_location="cpu", weights_only=False)
++            usable = payload.get("format") == CHECKPOINT_FORMAT and isinstance(payload.get("trainable_state_dict"), dict)
++            step = payload.get("step") if usable else None
++            del payload
++            if usable:
++                v5_runtime._log("resume_candidate", path=str(candidate), step=step)
++                return candidate
++        except Exception as exc:  # noqa: BLE001
++            v5_runtime._log("checkpoint_rejected", path=str(candidate), error=repr(exc))
++    if args.resume not in ("none", "auto"):
++        raise RuntimeError(f"Invalid resume checkpoint: {args.resume}")
++    return None
++
++
++def _load_resume(
++    path: Path,
++    args: argparse.Namespace,
++    plan: Mapping[str, Any],
++    trainable: Sequence[Tuple[str, torch.nn.Parameter]],
++    optimizer: torch.optim.Optimizer,
++    device: torch.device,
++) -> Tuple[int, List[Dict[str, Any]]]:
++    payload = torch.load(path, map_location="cpu", weights_only=False)
++    if payload.get("format") != CHECKPOINT_FORMAT:
++        raise RuntimeError(f"Unsupported checkpoint format: {payload.get('format')}")
++    saved_config = payload.get("config") or {}
++    mismatches = {
++        key: {"checkpoint": saved_config.get(key), "current": plan.get(key)}
++        for key in RESUME_GUARD_KEYS
++        if saved_config.get(key) != plan.get(key)
++    }
++    saved_args = (saved_config.get("args") or {}) if isinstance(saved_config.get("args"), dict) else {}
++    for key in ("seed", "lr", "lora_r", "lora_alpha", "trainable_name_regex"):
++        if saved_args.get(key) != getattr(args, key, None):
++            mismatches[f"args.{key}"] = {"checkpoint": saved_args.get(key), "current": getattr(args, key, None)}
++    if mismatches:
++        raise RuntimeError(f"Resume config mismatch: {json.dumps(mismatches, default=str)}")
++    named = dict(trainable)
++    saved = payload["trainable_state_dict"]
++    if set(saved) != set(named):
++        raise RuntimeError("Resume trainable keys mismatch")
++    for name, tensor in saved.items():
++        if tuple(tensor.shape) != tuple(named[name].shape):
++            raise RuntimeError(f"Resume shape mismatch for {name}")
++        named[name].data.copy_(tensor.to(device=named[name].device, dtype=named[name].dtype))
++    optimizer.load_state_dict(payload["optimizer_state_dict"])
++    for group in optimizer.param_groups:
++        for parameter in group["params"]:
++            for value in optimizer.state[parameter].values():
++                if torch.is_tensor(value) and value.device != parameter.device:
++                    value.data = value.data.to(parameter.device)
++    step = int(payload.get("step", 0))
++    history = list(payload.get("history", []))
++    del payload
++    v3_runtime._assert_replicated_trainables([parameter for _, parameter in trainable], device, "resume_loaded")
++    v5_runtime._log("resume_loaded", path=str(path), step=step, history_rows=len(history))
++    return step, history
++
++
++def _load_init_trainable(path: Path, trainable: Sequence[Tuple[str, torch.nn.Parameter]], device: torch.device) -> Dict[str, Any]:
++    payload = torch.load(path, map_location="cpu", weights_only=False)
++    saved = payload.get("trainable_state_dict")
++    if not isinstance(saved, dict) or not saved:
++        raise RuntimeError(f"{path}: no trainable_state_dict to warm start from")
++    named = dict(trainable)
++    if set(saved) != set(named):
++        only_saved = sorted(set(saved) - set(named))[:5]
++        only_model = sorted(set(named) - set(saved))[:5]
++        raise RuntimeError(f"init-trainable key mismatch: saved_only={only_saved} model_only={only_model}")
++    for name, tensor in saved.items():
++        if tuple(tensor.shape) != tuple(named[name].shape):
++            raise RuntimeError(f"init-trainable shape mismatch for {name}")
++        named[name].data.copy_(tensor.to(device=named[name].device, dtype=named[name].dtype))
++    report = {
++        "path": str(path),
++        "format": payload.get("format"),
++        "step": payload.get("step", payload.get("global_step")),
++        "num_tensors": len(saved),
++    }
++    del payload
++    v3_runtime._assert_replicated_trainables([parameter for _, parameter in trainable], device, "init_trainable_loaded")
++    v5_runtime._log("init_trainable_loaded", **report)
++    return report
++
++
++def _prepare_align_state(
++    args: argparse.Namespace,
++    record: Mapping[str, Any],
++    state_id: str,
++    target_cache: AlignTargetCache,
++    batch: Any,
++    data: Dict[str, Any],
++    branch_weights: Mapping[str, Mapping[str, torch.Tensor]],
++    device: torch.device,
++    align_hooks: AlignHookManager,
++) -> Dict[str, Any]:
++    """Derive this forward's align targets and arm the hooks (or explain why not)."""
++    if args.align_lambda <= 0.0:
++        return {"enabled": False, "reason": "lambda_zero"}
++    weights = branch_weights.get(state_id)
++    if weights is None:
++        return {"enabled": False, "reason": "no_branch_weights"}
++    edit_mass = float(weights["edit"].sum())
++    outside_mass = float(weights["outside"].sum())
++    if edit_mass < ALIGN_MIN_REGION_MASS or outside_mass < ALIGN_MIN_REGION_MASS:
++        return {"enabled": False, "reason": f"region_mass_in_out=({edit_mass:.2f},{outside_mass:.2f})"}
++    value = state_changed_value(record, state_id)
++    if not value:
++        return {"enabled": False, "reason": "no_intervention_value"}
++    prompt = render_state_prompt(record, state_id)
++    entry = target_cache.entry(record["pair_id"], state_id, prompt, value)
++    if not entry["spans"]:
++        return {"enabled": False, "reason": "no_value_span", "span_source": entry["span_source"]}
++    layout = derive_prompt_layout(
++        batch.packed_text_ids,
++        batch.packed_vit_token_indexes,
++        batch.mse_loss_indexes,
++        entry["text_ids"],
++    )
++    token_index = build_token_index(entry["spans"], layout["bos_pos"], device)
++    mse_positions = data["mse_loss_indexes"].to(device=device, dtype=torch.long)
++    w_in, w_out = build_region_weight_vectors(
++        weights["edit"], weights["outside"], int(data["sequence_length"]), mse_positions, device, torch.bfloat16
++    )
++    align_hooks.configure_forward(token_index, w_in, w_out, detach_mu=bool(args.align_detach_mu))
++    return {
++        "enabled": True,
++        "reason": "",
++        "tokens": int(token_index.numel()),
++        "spans": entry["spans"],
++        "span_source": entry["span_source"],
++    }
++
++
++def _controlled_noise(shape: Tuple[int, int], noise_seed: int, device: torch.device, dtype: torch.dtype):
++    generator = torch.Generator(device=device)
++    generator.manual_seed(int(noise_seed))
++    noise = torch.randn(shape, device=device, dtype=dtype, generator=generator)
++    state = {"calls": 0}
++
++    def controlled_randn_like(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
++        if tuple(value.shape) != shape:
++            raise RuntimeError(f"unexpected BAGEL noise shape {tuple(value.shape)} (expected {shape})")
++        state["calls"] += 1
++        return noise.clone()
++
++    return noise, controlled_randn_like, state
++
++
++def _run_state(
++    model: Any,
++    vae: Any,
++    packer: Any,
++    dataset: Any,
++    record: Dict[str, Any],
++    schedule: Mapping[str, Any],
++    device: torch.device,
++    branch_weights: Mapping[str, Mapping[str, torch.Tensor]],
++    forward_loss: Any,
++    args: argparse.Namespace,
++    align_hooks: AlignHookManager,
++    target_cache: AlignTargetCache,
++) -> Tuple[Dict[str, float], Dict[str, Any]]:
++    state_id = dataset.state_id
++    batch, trace = v5_runtime._pack_single_pair(packer, dataset, record, int(schedule["pack_seed"]))
++    finite = torch.isfinite(batch.packed_timesteps)
++    if int(finite.sum()) != v5_runtime.EXPECTED_TARGET_TIMESTEP_TOKENS:
++        raise RuntimeError(f"{record['pair_id']}: expected {v5_runtime.EXPECTED_TARGET_TIMESTEP_TOKENS} target timestep tokens")
++    batch.packed_timesteps = torch.where(
++        finite,
++        torch.full_like(batch.packed_timesteps, float(schedule["raw"])),
++        batch.packed_timesteps,
++    )
++    data = v5_runtime._prepare_batch(batch, vae, device, torch.bfloat16)
++
++    align_info = _prepare_align_state(args, record, state_id, target_cache, batch, data, branch_weights, device, align_hooks)
++    noise, controlled_randn_like, noise_state = _controlled_noise(
++        v5_runtime.EXPECTED_NOISE_SHAPE, int(schedule["noise_seed"]), device, data["padded_latent"].dtype
++    )
++
++    cuda_index = device.index if device.index is not None else torch.cuda.current_device()
++    with torch.random.fork_rng(devices=[cuda_index], enabled=True), mock.patch.object(
++        torch, "randn_like", side_effect=controlled_randn_like
++    ):
++        torch.manual_seed(int(schedule["noise_seed"]))
++        torch.cuda.manual_seed(int(schedule["noise_seed"]))
++        sft_loss, metrics = forward_loss(model, data, state_id, branch_weights, v3_runtime._autocast)
++        if align_hooks.configured:
++            align_loss, align_metrics = align_loss_from_stash(align_hooks.stash, args.align_layers_list, args.align_margin_scale)
++        else:
++            align_loss, align_metrics = None, empty_align_metrics(align_info.get("reason", "not_configured"))
++        total = sft_loss if align_loss is None else sft_loss + args.align_lambda * align_loss
++        # v7 strength regularizer (target_state branch only): built from the
++        # LIVE region tensors the objective stashed for this branch; the
++        # outside term is the detached anchor (see module docstring).
++        strength_metrics: Dict[str, float] = {}
++        if args.strength_reg_on and state_id == "target_state":
++            objective_module = _STRENGTH_STATE["objective_module"]
++            extracted = (
++                objective_module.branch_region_tensors(state_id)
++                if objective_module is not None and hasattr(objective_module, "branch_region_tensors")
++                else None
++            )
++            if extracted is None:
++                raise RuntimeError(
++                    f"{record['pair_id']} {state_id}: --strength-reg on but the objective module "
++                    f"exposed no live region tensors for this branch"
++                )
++            edit_region, outside_region = extracted
++            strength_estimate = edit_region / outside_region.detach().clamp_min(1e-6)
++            strength_term = args.strength_weight * torch.abs(strength_estimate - args.strength_target)
++            total = total + strength_term
++            strength_metrics = {
++                "strength_est": float(strength_estimate.detach()),
++                "strength_reg_loss": float(strength_term.detach()),
++            }
++        if not torch.isfinite(total):
++            raise FloatingPointError(f"{record['pair_id']} {state_id}: non-finite loss")
++        (total * 0.5).backward()
++    if noise_state["calls"] != 1:
++        raise RuntimeError(f"{record['pair_id']} {state_id}: expected one controlled noise draw, got {noise_state['calls']}")
++    align_hooks.clear()
++    objective_module = _STRENGTH_STATE["objective_module"]
++    if objective_module is not None and hasattr(objective_module, "clear_branch_tensors"):
++        objective_module.clear_branch_tensors()
++
++    merged = dict(metrics)
++    merged.update(align_metrics)
++    merged.update(strength_metrics)
++    merged["align_lambda"] = float(args.align_lambda)
++    if align_info.get("enabled"):
++        merged["align_skipped"] = 0
++        merged["align_span_source"] = align_info.get("span_source", "")
++    trace.update(
++        state=state_id,
++        pack_seed=int(schedule["pack_seed"]),
++        noise_seed=int(schedule["noise_seed"]),
++        noise_sha256=hashlib.sha256(noise.float().cpu().numpy().tobytes()).hexdigest(),
++        raw_timestep=schedule["raw"],
++        effective_t=schedule["effective_t"],
++        align_tokens=align_info.get("tokens", 0),
++        align_spans=[list(span) for span in align_info.get("spans", [])],
++        align_span_source=align_info.get("span_source", ""),
++    )
++    return merged, trace
++
++
++def _run_replay_state(
++    model: Any,
++    vae: Any,
++    packer: Any,
++    dataset: Any,
++    record: Dict[str, Any],
++    schedule: Mapping[str, Any],
++    device: torch.device,
++) -> Dict[str, float]:
++    """One optional general-T2I micro-step: native MSE (+CE) only, no align, scale 0.5."""
++    batch, _trace = v5_runtime._pack_single_pair(packer, dataset, record, int(schedule["pack_seed"]))
++    finite = torch.isfinite(batch.packed_timesteps)
++    if int(finite.sum()) != v5_runtime.EXPECTED_TARGET_TIMESTEP_TOKENS:
++        raise RuntimeError(f"replay {record.get('pair_id')}: expected target timestep tokens")
++    batch.packed_timesteps = torch.where(
++        finite,
++        torch.full_like(batch.packed_timesteps, float(schedule["raw"])),
++        batch.packed_timesteps,
++    )
++    data = v5_runtime._prepare_batch(batch, vae, device, torch.bfloat16)
++    noise, controlled_randn_like, noise_state = _controlled_noise(
++        REPLAY_NOISE_SHAPE, int(schedule["noise_seed"]), device, data["padded_latent"].dtype
++    )
++
++    cuda_index = device.index if device.index is not None else torch.cuda.current_device()
++    with torch.random.fork_rng(devices=[cuda_index], enabled=True), mock.patch.object(
++        torch, "randn_like", side_effect=controlled_randn_like
++    ):
++        torch.manual_seed(int(schedule["noise_seed"]))
++        torch.cuda.manual_seed(int(schedule["noise_seed"]))
++        with v3_runtime._autocast(model):
++            output = model(**data)
++        mse = output.get("mse")
++        if mse is None:
++            raise RuntimeError(f"replay {record.get('pair_id')}: model returned no mse")
++        replay_loss = mse.float().mean()
++        ce = output.get("ce")
++        ce_loss = ce.float().mean() if ce is not None else None
++        if ce_loss is not None:
++            replay_loss = replay_loss + ce_loss
++        if not torch.isfinite(replay_loss):
++            raise FloatingPointError(f"replay {record.get('pair_id')}: non-finite loss")
++        (replay_loss * 0.5).backward()
++    if noise_state["calls"] != 1:
++        raise RuntimeError(f"replay {record.get('pair_id')}: expected one controlled noise draw, got {noise_state['calls']}")
++    return {
++        "replay_total": float(replay_loss.detach().cpu()),
++        "replay_mse": float(mse.float().mean().detach().cpu()),
++        "replay_ce": float(ce_loss.detach().cpu()) if ce_loss is not None else 0.0,
++    }
++
++
++def _build_replay_dataset(args: argparse.Namespace, tokenizer: Any) -> "CounterfactualCoTDataset":
++    from data.transforms import ImageTransform
++    from experiments.counterfactual_cot.training.gold40_overfit import _transform_args
++
++    class _ReplayStandardDataset(CounterfactualCoTDataset):
++        def _paired_sample(self, pair: Dict[str, Any]):
++            return self._standard_sample(pair, "source")
++
++    return _ReplayStandardDataset(
++        dataset_name="e3_general_replay",
++        transform=ImageTransform(**_transform_args(1024, 1024, 16)),
++        tokenizer=tokenizer,
++        manifest_path=str(args.general_replay_manifest),
++        variant="standard_cot",
++        include_source_image=False,
++        training_seed=args.seed,
++        local_rank=0,
++        world_size=1,
++        num_workers=0,
++        data_status=None,
++        vit_transform=None,
++        max_records=None,
++    )
++
++
++def plateau_check(values: Sequence[float], center: float, eps: float, trend_eps: float) -> Optional[Dict[str, Any]]:
++    """Return an ALERT payload if every value sits in the plateau band with no downward trend.
++
++    ``values`` are the last ``--plateau-window`` consecutive non-skipped
++    target-state align losses.  Returns None when any value has LEFT the band
++    (something is moving) or when the second half drops by >= ``trend_eps``
++    below the first half mean (a real downward trend, i.e. leaving the
++    plateau).  Pure function — unit-tested in selftest_v7.py.
++    """
++    if len(values) < 2:
++        return None
++    lo, hi = center - eps, center + eps
++    if any(not (lo <= value <= hi) for value in values):
++        return None
++    half = len(values) // 2
++    first_mean = sum(values[:half]) / max(half, 1)
++    second_mean = sum(values[half:]) / max(len(values) - half, 1)
++    if first_mean - second_mean >= trend_eps:
++        return None
++    return {
++        "center": center,
++        "eps": eps,
++        "window": len(values),
++        "band": [lo, hi],
++        "values_min": min(values),
++        "values_max": max(values),
++        "trend_drop": first_mean - second_mean,
++    }
++
++
++def _write_progress_alert(args: argparse.Namespace, alert: Mapping[str, Any]) -> None:
++    """Rank0-only atomic ALERT overwrite of the run_v7.sh watchdog progress file."""
++    if not v5_runtime._rank0():
++        return
++    try:
++        lines = [
++            f"updated: {time.strftime('%F %T')} (stage=ALERT)",
++            f"ALERT: plateau_guard stopped training at step {alert['step']}",
++            (
++                f"  target align loss stayed inside [{alert['band'][0]:.3f}, {alert['band'][1]:.3f}] "
++                f"for {alert['window']} consecutive steps (min {alert['values_min']:.4f}, max {alert['values_max']:.4f})"
++            ),
++            f"  downward trend {alert['trend_drop']:.2e} < trend_eps {alert['trend_eps']:.1e}: no thrust",
++            "  emergency latest.pt saved; final_report status = plateau_alert_stopped",
++            "  do NOT rerun with the same align-tau/align-lambda; check the thrust configuration first.",
++        ]
++        path = Path(args.progress_file)
++        path.parent.mkdir(parents=True, exist_ok=True)
++        tmp = path.with_suffix(".tmp")
++        tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
++        tmp.replace(path)
++    except Exception as exc:  # noqa: BLE001
++        v5_runtime._log("progress_alert_write_failed", error=repr(exc))
++
++
++def main() -> None:
++    args = _parse_args()
++    if args.preflight_only:
++        args.output_dir.mkdir(parents=True, exist_ok=True)
++        records, _, _, _ = _preflight(args)
++        v5_runtime._log("preflight_passed", records=len(records), manifest=str(args.manifest))
++        return
++    _, _, device = v3_runtime._validate_topology(args)
++    try:
++        if v5_runtime._rank0():
++            args.output_dir.mkdir(parents=True, exist_ok=True)
++            (args.output_dir / "checkpoints").mkdir(exist_ok=True)
++        v5_runtime._barrier()
++        records, plan, build_objective, forward_loss = _preflight(args)
++        _STRENGTH_STATE["objective_module"] = importlib.import_module(args.objective_module)
++        random.seed(args.seed)
++        np.random.seed(args.seed)
++        torch.manual_seed(args.seed)
++        torch.cuda.manual_seed_all(args.seed)
++        tokenizer, special_tokens, added = v5_runtime._load_tokenizer(str(args.llm_path))
++        packer = v5_runtime._build_singleton_packed_dataset(args, tokenizer, special_tokens)
++        datasets = {state: build_state_dataset(args, tokenizer, state) for state in STATE_IDS}
++        replay_dataset = None
++        if args.general_replay_manifest is not None:
++            replay_dataset = _build_replay_dataset(args, tokenizer)
++        layers = v5_runtime._read_num_layers(args.llm_path)
++        if layers != v5_runtime.EXPECTED_ACTIVATION_CHECKPOINTS:
++            raise RuntimeError(f"AutoMask-v6 requires 28 decoder layers, found {layers}")
++        model, load_report = v3_runtime._build_cpu_model(args, len(tokenizer), added)
++        model.timestep_shift = v5_runtime.SHIFT
++        model.config.timestep_shift = v5_runtime.SHIFT
++        target_names = v5_runtime._iter_target_linear_names(model, list(range(layers)))
++        wrappers = v5_runtime.inject_lora(model, target_names, args.lora_r, args.lora_alpha, 0.0)
++        groups = v5_runtime.set_trainable(model, args.trainable_name_regex, wrappers)
++        trainable = [(name, parameter) for name, parameter in model.named_parameters() if parameter.requires_grad]
++        if not trainable:
++            raise RuntimeError("no LoRA/bridge trainables selected")
++        for _, parameter in trainable:
++            parameter.data = parameter.data.to(device=device, dtype=torch.float32)
++        if any(parameter.dtype != torch.float32 for _, parameter in trainable):
++            raise RuntimeError("FP32 LoRA/bridge master trainables required")
++        init_report = None
++        if args.init_trainable_from is not None:
++            init_report = _load_init_trainable(args.init_trainable_from, trainable, device)
++        # Align hooks are installed on module references captured BEFORE FSDP/AC
++        # wrapping; the wrapped tree still forwards through these objects.
++        if args.align_lambda > 0.0:
++            align_layer_modules = [model.language_model.model.layers[index] for index in args.align_layers_list]
++            align_hooks = AlignHookManager(align_layer_modules, args.align_layers_list)
++            align_hooks.install()
++        else:
++            align_hooks = AlignHookManager([], [])
++        target_cache = AlignTargetCache(tokenizer)
++        hooks, bridge_report = v4_runtime._install_bridge_output_cast_hooks(model)
++        fsdp = v3_runtime._fsdp_model(model, [parameter for _, parameter in trainable], device)
++        activated = v3_runtime._apply_activation_checkpointing(fsdp, layers)
++        if activated != v5_runtime.EXPECTED_ACTIVATION_CHECKPOINTS:
++            raise RuntimeError(f"expected {v5_runtime.EXPECTED_ACTIVATION_CHECKPOINTS} activation-checkpointed layers, got {activated}")
++        vae, _ = v5_runtime.load_ae(str(args.vae_path))
++        vae.to(device=device, dtype=torch.bfloat16).eval()
++        optimizer = torch.optim.AdamW([parameter for _, parameter in trainable], lr=args.lr, weight_decay=args.weight_decay)
++        audit = {
++            "num_layers": layers,
++            "lora_wrappers": len(wrappers),
++            "lora_targets": target_names,
++            "trainable_dtype": "float32",
++            "fp32_master_scope": "LoRA and bridge trainables",
++            "activation_checkpointed_layers": activated,
++            "fsdp": "FULL_SHARD",
++            "bridge_output_cast": bridge_report,
++            "align_layers": args.align_layers_list,
++            "init_trainable": init_report,
++            **groups,
++        }
++        v5_runtime._atomic_json(args.output_dir / "trainable_audit.json", audit)
++        v5_runtime._log(
++            "model_ready",
++            records=len(records),
++            trainables=len(trainable),
++            lora_wrappers=len(wrappers),
++            align_layers=args.align_layers_list,
++            align_lambda=args.align_lambda,
++            align_tau=args.align_tau,
++            align_margin_scale=args.effective_margin_scale,
++            strength_reg=args.strength_reg,
++            strength_weight=args.strength_weight,
++            plateau_guard=args.plateau_guard,
++        )
++        resume_path = _resolve_resume(args)
++        if resume_path is None:
++            start_step, history = 0, []
++        else:
++            start_step, history = _load_resume(resume_path, args, plan, trainable, optimizer, device)
++            if start_step >= args.steps:
++                v5_runtime._log("resume_already_complete", step=start_step, requested_steps=args.steps)
++        plateau_history: List[float] = (
++            [
++                float(entry["target_state_align_loss"])
++                for entry in history
++                if entry.get("target_state_align_skipped") == 0
++                and isinstance(entry.get("target_state_align_loss"), (int, float))
++            ][-args.plateau_window:]
++            if args.plateau_guard_on
++            else []
++        )
++        alert_result: Optional[Dict[str, Any]] = None
++        torch.cuda.reset_peak_memory_stats(device)
++        for step in range(start_step + 1, args.steps + 1):
++            record, schedule = v5_runtime._sample_pair(records, args.seed, step), v5_runtime._schedule(args.seed, step)
++            _, branch_weights = build_objective(record)
++            optimizer.zero_grad(set_to_none=True)
++            result = {}
++            for state in STATE_IDS:
++                result[state] = _run_state(
++                    fsdp,
++                    vae,
++                    packer,
++                    datasets[state],
++                    record,
++                    schedule,
++                    device,
++                    branch_weights,
++                    forward_loss,
++                    args,
++                    align_hooks,
++                    target_cache,
++                )
++            source_trace, target_trace = result["source_state"][1], result["target_state"][1]
++            for field in ("pack_seed", "noise_seed", "noise_sha256", "raw_timestep", "effective_t"):
++                if source_trace[field] != target_trace[field]:
++                    raise RuntimeError(f"state branches diverged on controlled {field}")
++            row = {
++                "gpu_peak_reserved_gib": None,
++                "step": step,
++                "pair_id": record["pair_id"],
++                "source_scene_id": record["source_scene_id"],
++                "intervention_type": record["intervention"]["intervention_type"],
++                "macro_steps": 1,
++                "micro_steps": 2,
++                "optimizer_steps": 1,
++                "branch_loss_scale": 0.5,
++                "timestep_mode": schedule["mode"],
++                "effective_t": schedule["effective_t"],
++                "raw_timestep": schedule["raw"],
++                "matched_pack_seed": schedule["pack_seed"],
++                "matched_noise_sha256": source_trace["noise_sha256"],
++                "align_lambda": float(args.align_lambda),
++                "replay_active": 0,
++            }
++            replay_metrics: Dict[str, float] = {}
++            if replay_dataset is not None and step % args.general_replay_every == 0:
++                replay_record = v5_runtime._sample_pair(replay_dataset.records, args.seed + 1_234_567, step)
++                replay_schedule = v5_runtime._schedule(args.seed + 7_654_321, step)
++                replay_metrics = _run_replay_state(fsdp, vae, packer, replay_dataset, replay_record, replay_schedule, device)
++                replay_metrics["replay_active"] = 1
++            missing = [name for name, parameter in trainable if parameter.grad is None]
++            if missing:
++                raise RuntimeError(f"missing gradients: {missing[:10]}")
++            v3_runtime._sync_ignored_trainable_grads([parameter for _, parameter in trainable])
++            norm = torch.nn.utils.clip_grad_norm_([parameter for _, parameter in trainable], args.max_grad_norm)
++            optimizer.step()
++            checksum = v3_runtime._assert_replicated_trainables([parameter for _, parameter in trainable], device, f"step_{step}")
++            peak_reserved_gib = torch.cuda.max_memory_reserved(device) / 2**30
++            if dist.is_initialized():
++                peak_tensor = torch.tensor([peak_reserved_gib], device=device)
++                dist.all_reduce(peak_tensor, op=dist.ReduceOp.MAX)
++                peak_reserved_gib = float(peak_tensor.item())
++            if peak_reserved_gib > args.max_peak_reserved_gib:
++                v5_runtime._log(
++                    "peak_memory_over_budget",
++                    step=step,
++                    peak_gib=round(peak_reserved_gib, 3),
++                    budget_gib=args.max_peak_reserved_gib,
++                )
++            row.update(
++                {
++                    "gpu_peak_reserved_gib": round(peak_reserved_gib, 3),
++                    "grad_norm_pre_clip": float(norm.detach().float().cpu()),
++                    "trainable_checksum": checksum,
++                    **replay_metrics,
++                    **{
++                        f"{state}_{key}": value
++                        for state, (metrics, _) in result.items()
++                        for key, value in metrics.items()
++                    },
++                }
++            )
++            history.append(row)
++            v5_runtime._log("macro_step", **row)
++            if args.plateau_guard_on and args.align_lambda > 0.0:
++                if row.get("target_state_align_skipped") == 0 and isinstance(row.get("target_state_align_loss"), (int, float)):
++                    plateau_history.append(float(row["target_state_align_loss"]))
++                    window_values = plateau_history[-args.plateau_window:]
++                    alert = (
++                        plateau_check(window_values, args.plateau_center, args.plateau_eps, args.plateau_trend_eps)
++                        if len(window_values) >= args.plateau_window
++                        else None
++                    )
++                    if alert is not None:
++                        alert.update(step=step, trend_eps=args.plateau_trend_eps)
++                        alert_result = alert
++                        v5_runtime._log("plateau_alert", **alert)
++                        _write_progress_alert(args, alert)
++                        emergency_payload = {
++                            "format": CHECKPOINT_FORMAT,
++                            "step": step,
++                            "config": plan,
++                            "trainable_state_dict": {name: parameter.detach().cpu() for name, parameter in trainable},
++                            "optimizer_state_dict": v3_runtime._cpu_tree(optimizer.state_dict()),
++                            "history": history,
++                        }
++                        if v5_runtime._rank0():
++                            v3_runtime._atomic_save(args.output_dir / "checkpoints" / "latest.pt", emergency_payload)
++                        v5_runtime._barrier()
++                        break
++            torch.cuda.reset_peak_memory_stats(device)
++            if step % args.checkpoint_every == 0 or step == args.steps:
++                payload = {
++                    "format": CHECKPOINT_FORMAT,
++                    "step": step,
++                    "config": plan,
++                    "trainable_state_dict": {name: parameter.detach().cpu() for name, parameter in trainable},
++                    "optimizer_state_dict": v3_runtime._cpu_tree(optimizer.state_dict()),
++                    "history": history,
++                }
++                if v5_runtime._rank0():
++                    v3_runtime._atomic_save(args.output_dir / "checkpoints" / "latest.pt", payload)
++                    if step == args.steps:
++                        v3_runtime._atomic_save(args.output_dir / "checkpoints" / f"step_{step:06d}.pt", payload)
++                v5_runtime._barrier()
++        v5_runtime._atomic_json(
++            args.output_dir / "final_report.json",
++            {
++                "status": "plateau_alert_stopped" if alert_result is not None else "completed",
++                "base_load_report": load_report,
++                "init_trainable": init_report,
++                "history": history,
++                "fsdp": {"world_size": 2, "strategy": "FULL_SHARD"},
++                "align": plan["align"],
++                "overshoot": plan["overshoot"],
++                "strength_reg": plan["strength_reg"],
++                "plateau_guard": plan["plateau_guard"],
++                "plateau_alert": alert_result,
++                "replay": plan["replay"],
++                "resume": {"from_step": start_step, "checkpoint": str(resume_path) if resume_path else None},
++            },
++        )
++    finally:
++        if dist.is_initialized():
++            dist.destroy_process_group()
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/README.md b/experiments/counterfactual_cot/e3_eval/README.md
+index 8bbc9c0..1712005 100644
+--- a/experiments/counterfactual_cot/e3_eval/README.md
++++ b/experiments/counterfactual_cot/e3_eval/README.md
+@@ -1,4 +1,4 @@
+-# E3 three-way evaluation: base / final991 / v6
++# E3 evaluation: base / final991 / v6 (/ v7)
+ 
+ E3 v6 (= Module-A SFT + token-region alignment loss, 2973 steps,
+ `outputs/gold40_automask_v6_align_fsdp_full_shard/checkpoints/latest.pt`,
+@@ -77,6 +77,20 @@ probe_stats/probe_stats_threeway.json + probe_table.md
+ summary_table.md + summary.json   unified three-way summary
+ ```
+ 
++## N-way models (v7 support, added 20261014)
++
++Every stats CLI auto-detects the models that actually have rows
++(`indomain_stats.py` / `stats_threeway.py`: `--models` default None;
++`probe_stats.py`: `--v7-dir`, skipped when absent;
++`score_indomain_threeway.py`: `--gen-v7-dir`).  With v7 rows present the
++comparisons extend to six pairs — the v6 three-way order is preserved
++byte-identically, then `v7-v6`, `v7-final991`, `v7-base` are appended
++(`indomain_stats.pairs_for`; future models enumerate as later-minus-earlier).
++v7 generation for the A-module uses the same `gen_same_seed_states_v6.py`
++copy (its format guard accepts `gold40_automask_v7_align_fsdp` — same keys,
++label only); E1/probe v7 runs go through `model_shim.py --alias v7 --ckpt
++<v7 latest.pt>` exactly like v6.
++
+ ## Stats recipe (all components, identical)
+ 
+ Per-item paired diff (y − x), 20000 bootstrap resamples seeded 1234,
+diff --git a/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py b/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py
+index 828246d..ed9791f 100644
+--- a/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py
++++ b/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py
+@@ -178,8 +178,8 @@ def main() -> None:
+         checkpoint_path_str: str | None = None
+     else:
+         checkpoint_payload = torch.load(args.trainable_checkpoint, map_location="cpu", weights_only=False)
+-        if checkpoint_payload.get("format") not in ("gold40_automask_v5_paired_fsdp", "gold40_automask_v6_align_fsdp"):
+-            raise RuntimeError(f"not a Gold40 AutoMask-v5/v6-align checkpoint: {checkpoint_payload.get('format')!r}")
++        if checkpoint_payload.get("format") not in ("gold40_automask_v5_paired_fsdp", "gold40_automask_v6_align_fsdp", "gold40_automask_v7_align_fsdp"):
++            raise RuntimeError(f"not a Gold40 AutoMask-v5/v6/v7-align checkpoint: {checkpoint_payload.get('format')!r}")
+         checkpoint_sha256 = sha256_file(args.trainable_checkpoint)
+         checkpoint_path_str = str(args.trainable_checkpoint.resolve())
+     manifest_path = args.output_dir / "generation_manifest.jsonl"
+diff --git a/experiments/counterfactual_cot/e3_eval/indomain_stats.py b/experiments/counterfactual_cot/e3_eval/indomain_stats.py
+index d332642..106af9f 100644
+--- a/experiments/counterfactual_cot/e3_eval/indomain_stats.py
++++ b/experiments/counterfactual_cot/e3_eval/indomain_stats.py
+@@ -36,8 +36,54 @@ HERE = Path(__file__).resolve().parent
+ CFCOT = HERE.parent
+ DEFAULT_SCORES_DIR = CFCOT / "outputs/e3_eval/scores_indomain"
+ 
+-MODEL_ORDER = ["base", "final991", "v6"]
+-DEFAULT_PAIRS = [("v6", "final991"), ("v6", "base"), ("final991", "base")]
++MODEL_ORDER = ["base", "final991", "v6", "v7"]
++# Ordered comparison pairs: the v6 three-way order is preserved first (existing
++# outputs stay byte-identical); v7 pairs are appended; any future models are
++# compared as (later - earlier) after the preferred list.
++DEFAULT_PAIRS = [
++    ("v6", "final991"), ("v6", "base"), ("final991", "base"),
++    ("v7", "v6"), ("v7", "final991"), ("v7", "base"),
++]
++
++
++def ordered_models(models) -> list[str]:
++    """Entry order: MODEL_PRIORITY first, unknown models after (sorted)."""
++    models = list(models)
++    known = [m for m in MODEL_ORDER if m in models]
++    extra = sorted(set(models) - set(MODEL_ORDER))
++    return known + extra
++
++
++def pairs_for(models) -> list[tuple[str, str]]:
++    """All (y, x) comparisons among `models`, preferred pairs first."""
++    have = set(models)
++    pairs = [p for p in DEFAULT_PAIRS if p[0] in have and p[1] in have]
++    covered = {(a, b) for a, b in pairs} | {(b, a) for a, b in pairs}
++    ranked = ordered_models(models)
++    for j in range(len(ranked)):
++        for i in range(j):
++            pair = (ranked[j], ranked[i])
++            if pair not in covered:
++                pairs.append(pair)
++    return pairs
++
++
++def detect_indomain_models(scores_dir: Path, splits) -> list[str]:
++    """Auto-detect models with indomain rows under --scores-dir."""
++    found: set[str] = set()
++    for split in splits:
++        for path in scores_dir.glob(f"indomain_*_{split}.jsonl"):
++            stem = path.stem
++            model = stem[len("indomain_"):-(len(split) + 1)]
++            if model:
++                found.add(model)
++    return ordered_models(found) if found else ["base", "final991", "v6"]
++
++
++def detect_clip_models(scores_dir: Path) -> list[str]:
++    """Auto-detect models with clipT rows under --scores-dir."""
++    found = {path.stem[len("clipT_"):] for path in scores_dir.glob("clipT_*.jsonl")}
++    return ordered_models(found) if found else ["base", "final991", "v6"]
+ 
+ # (field, better) — polarity only annotates direction; significance is CI != 0
+ IND_METRICS = [
+@@ -142,8 +188,10 @@ def pair_stats(rows_x: dict[str, dict], rows_y: dict[str, dict], field: str,
+ 
+ 
+ def available_pairs(models: list[str],
+-                    pairs: list[tuple[str, str]] = DEFAULT_PAIRS) -> list[tuple[str, str]]:
++                    pairs: list[tuple[str, str]] | None = None) -> list[tuple[str, str]]:
+     """Ordered pairs restricted to models actually present in the data."""
++    if pairs is None:
++        return pairs_for(models)
+     return [(a, b) for (a, b) in pairs if a in models and b in models]
+ 
+ 
+@@ -172,7 +220,7 @@ def fmt_entry(e: dict | None, prec: int = 4) -> str:
+ def analyze_split(rows_by_model: dict[str, dict[str, dict]], metrics: list[tuple[str, str]],
+                   n_boot: int) -> dict:
+     """rows_by_model: {model: {pair_id: row}} for ONE split (already loaded)."""
+-    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
++    models = ordered_models([m for m, rows in rows_by_model.items() if rows])
+     if len(models) < 2:
+         return {"models": models, "skipped": True}
+     ids = None
+@@ -226,11 +274,15 @@ def markdown_report(summary: dict, out: Path) -> None:
+ def main() -> None:
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
+-    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
++    parser.add_argument("--models", nargs="*", default=None,
++                        help="default: auto-detect every model with indomain rows (base/final991/v6/v7)")
+     parser.add_argument("--splits", nargs="*", default=["val", "test"])
+     parser.add_argument("--bootstrap", type=int, default=20000)
+     parser.add_argument("--out-prefix", default="indomain_stats_threeway")
+     args = parser.parse_args()
++    if args.models is None:
++        args.models = detect_indomain_models(args.scores_dir, args.splits)
++        print(f"[auto] models detected: {args.models}")
+ 
+     rows_all: dict[str, dict[str, dict[str, dict]]] = {}
+     for split in args.splits:
+@@ -255,7 +307,7 @@ def main() -> None:
+ 
+     summary = {
+         "experiment": "e3_module_a_indomain_threeway",
+-        "models": [m for m in MODEL_ORDER if any(m in rows_all[s] for s in rows_all)],
++        "models": ordered_models([m for m in args.models if any(m in rows_all[s] for s in rows_all)]),
+         "bootstrap_resamples": args.bootstrap,
+         "splits": {s: analyze_split(rows_all[s], IND_METRICS, args.bootstrap)
+                    for s in list(args.splits) + ["pooled"]},
+diff --git a/experiments/counterfactual_cot/e3_eval/probe_stats.py b/experiments/counterfactual_cot/e3_eval/probe_stats.py
+index bf5f377..9321f76 100644
+--- a/experiments/counterfactual_cot/e3_eval/probe_stats.py
++++ b/experiments/counterfactual_cot/e3_eval/probe_stats.py
+@@ -29,7 +29,7 @@ import argparse
+ import json
+ from pathlib import Path
+ 
+-from indomain_stats import MODEL_ORDER, available_pairs, fmt_entry, pair_label, pair_stats
++from indomain_stats import available_pairs, fmt_entry, ordered_models, pair_label, pair_stats
+ 
+ HERE = Path(__file__).resolve().parent
+ CFCOT = HERE.parent
+@@ -161,7 +161,7 @@ def detect_late(manifests: dict[str, dict[str, dict]]) -> dict:
+ 
+ 
+ def analyze_probe(manifests: dict[str, dict[str, dict]], n_boot: int, min_n: int) -> dict:
+-    models = [m for m in MODEL_ORDER if m in manifests and manifests[m]]
++    models = ordered_models([m for m, recs in manifests.items() if recs])
+     common = None
+     for m in models:
+         common = set(manifests[m]) if common is None else (common & set(manifests[m]))
+@@ -255,6 +255,8 @@ def main() -> None:
+     parser.add_argument("--base-dir", type=Path, default=PROBE_ROOT / "probe_base")
+     parser.add_argument("--final991-dir", type=Path, default=PROBE_ROOT / "probe_final991")
+     parser.add_argument("--v6-dir", type=Path, default=CFCOT / "outputs/e3_eval/probe_v6")
++    parser.add_argument("--v7-dir", type=Path, default=CFCOT / "outputs/e3_eval/probe_v7",
++                        help="v7 probe dir (e3_align_v7 model); skipped when absent")
+     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+     parser.add_argument("--bootstrap", type=int, default=20000)
+     parser.add_argument("--min-n", type=int, default=5)
+@@ -264,7 +266,8 @@ def main() -> None:
+     parser.add_argument("--npz-tol", type=float, default=0.02)
+     args = parser.parse_args()
+ 
+-    dirs = {"base": args.base_dir, "final991": args.final991_dir, "v6": args.v6_dir}
++    dirs = {"base": args.base_dir, "final991": args.final991_dir,
++            "v6": args.v6_dir, "v7": args.v7_dir}
+     manifests: dict[str, dict[str, dict]] = {}
+     for m, d in dirs.items():
+         man = load_manifest(d / "probe_manifest.jsonl")
+diff --git a/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py b/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
+index 76b8cca..de6343e 100644
+--- a/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
++++ b/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
+@@ -42,6 +42,7 @@ DEFAULT_GEN_DIRS = {
+     "base": CFCOT / "outputs/final991_eval_v1/gen/base",
+     "final991": CFCOT / "outputs/final991_eval_v1/gen/final991",
+     "v6": CFCOT / "outputs/e3_eval/gen_indomain/v6",
++    "v7": CFCOT / "outputs/e3_eval/gen_indomain/v7",
+ }
+ VENV_SITE = BAGEL / "venvs/geneval_eval/lib/python3.10/site-packages"
+ SIZE = 512
+@@ -56,6 +57,7 @@ def parse_args() -> argparse.Namespace:
+     parser.add_argument("--gen-base-dir", type=Path, default=DEFAULT_GEN_DIRS["base"])
+     parser.add_argument("--gen-final991-dir", type=Path, default=DEFAULT_GEN_DIRS["final991"])
+     parser.add_argument("--gen-v6-dir", type=Path, default=DEFAULT_GEN_DIRS["v6"])
++    parser.add_argument("--gen-v7-dir", type=Path, default=DEFAULT_GEN_DIRS["v7"])
+     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+     parser.add_argument("--seeds", nargs="*", default=["1234", "2234", "3234"])
+     parser.add_argument("--rescore", action="store_true", help="overwrite existing row files")
+@@ -67,7 +69,8 @@ def parse_args() -> argparse.Namespace:
+ 
+ 
+ def gen_dir_for(args: argparse.Namespace, model: str) -> Path:
+-    return {"base": args.gen_base_dir, "final991": args.gen_final991_dir, "v6": args.gen_v6_dir}[model]
++    return {"base": args.gen_base_dir, "final991": args.gen_final991_dir,
++            "v6": args.gen_v6_dir, "v7": args.gen_v7_dir}[model]
+ 
+ 
+ def score_split(model: str, split: str, pairs: list[dict], gen_dir: Path,
+diff --git a/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
+index 3841f2b..1eb407d 100644
+--- a/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
++++ b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
+@@ -441,6 +441,7 @@ def test_guard_copy() -> None:
+         return
+     copy_src = copy_path.read_text(encoding="utf-8")
+     check("guard_copy_accepts_v6_label", '"gold40_automask_v6_align_fsdp"' in copy_src)
++    check("guard_copy_accepts_v7_label", '"gold40_automask_v7_align_fsdp"' in copy_src)
+     check("guard_copy_keeps_v5_label", '"gold40_automask_v5_paired_fsdp"' in copy_src)
+     orig_path = HERE.parent / "gold40_automask_dual_target_cot1024_fsdp_v5" / \
+         "generate_same_seed_states.py"
+@@ -474,6 +475,69 @@ def test_guard_copy() -> None:
+               '.get("format")' not in src and ".get('format')" not in src)
+ 
+ 
++# ---------------------------------------------------------------------------
++# 11: four-way (base/final991/v6/v7) auto-detection + pair enumeration
++# ---------------------------------------------------------------------------
++def test_four_way_models(tmp: Path) -> None:
++    istats = load_module("istats_4way", HERE / "indomain_stats.py")
++    # backward-compat: the 3-model pair order is unchanged
++    check("pairs_3way_compat",
++          istats.pairs_for(["base", "final991", "v6"])
++          == [("v6", "final991"), ("v6", "base"), ("final991", "base")])
++    # 4 models -> 6 ordered pairs, v7 pairs appended after the v6 three-way
++    check("pairs_4way_count",
++          istats.pairs_for(["base", "final991", "v6", "v7"])
++          == [("v6", "final991"), ("v6", "base"), ("final991", "base"),
++              ("v7", "v6"), ("v7", "final991"), ("v7", "base")])
++    # indomain CLI auto-detects 4 models and emits all 6 pairs
++    scores = tmp / "scores_indomain_4w"
++    scores.mkdir(parents=True)
++    n = 40
++    for model, lift in (("base", 0.0), ("final991", 0.03), ("v6", 0.01), ("v7", 0.04)):
++        rows = []
++        for i in range(n):
++            shared = (i % 50) / 500.0  # identical across models: pure paired design
++            rows.append({"pair_id": f"p{i:03d}", "model": model, "split": "val",
++                         "tgt_ssim": 0.5 + shared + lift,
++                         "tgt_mse": 0.1 + shared - lift,
++                         "in_mse": 0.1 + shared - lift, "out_mse": 0.1 + shared,
++                         "tgt_psnr": 20.0 + lift, "tgt_lpips": 0.3 - lift,
++                         "src_mse": 0.1 + shared, "clip_src": 0.5 + shared,
++                         "clip_tgt": 0.5 + shared + lift, "dino_tgt": 0.4 + lift,
++                         "strength": 1.0, "bg_drift": 0.05, "directional": 0.1 + lift})
++        with (scores / f"indomain_{model}_val.jsonl").open("w") as f:
++            for r in rows:
++                f.write(json.dumps(r) + "\n")
++    proc = run_cli(["indomain_stats.py", "--scores-dir", str(scores),
++                    "--splits", "val", "--bootstrap", "300"])
++    check("fourway_indomain_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
++    data = json.loads((scores / "indomain_stats_threeway.json").read_text())
++    pooled = data["splits"]["pooled"]
++    check("fourway_models_detected", pooled["models"] == ["base", "final991", "v6", "v7"])
++    check("fourway_six_pairs",
++          set(pooled["pairs"]) == {"v6-final991", "v6-base", "final991-base",
++                                   "v7-v6", "v7-final991", "v7-base"})
++    e = pooled["pairs"]["v7-final991"]["metrics"]["tgt_ssim"]
++    check("fourway_v7_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
++    md = (scores / "indomain_table.md").read_text()
++    check("fourway_md_columns", all(c in md for c in ("v7-v6", "v7-final991", "v7-base")))
++    # E1 CLIP-T: auto-detect 4 models from clipT_*.jsonl
++    rng = random.Random(19)
++    t2i = tmp / "scores_t2i_4w"
++    t2i.mkdir(parents=True)
++    for model, lift in (("base", 0.0), ("final991", 0.02), ("v6", 0.012), ("v7", 0.03)):
++        with (t2i / f"clipT_{model}.jsonl").open("w") as f:
++            for i in range(50):
++                f.write(json.dumps({"item_id": f"it{i:03d}", "subset": "counting",
++                                    "clip_cos": 0.30 + 0.01 * rng.random() + lift}) + "\n")
++    proc = run_cli(["stats_threeway.py", "--scores-dir", str(t2i), "--bootstrap", "300"])
++    check("fourway_e1_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
++    e1 = json.loads((t2i / "stats_threeway.json").read_text())["clipT"]
++    check("fourway_e1_models", e1["models"] == ["base", "final991", "v6", "v7"])
++    check("fourway_e1_pairs", set(e1["ALL"]["pairs"]) ==
++          {"v6-final991", "v6-base", "final991-base", "v7-v6", "v7-final991", "v7-base"})
++
++
+ def main() -> None:
+     tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
+     try:
+@@ -487,6 +551,7 @@ def main() -> None:
+         test_score_lazy_import()
+         test_summarize(tmp)
+         test_guard_copy()
++        test_four_way_models(tmp)
+     finally:
+         shutil.rmtree(tmp, ignore_errors=True)
+     print()
+diff --git a/experiments/counterfactual_cot/e3_eval/stats_threeway.py b/experiments/counterfactual_cot/e3_eval/stats_threeway.py
+index c8634ec..6981e25 100644
+--- a/experiments/counterfactual_cot/e3_eval/stats_threeway.py
++++ b/experiments/counterfactual_cot/e3_eval/stats_threeway.py
+@@ -22,8 +22,8 @@ import json
+ import statistics
+ from pathlib import Path
+ 
+-from indomain_stats import (DEFAULT_PAIRS, MODEL_ORDER, available_pairs, fmt_entry,
+-                            load_rows, pair_label, pair_stats)
++from indomain_stats import (available_pairs, detect_clip_models, fmt_entry, load_rows,
++                            ordered_models, pair_label, pair_stats)
+ 
+ HERE = Path(__file__).resolve().parent
+ DEFAULT_SCORES_DIR = HERE.parent / "outputs/e3_eval/scores_t2i"
+@@ -31,7 +31,7 @@ DEFAULT_SCORES_DIR = HERE.parent / "outputs/e3_eval/scores_t2i"
+ 
+ def analyze_subsets(rows_by_model: dict[str, dict[str, dict]], field: str,
+                     n_boot: int) -> dict:
+-    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
++    models = ordered_models([m for m, rows in rows_by_model.items() if rows])
+     if len(models) < 2:
+         return {"models": models, "skipped": True}
+     common = None
+@@ -88,10 +88,14 @@ def markdown(clip: dict, vqa: dict | None, out: Path, n_boot: int) -> None:
+ def main() -> None:
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
+-    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
++    parser.add_argument("--models", nargs="*", default=None,
++                        help="default: auto-detect every model with clipT rows (base/final991/v6/v7)")
+     parser.add_argument("--field", default="clip_cos")
+     parser.add_argument("--bootstrap", type=int, default=20000)
+     args = parser.parse_args()
++    if args.models is None:
++        args.models = detect_clip_models(args.scores_dir)
++        print(f"[auto] models detected: {args.models}")
+ 
+     rows: dict[str, dict[str, dict]] = {}
+     for m in args.models:
+diff --git a/experiments/counterfactual_cot/e3_eval/summarize.py b/experiments/counterfactual_cot/e3_eval/summarize.py
+index 8d16b9f..830f487 100644
+--- a/experiments/counterfactual_cot/e3_eval/summarize.py
++++ b/experiments/counterfactual_cot/e3_eval/summarize.py
+@@ -17,13 +17,11 @@ import argparse
+ import json
+ from pathlib import Path
+ 
+-from indomain_stats import DEFAULT_PAIRS, MODEL_ORDER, fmt_entry
++from indomain_stats import fmt_entry, ordered_models, pairs_for
+ 
+ HERE = Path(__file__).resolve().parent
+ DEFAULT_ROOT = HERE.parent / "outputs/e3_eval"
+ 
+-ALL_PAIRS = [f"{y}-{x}" for (y, x) in DEFAULT_PAIRS]
+-
+ 
+ def load_json(path: Path) -> dict | None:
+     if path.exists():
+@@ -36,7 +34,8 @@ def cell(entry: dict | None, prec: int = 4) -> str:
+ 
+ 
+ def pair_cols(present_pairs: list[str]) -> list[str]:
+-    return [p for p in ALL_PAIRS if p in present_pairs]
++    """Column order comes from the stats producers (pairs_for ordering)."""
++    return list(present_pairs)
+ 
+ 
+ def section_e1(data: dict) -> list[str]:
+@@ -106,12 +105,16 @@ def section_probe(data: dict) -> list[str]:
+         lines.append("")
+     else:
+         lines += ["(E2 probe rows missing)", ""]
++    models = data.get("models") or []
++    preferred = [f"{y}-{x}" for (y, x) in pairs_for(models)]
++    present = {pair for per_pair in data.get("metrics", {}).values() for pair in per_pair}
++    cols = [c for c in preferred if c in present] + sorted(present - set(preferred))
+     lines += ["Best layer per metric (largest mean paired diff):", "",
+-              "| metric | " + " | ".join(ALL_PAIRS) + " |",
+-              "|" + "---|" * (1 + len(ALL_PAIRS))]
++              "| metric | " + " | ".join(cols) + " |",
++              "|" + "---|" * (1 + len(cols))]
+     for metric, per_pair in data.get("metrics", {}).items():
+         cells = []
+-        for c in ALL_PAIRS:
++        for c in cols:
+             d = per_pair.get(c)
+             if d and d.get("best") and d["best"].get("n", 0) > 0:
+                 cells.append(f"L{d['best_layer']} {d['best']['mean_diff_y_minus_x']:+.4f}"
+@@ -130,21 +133,28 @@ def section_probe(data: dict) -> list[str]:
+ 
+ 
+ def condense(root: Path) -> dict:
+-    out: dict = {"models": MODEL_ORDER,
+-                 "pairs": ALL_PAIRS,
+-                 "components": {}}
+     e1 = load_json(root / "scores_t2i" / "stats_threeway.json")
++    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
++    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
++    models: set[str] = set()
++    if e1:
++        models.update(e1.get("clipT", {}).get("models", []))
++    if ind:
++        models.update(ind.get("models", []))
++    if pr:
++        models.update(pr.get("models", []))
++    out: dict = {"models": ordered_models(sorted(models)),
++                 "pairs": [f"{y}-{x}" for (y, x) in pairs_for(models)],
++                 "components": {}}
+     if e1:
+         clip = e1.get("clipT", {})
+         out["components"]["e1_clipt"] = {
+             s: {"n": e.get("n"), "pairs": e.get("pairs")}
+             for s, e in clip.items() if s not in ("models", "skipped")}
+-    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
+     if ind:
+         out["components"]["module_a"] = {
+             s: {"n": d.get("n_pairs"), "pairs": d.get("pairs")}
+             for s, d in ind.get("splits", {}).items() if not d.get("skipped")}
+-    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
+     if pr:
+         out["components"]["e2_probe"] = {
+             "n_pairs": pr.get("n_pairs"),
+@@ -164,9 +174,10 @@ def main() -> None:
+     ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
+     pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
+ 
+-    lines = ["# E3 three-way evaluation summary: base / final991 / v6", "",
+-             "v6 = final991 SFT + token-region alignment loss (2973 steps, latest.pt, LoRA "
+-             "direct-load). Pairs: v6-final991 / v6-base / final991-base (replication). "
++    lines = ["# E3 evaluation summary: base / final991 / v6 / v7 (whichever rows exist)", "",
++             "v6 = final991 SFT + token-region alignment loss; v7 = v6 + thrust fixes "
++             "(lambda 0.3, tau 0.1, strength reg, plateau guard). Pairs: v6-final991 / "
++             "v6-base / final991-base (replication) / v7-v6 / v7-final991 / v7-base. "
+              "Bootstrap 95% CI (20000 resamples, seed 1234); SIG = CI excludes 0; "
+              "optional Wilcoxon signed-rank p in parentheses.", ""]
+     lines += section_e1(e1) if e1 else ["## E1 general T2I", "", "(missing)", ""]
