@@ -1141,7 +1141,7 @@ index 0000000..bf5f377
 +    main()
 diff --git a/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
 new file mode 100644
-index 0000000..c246553
+index 0000000..fe28301
 --- /dev/null
 +++ b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
 @@ -0,0 +1,337 @@
@@ -1268,7 +1268,7 @@ index 0000000..c246553
 +indomain_v6_score() { # out_root splits_dir splits...
 +  local o="$1" splits_dir="$2"; shift 2
 +  CUDA_VISIBLE_DEVICES=$GPU1 $EVAL_PY "$HERE/score_indomain_threeway.py" \
-+    --models v6 --splits "$*" --splits-dir "$splits_dir" \
++    --models v6 --splits $* --splits-dir "$splits_dir" \
 +    --gen-v6-dir "$o/gen_indomain/v6" --out-dir "$o/scores_indomain" --seeds $INDO_SEEDS
 +}
 +
