@@ -1,0 +1,2285 @@
+From 6cae58416e82058c158f26c50b2df221319430e5 Mon Sep 17 00:00:00 2001
+From: nightlee1218-sudo <nightlee1218-sudo@users.noreply.github.com>
+Date: Wed, 14 Oct 2026 11:15:09 +0800
+Subject: [PATCH] E3 eval: three-way evaluation launcher (base/final991/v6)
+
+- run_e3_eval.sh: selftest|preflight|smoke|run|status stages (run_v6.sh
+  style) + granular e1-gen/e1-score/indomain-gen/indomain-score/probe/
+  stats/summary; 2-GPU chain orchestration + watchdog progress file
+- model_shim.py: import-time MODELS['v6'] injection into e1/e2 scripts
+  (no edits on feature/e1-general-t2i or exp/e2-token-probe)
+- E1 general T2I (3x150 T2I-CompBench): v6 generation via shim + reused
+  score_clip.py; stats_threeway.py = CLIP-T per-item 20k bootstrap (seed
+  1234) + Wilcoxon, 3 model pairs, subsets + ALL
+- Module A in-domain (95 pairs, 3 seeds x 2 states):
+  score_indomain_threeway.py (metric code line-identical to
+  final991_eval_v1/score_indomain.py, lazy heavy imports, --models,
+  skip-if-exists) + indomain_stats.py (pure shared stats helpers +
+  13-metric three-way CLI)
+- E2 probe (51 val pairs): v6 rerun via shim with identical probe-steps;
+  probe_stats.py = 10-metric best-layer paired diffs + late-step AUROC
+  (S23) + optional npz cross-check (validated, f16 drift < 5e-05)
+- summarize.py: unified summary_table.md / summary.json
+- selftest_e3_eval.py: 46 CPU checks ALL PASS; replication pair
+  (final991-base) validated against historical E1 / Module-A / E2
+  numbers (exact match)
+---
+ .../counterfactual_cot/e3_eval/README.md      | 141 ++++++
+ .../e3_eval/indomain_stats.py                 | 273 +++++++++++
+ .../counterfactual_cot/e3_eval/model_shim.py  |  91 ++++
+ .../counterfactual_cot/e3_eval/probe_stats.py | 325 +++++++++++++
+ .../counterfactual_cot/e3_eval/run_e3_eval.sh | 332 +++++++++++++
+ .../e3_eval/score_indomain_threeway.py        | 238 +++++++++
+ .../e3_eval/selftest_e3_eval.py               | 456 ++++++++++++++++++
+ .../e3_eval/stats_threeway.py                 | 137 ++++++
+ .../counterfactual_cot/e3_eval/summarize.py   | 189 ++++++++
+ 9 files changed, 2182 insertions(+)
+ create mode 100644 experiments/counterfactual_cot/e3_eval/README.md
+ create mode 100644 experiments/counterfactual_cot/e3_eval/indomain_stats.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/model_shim.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/probe_stats.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
+ create mode 100644 experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/stats_threeway.py
+ create mode 100644 experiments/counterfactual_cot/e3_eval/summarize.py
+
+diff --git a/experiments/counterfactual_cot/e3_eval/README.md b/experiments/counterfactual_cot/e3_eval/README.md
+new file mode 100644
+index 0000000..2b0384c
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/README.md
+@@ -0,0 +1,141 @@
++# E3 three-way evaluation: base / final991 / v6
++
++E3 v6 (= Module-A SFT + token-region alignment loss, 2973 steps,
++`outputs/gold40_automask_v6_align_fsdp_full_shard/checkpoints/latest.pt`,
++checkpoint keys identical to v5 → LoRA direct-load) evaluated against both
++baselines on three axes, then unified into one summary table:
++
++1. **E1 general T2I** — T2I-CompBench 3 subsets x 150 prompts, CLIP-T
++   (ViT-L/14), per-item paired bootstrap + Wilcoxon.
++2. **Module A in-domain** — the 95 counterfactual pairs (val 51 + test 44),
++   3 seeds x 2 states, 13 metrics (pixel / CLIP-I / DINOv2 / LPIPS / mask
++   decomposition / directionality).
++3. **E2 token probe** — 51 val pairs, per-layer binding metrics, best-layer
++   paired diffs + late-step AUROC.
++
++Model pairs everywhere: `v6-final991` (alignment-loss marginal effect),
++`v6-base` (total effect), `final991-base` (replication of the already-known
++Module-A / E1 / E2 result, as a sanity anchor).
++
++## Files
++
++| file | role |
++|---|---|
++| `run_e3_eval.sh` | launcher: `selftest\|preflight\|smoke\|run\|status` + granular `e1-gen\|e1-score\|indomain-gen\|indomain-score\|probe\|stats\|summary` (run_v6.sh style, progress file `wb_e3_eval_progress.txt`) |
++| `model_shim.py` | injects `MODELS["v6"] = {trainable_checkpoint: <ckpt>}` into e1/e2 scripts at import time (see below) |
++| `indomain_stats.py` | shared PURE stats helpers (bootstrap/wilcoxon/pair_stats) + Module-A three-way CLI |
++| `score_indomain_threeway.py` | Module-A scoring, metric code line-identical to `final991_eval_v1/score_indomain.py`; lazy heavy imports, `--models`, skip-if-exists |
++| `stats_threeway.py` | E1 CLIP-T three-way CLI (subsets + ALL, optional VQA merge) |
++| `probe_stats.py` | E2 three-way CLI: 10 metrics x layers, best layer, late-step AUROC, optional npz cross-check |
++| `summarize.py` | unified `summary_table.md` + `summary.json` from the three stats files |
++| `selftest_e3_eval.py` | CPU mock suite (46 checks; no GPU/BAGEL stack) |
++
++## What is reused vs. newly computed
++
++| component | base / final991 | v6 |
++|---|---|---|
++| E1 generation | existing `outputs/e1_general_t2i/gen/{base,final991}` | new: `gen_t2i/v6` via shim -> `generate_t2i.py` |
++| E1 CLIP-T rows | copied `clipT_{base,final991}.jsonl` | new: `score_clip.py --models v6` |
++| A gen (95x2x3) | existing `outputs/final991_eval_v1/gen/...` | new: `generate_same_seed_states.py --trainable-checkpoint <v6 latest.pt>` (no shim needed) |
++| A rows | copied `indomain_{base,final991}_{val,test}.jsonl` | new: `score_indomain_threeway.py --models v6` |
++| E2 probe | existing `outputs/e2_token_probe/probe_{base,final991}` (51 ok pairs) | new: shim -> `probe.py`, same `--probe-steps 0 11 23` |
++| stats | recomputed from the copied rows (replication pair) | — |
++
++Only v6 is generated/scored/probed; the reference rows are never rescored,
++so the replication pair stays comparable with the historical runs.
++
++## The import-shim (why e1/e2 files are untouched)
++
++`e1_general_t2i/generate_t2i.py` and `e2_token_probe/probe.py` live on other
++branches (`feature/e1-general-t2i`, `exp/e2-token-probe`) and resolve
++`--model` through a module-level `MODELS` dict (`choices=list(MODELS)`
++inside parse). `model_shim.py` loads the script with
++`importlib.util.spec_from_file_location`, registers
++`MODELS["v6"] = {"trainable_checkpoint": <latest.pt>, "skip_trainable_reload": False}`,
++rewrites `sys.argv` and calls `module.main()` — adding v6 without touching
++any file on those branches:
++
++```bash
++python3 model_shim.py --script ../e2_token_probe/probe.py \
++    --alias v6 --ckpt $V6_CKPT -- --model v6 --out-dir $OUT/probe_v6
++```
++
++`--dry-run` prints the injected entry and exits (used by preflight and the
++selftest). The v5 A-module generator already takes
++`--trainable-checkpoint` directly, so no shim is needed there.
++
++## Output layout (`outputs/e3_eval/`, smoke: `outputs/e3_eval_smoke/`)
++
++```
++gen_t2i/v6/                       E1 v6 generation (450 imgs)
++scores_t2i/clipT_{base,final991,v6}.jsonl + stats_threeway.json + comparison_table.md
++gen_indomain/v6/{val,test}/       A-module v6 generation (570 imgs)
++scores_indomain/indomain_{model}_{split}.jsonl + indomain_stats_threeway.json + indomain_table.md
++probe_v6/                         E2 v6 probe (manifest + maps/*.npz)
++probe_stats/probe_stats_threeway.json + probe_table.md
++summary_table.md + summary.json   unified three-way summary
++```
++
++## Stats recipe (all components, identical)
++
++Per-item paired diff (y − x), 20000 bootstrap resamples seeded 1234,
++2.5/97.5 percentile CI, significant iff the CI excludes 0, win/loss/tie,
++optional scipy Wilcoxon signed-rank on nonzero diffs. The bootstrap body is
++copied verbatim from `e1_general_t2i/stats_paired.py`, so the replication
++pair reproduces the historical numbers exactly (validated: E1 CLIP-T
++diff+CI match `stats_summary.json` to 1e-12; Module-A deltas match
++`final991_eval_v1/scores/summary.json` to 2e-16; E2 all 10 best-layer
++selections match `e2_stats_summary.json`). Non-finite values (e.g.
++PSNR=inf) are dropped per metric with `n_dropped` recorded.
++
++Note: `final991_eval_v1` used `random.seed(0)` for its bootstrap; e3_eval
++unifies on seed 1234, so replication CIs may differ marginally from the
++old file while deltas are identical.
++
++## E2 flow keys and "late-step AUROC"
++
++`probe.py` captures flow maps at (layer, step) combos where the shared
++counter coincides (defaults → `flow_map_L0_S0`, `L11_S11`, `L23_S23` in
++`maps/<pair>.npz`, shape (n_heads, 4096) f16). The late step is the largest
++captured step (t≈0.115, near the trajectory end); **late-step AUROC** =
++`per_layer["23"]["flow_auroc"]` from the manifests, compared three-way.
++`--verify-npz` recomputes it from the npz maps (head-mean, tie-corrected
++AUROC vs mask flags rebuilt from the val records — helpers verbatim from
++probe.py). Validated on the existing runs: max manifest-vs-npz drift
++4.8e-05 (f16 rounding), tolerance 0.02.
++
++## Running (GPU instance, 2x A100)
++
++```bash
++bash run_e3_eval.sh selftest   # CPU only
++bash run_e3_eval.sh preflight  # env + reusable-artifact audit + shim dry-run
++bash run_e3_eval.sh smoke      # v6-only tiny pipeline (~30 min) + stats
++bash run_e3_eval.sh run        # full: gpu0 E1 v6 -> CLIP-T; gpu1 A gen -> probe -> score; then stats+summary
++bash run_e3_eval.sh status
++```
++
++Env knobs: `V6_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1 E1_MAX_ITEMS
++INDO_SEEDS PROBE_LIMIT PROBE_STEPS PROBE_VERIFY_NPZ`. Scoring uses
++`/group/40016/niightli/BAGEL/venvs/geneval_eval/bin/python` (torch +
++open_clip ViT-g-14 + dinov2 + lpips); generation/probing use system
++`python3` with the BAGEL stack.
++
++Resumability: E1 gen and the probe skip already-done items by manifest;
++the v5 A-module generator is NOT resumable (non-empty dir without
++`--overwrite` aborts), so `indomain-gen` checks completion (pairs x 2 x
++seeds rows) and auto-passes `--overwrite` only when a split is incomplete.
++
++## Limitations / notes
++
++- Runtime requires the merged server tree (sibling `e1_general_t2i/`,
++  `e2_token_probe/`, `final991_automask_v5_data/`, v5 trainer dir); on the
++  `exp/e3-align-v6` branch alone only `e3_eval/` exists — the e1/e2 dirs
++  live on their own branches by design.
++- Model weights default to `/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT`
++  (GPU-instance local); override with `MODEL_DIR` if needed.
++- `dinov2`/`lpips` load failures degrade to null columns (stats drop them
++  per metric) instead of crashing, unlike the original scorer.
++- VQA faithfulness (E1) is merged only if `vqa_{model}.jsonl` rows exist;
++  the current E1 run has none, so the section is absent unless v6 adds it.
++- The author delivered the launcher only; GPU evaluation itself was NOT
++  run from the authoring session (per task scope).
+diff --git a/experiments/counterfactual_cot/e3_eval/indomain_stats.py b/experiments/counterfactual_cot/e3_eval/indomain_stats.py
+new file mode 100644
+index 0000000..d332642
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/indomain_stats.py
+@@ -0,0 +1,273 @@
++#!/usr/bin/env python3
++"""E3 eval shared stats helpers + Module-A (in-domain, 95 pairs) three-way CLI.
++
++This module is deliberately PURE (stdlib only — no torch/numpy) so the CPU
++selftest and every stats component can import it anywhere.
++
++Recipe (byte-identical to e1_general_t2i/stats_paired.py::paired_bootstrap /
++final991_eval_v1 Module A): per-item paired diff, 20000 bootstrap resamples
++seeded 1234, 2.5/97.5 percentile CI, significant iff the CI excludes 0,
++win/loss/tie counts, optional scipy Wilcoxon signed-rank on the nonzero
++diffs.  The bootstrap function body below is copied verbatim from E1 so
++three-way numbers are directly comparable with the E1 stats_summary.json
++replication pair (final991 - base).
++
++Three model pairs everywhere:
++  v6 - final991     (E3 question: alignment loss on top of Module-A SFT)
++  v6 - base         (total effect)
++  final991 - base   (replication sanity check vs final991_eval_v1/E1)
++
++CLI (Module A): reads indomain_{model}_{split}.jsonl rows written by
++final991_eval_v1/score_indomain.py (base/final991, copied here by
++run_e3_eval.sh) and by e3_eval/score_indomain_threeway.py (v6), then writes
++  indomain_stats_threeway.json
++  indomain_table.md
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import math
++import random
++import statistics
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++CFCOT = HERE.parent
++DEFAULT_SCORES_DIR = CFCOT / "outputs/e3_eval/scores_indomain"
++
++MODEL_ORDER = ["base", "final991", "v6"]
++DEFAULT_PAIRS = [("v6", "final991"), ("v6", "base"), ("final991", "base")]
++
++# (field, better) — polarity only annotates direction; significance is CI != 0
++IND_METRICS = [
++    ("tgt_mse", "lower"),
++    ("src_mse", "lower"),
++    ("tgt_psnr", "higher"),
++    ("tgt_ssim", "higher"),
++    ("tgt_lpips", "lower"),
++    ("clip_src", "higher"),
++    ("clip_tgt", "higher"),
++    ("dino_tgt", "higher"),
++    ("in_mse", "lower"),
++    ("out_mse", "lower"),
++    ("strength", "ratio"),      # gen_change / gold_change inside mask: ~1 is ideal
++    ("bg_drift", "lower"),
++    ("directional", "higher"),  # clip_tgt - clip_tgt_vs_src
++]
++
++
++# ---------------------------------------------------------------------------
++# shared pure helpers
++# ---------------------------------------------------------------------------
++def load_rows(path: Path, key: str = "pair_id") -> dict[str, dict]:
++    """jsonl -> {key: row}; missing file returns {} (callers decide tolerance)."""
++    rows: dict[str, dict] = {}
++    if not path.exists():
++        return rows
++    for line in path.read_text(encoding="utf-8").splitlines():
++        if line.strip():
++            rec = json.loads(line)
++            rows[rec[key]] = rec
++    return rows
++
++
++def paired_bootstrap(diffs: list[float], n_boot: int, seed: int = 1234) -> tuple[float, float, float]:
++    """Verbatim from e1_general_t2i/stats_paired.py (returns lo, hi, mean)."""
++    rng = random.Random(seed)
++    n = len(diffs)
++    if n == 0:
++        return float("nan"), float("nan"), float("nan")
++    means = []
++    for _ in range(n_boot):
++        sample = [diffs[rng.randrange(n)] for _ in range(n)]
++        means.append(statistics.fmean(sample))
++    means.sort()
++    lo = means[int(0.025 * len(means))]
++    hi = means[int(0.975 * len(means))]
++    return lo, hi, statistics.fmean(diffs)
++
++
++def wilcoxon_p(diffs: list[float]) -> float | None:
++    """Signed-rank p on nonzero diffs (scipy if importable, else None)."""
++    nz = [d for d in diffs if d != 0]
++    if len(nz) < 5:
++        return None
++    try:
++        from scipy.stats import wilcoxon
++
++        _stat, p = wilcoxon(nz)
++        return float(p)
++    except Exception:
++        return None
++
++
++def pair_stats(rows_x: dict[str, dict], rows_y: dict[str, dict], field: str,
++               ids: list[str], n_boot: int = 20000, seed: int = 1234) -> dict:
++    """Paired stats of (y - x) over `ids`; None/non-finite values dropped."""
++    diffs: list[float] = []
++    x_vals: list[float] = []
++    y_vals: list[float] = []
++    dropped = 0
++    for i in ids:
++        vx = rows_x.get(i, {}).get(field)
++        vy = rows_y.get(i, {}).get(field)
++        if vx is None or vy is None:
++            dropped += 1
++            continue
++        d = vy - vx
++        if not (isinstance(d, float) and math.isfinite(d)):
++            dropped += 1
++            continue
++        diffs.append(d)
++        x_vals.append(vx)
++        y_vals.append(vy)
++    if not diffs:
++        return {"n": 0, "n_dropped": dropped}
++    lo, hi, mean_diff = paired_bootstrap(diffs, n_boot, seed)
++    wins = sum(1 for d in diffs if d > 0)
++    losses = sum(1 for d in diffs if d < 0)
++    entry = {
++        "n": len(diffs),
++        "n_dropped": dropped,
++        "x_mean": statistics.fmean(x_vals),
++        "y_mean": statistics.fmean(y_vals),
++        "mean_diff_y_minus_x": mean_diff,
++        "ci95": [lo, hi],
++        "significant": bool(lo > 0 or hi < 0),
++        "wins/losses/ties": [wins, losses, len(diffs) - wins - losses],
++        "wilcoxon_p": wilcoxon_p(diffs),
++    }
++    return entry
++
++
++def available_pairs(models: list[str],
++                    pairs: list[tuple[str, str]] = DEFAULT_PAIRS) -> list[tuple[str, str]]:
++    """Ordered pairs restricted to models actually present in the data."""
++    return [(a, b) for (a, b) in pairs if a in models and b in models]
++
++
++def pair_label(y: str, x: str) -> str:
++    return f"{y}-{x}"
++
++
++def fmt_entry(e: dict | None, prec: int = 4) -> str:
++    if not e or e.get("n", 0) == 0:
++        return "n/a"
++    txt = (f"{e['mean_diff_y_minus_x']:+.{prec}f} "
++           f"[{e['ci95'][0]:+.{prec}f}, {e['ci95'][1]:+.{prec}f}]")
++    if e["significant"]:
++        txt += " SIG"
++    p = e.get("wilcoxon_p")
++    if p is not None:
++        txt += f" (p={p:.4g})"
++    w = e["wins/losses/ties"]
++    txt += f" {w[0]}/{w[1]}/{w[2]}"
++    return txt
++
++
++# ---------------------------------------------------------------------------
++# Module-A three-way analysis
++# ---------------------------------------------------------------------------
++def analyze_split(rows_by_model: dict[str, dict[str, dict]], metrics: list[tuple[str, str]],
++                  n_boot: int) -> dict:
++    """rows_by_model: {model: {pair_id: row}} for ONE split (already loaded)."""
++    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
++    if len(models) < 2:
++        return {"models": models, "skipped": True}
++    ids = None
++    for m in models:
++        s = set(rows_by_model[m])
++        ids = s if ids is None else (ids & s)
++    ids = sorted(ids)
++    out: dict = {"models": models, "n_pairs": len(ids), "model_means": {}, "pairs": {}}
++    for field, _better in metrics:
++        mm = {}
++        for m in models:
++            vals = [rows_by_model[m][i][field] for i in ids
++                    if isinstance(rows_by_model[m][i].get(field), float)]
++            if vals:
++                mm[m] = statistics.fmean(vals)
++        out["model_means"][field] = mm
++    for (y, x) in available_pairs(models):
++        plist: dict[str, dict] = {}
++        for field, _better in metrics:
++            plist[field] = pair_stats(rows_by_model[x], rows_by_model[y], field, ids, n_boot)
++        out["pairs"][pair_label(y, x)] = {"diff": f"{y} - {x}", "metrics": plist}
++    return out
++
++
++def markdown_report(summary: dict, out: Path) -> None:
++    models = summary.get("models", [])
++    lines = ["# E3 Module A (in-domain, 95 counterfactual pairs): three-way comparison", "",
++             f"Models: {', '.join(models)}. Paired diff = column model - row model; "
++             f"bootstrap 95% CI ({summary['bootstrap_resamples']} resamples, seed 1234); "
++             f"SIG = CI excludes 0. Non-finite values (e.g. PSNR=inf) are dropped per metric.", ""]
++    for split, data in summary["splits"].items():
++        if data.get("skipped"):
++            lines += [f"## {split}: skipped (need >= 2 models with rows)", ""]
++            continue
++        lines += [f"## split: {split} (n={data['n_pairs']} paired pairs)", ""]
++        cols = [pair_label(y, x) for (y, x) in available_pairs(data["models"])]
++        lines.append("| metric | " + " | ".join(f"{m} mean" for m in data["models"])
++                     + " | " + " | ".join(cols) + " |")
++        lines.append("|---" * (1 + len(data["models"]) + len(cols)) + "|")
++        for field, _better in IND_METRICS:
++            means = data["model_means"].get(field, {})
++            mcells = [f"{means[m]:.4f}" if m in means else "n/a" for m in data["models"]]
++            pcells = [fmt_entry(data["pairs"][c]["metrics"][field]) if c in data["pairs"] else "n/a"
++                      for c in cols]
++            lines.append(f"| {field} | " + " | ".join(mcells) + " | "
++                         + " | ".join(pcells) + " |")
++        lines.append("")
++    out.write_text("\n".join(lines), encoding="utf-8")
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
++    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
++    parser.add_argument("--splits", nargs="*", default=["val", "test"])
++    parser.add_argument("--bootstrap", type=int, default=20000)
++    parser.add_argument("--out-prefix", default="indomain_stats_threeway")
++    args = parser.parse_args()
++
++    rows_all: dict[str, dict[str, dict[str, dict]]] = {}
++    for split in args.splits:
++        per_model: dict[str, dict[str, dict]] = {}
++        for m in args.models:
++            rows = load_rows(args.scores_dir / f"indomain_{m}_{split}.jsonl")
++            if rows:
++                per_model[m] = rows
++            else:
++                print(f"[warn] no rows: indomain_{m}_{split}.jsonl")
++        rows_all[split] = per_model
++    # pooled = union of splits
++    pooled: dict[str, dict[str, dict]] = {}
++    for m in args.models:
++        merged: dict[str, dict] = {}
++        for s in args.splits:
++            for pid, row in rows_all[s].get(m, {}).items():
++                merged[pid] = row
++        if merged:
++            pooled[m] = merged
++    rows_all["pooled"] = pooled
++
++    summary = {
++        "experiment": "e3_module_a_indomain_threeway",
++        "models": [m for m in MODEL_ORDER if any(m in rows_all[s] for s in rows_all)],
++        "bootstrap_resamples": args.bootstrap,
++        "splits": {s: analyze_split(rows_all[s], IND_METRICS, args.bootstrap)
++                   for s in list(args.splits) + ["pooled"]},
++        "metrics": {f: b for f, b in IND_METRICS},
++    }
++    out_json = args.scores_dir / f"{args.out_prefix}.json"
++    out_md = args.scores_dir / "indomain_table.md"
++    args.scores_dir.mkdir(parents=True, exist_ok=True)
++    out_json.write_text(json.dumps(summary, indent=1), encoding="utf-8")
++    markdown_report(summary, out_md)
++    print(json.dumps({"event": "indomain_stats_done", "json": str(out_json), "md": str(out_md)}))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/model_shim.py b/experiments/counterfactual_cot/e3_eval/model_shim.py
+new file mode 100644
+index 0000000..884211f
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/model_shim.py
+@@ -0,0 +1,91 @@
++#!/usr/bin/env python3
++"""E3 eval shim: inject a LoRA-checkpoint model alias into an existing script.
++
++The E1 generation driver (e1_general_t2i/generate_t2i.py) and the E2 probe
++(e2_token_probe/probe.py) both resolve ``--model`` through a module-level
++``MODELS`` dict at parse/runtime (``choices=list(MODELS)`` built inside
++``parse_args``/``main``).  This shim loads the target script as a module,
++registers
++
++    MODELS["v6"] = {"trainable_checkpoint": <ckpt>, "skip_trainable_reload": False}
++
++and then calls its ``main()`` with the forwarded argv — adding v6 (E3
++trainable_state_dict checkpoint, key-compatible with the v5 loaders) WITHOUT
++modifying any e1/e2 file (those live on other branches: exp/e2-token-probe,
++feature/e1-general-t2i).
++
++Usage:
++  python3 model_shim.py --script ../e2_token_probe/probe.py \
++      --alias v6 --ckpt <...>/latest.pt -- \
++      --model v6 --out-dir <...> --limit 1
++  python3 model_shim.py --script ../e1_general_t2i/generate_t2i.py \
++      --alias v6 --ckpt <...>/latest.pt -- \
++      --model v6 --output-dir <...> --seed 1234
++
++``--dry-run`` prints the injected entry + forwarded argv and exits (used by the
++CPU selftest; the target module is still imported, so its import side effects
++apply).
++"""
++from __future__ import annotations
++
++import argparse
++import importlib.util
++import json
++import sys
++from pathlib import Path
++
++
++def load_script_as_module(script_path: Path):
++    if not script_path.is_file():
++        raise SystemExit(f"model_shim: target script not found: {script_path}")
++    spec = importlib.util.spec_from_file_location(f"e3_shim_{script_path.stem}", script_path)
++    if spec is None or spec.loader is None:
++        raise SystemExit(f"model_shim: cannot load {script_path} as a module")
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--script", type=Path, required=True, help="target .py with a MODELS dict and main()")
++    parser.add_argument("--alias", required=True, help="model alias to register, e.g. v6")
++    parser.add_argument("--ckpt", type=Path, required=True, help="trainable_state_dict checkpoint (latest.pt)")
++    parser.add_argument("--dry-run", action="store_true")
++    parser.add_argument("rest", nargs=argparse.REMAINDER, help="args after '--' are forwarded to the target")
++    args = parser.parse_args()
++
++    forwarded = list(args.rest)
++    if forwarded and forwarded[0] == "--":
++        forwarded = forwarded[1:]
++
++    module = load_script_as_module(args.script.resolve())
++    models = getattr(module, "MODELS", None)
++    if not isinstance(models, dict):
++        raise SystemExit("model_shim: target script has no module-level MODELS dict")
++    if not hasattr(module, "main"):
++        raise SystemExit("model_shim: target script has no main()")
++    if not args.ckpt.is_file():
++        raise SystemExit(f"model_shim: checkpoint not found: {args.ckpt}")
++
++    models[args.alias] = {
++        "trainable_checkpoint": args.ckpt.resolve(),
++        "skip_trainable_reload": False,
++        "shim_alias": args.alias,
++    }
++    sys.argv = [str(args.script.resolve())] + forwarded
++    if args.dry_run:
++        print(json.dumps({
++            "event": "shim_dry_run",
++            "script": str(args.script.resolve()),
++            "alias": args.alias,
++            "ckpt": str(args.ckpt.resolve()),
++            "registered": sorted(models),
++            "forwarded_argv": forwarded,
++        }, ensure_ascii=False))
++        return
++    module.main()
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/probe_stats.py b/experiments/counterfactual_cot/e3_eval/probe_stats.py
+new file mode 100644
+index 0000000..bf5f377
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/probe_stats.py
+@@ -0,0 +1,325 @@
++#!/usr/bin/env python3
++"""E2 token-probe three-way stats: best-layer paired diffs + late-step AUROC.
++
++Reads probe_manifest.jsonl from the existing E2 runs
++(outputs/e2_token_probe/probe_{base,final991}) and the new E3 v6 probe
++(outputs/e3_eval/probe_v6, produced through model_shim.py -> probe.py with
++the same --probe-steps 0 11 23 defaults), then computes the E2 recipe
++(per-pair diff, 20000 bootstrap resamples seed 1234, 2.5/97.5 CI, SIG iff
++CI excludes 0) for all three model pairs on every per-layer metric.
++
++Flow metrics exist only at the captured (layer, step) combos — with the
++probe.py defaults step_idx is shared between layer and step, so the on-disk
++keys are flow_map_L0_S0 / L11_S11 / L23_S23.  "Late-step AUROC" below is the
++flow AUROC at the LARGEST captured step (t ~ 0.115, near the end of the
++denoising trajectory), read from per_layer[late_layer]["flow_auroc"] of the
++manifests; --verify-npz recomputes it from the per-pair npz maps
++(head-mean of flow_map_L{L}_S{late}, AUROC vs the mask flags rebuilt from
++the val records) as an f16-rounding cross-check.  The auroc/mask helpers
++are verbatim copies from e2_token_probe/probe.py so this module imports
++without the heavy BAGEL stack.
++
++Outputs (under --out-dir):
++  probe_stats_threeway.json
++  probe_table.md
++"""
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++
++from indomain_stats import MODEL_ORDER, available_pairs, fmt_entry, pair_label, pair_stats
++
++HERE = Path(__file__).resolve().parent
++CFCOT = HERE.parent
++PROBE_ROOT = CFCOT / "outputs/e2_token_probe"
++DEFAULT_OUT_DIR = CFCOT / "outputs/e3_eval/probe_stats"
++DEFAULT_VAL = CFCOT / "final991_automask_v5_data/artifacts/splits/val.jsonl"
++
++# verbatim metric list from e2_token_probe/analyze.py
++METRICS = [
++    ("norm_ratio_vae", "P1 vae density ratio in/out (prefill)"),
++    ("norm_ratio_vit", "P1 vit density ratio in/out (prefill)"),
++    ("norm_ratio_visual", "P1 visual density ratio in/out (prefill)"),
++    ("mass_visual", "P1 attn mass on all visual keys (prefill)"),
++    ("flow_log2_contrast", "P2 log2 in/out contrast (flow)"),
++    ("flow_mass_in_frac", "P2 in-mask mass fraction (flow)"),
++    ("flow_auroc", "P2 AUROC map vs mask (flow)"),
++    ("margin_vae", "P3 hidden margin cos (vae)"),
++    ("margin_vit", "P3 hidden margin cos (vit)"),
++    ("margin_lat", "P3 hidden margin cos (latent)"),
++]
++
++IMAGE_SIZE = 1024
++LAT_DOWNSAMPLE = 16  # probe.py: lat_side = image_size // model.latent_downsample
++
++
++# ---------------------------------------------------------------------------
++# manifest loading (mirrors e2_token_probe/analyze.py::load_manifest)
++# ---------------------------------------------------------------------------
++def load_manifest(path: Path) -> dict[str, dict]:
++    pairs: dict[str, dict] = {}
++    if not path.exists():
++        return pairs
++    for line in path.read_text(encoding="utf-8").splitlines():
++        if not line.strip():
++            continue
++        rec = json.loads(line)
++        if rec.get("status") == "ok":
++            pairs[rec["pair_id"]] = rec
++    return pairs
++
++
++def layer_values(rec: dict, layer: int, metric: str) -> float | None:
++    row = rec.get("per_layer", {}).get(str(layer), {})
++    return row.get(metric)
++
++
++# ---------------------------------------------------------------------------
++# verbatim copies from e2_token_probe/probe.py (kept importable without torch)
++# ---------------------------------------------------------------------------
++def auroc(scores, labels) -> float:  # noqa: ANN001 (np arrays)
++    import numpy as np
++    pos = labels.astype(bool)
++    neg = ~pos
++    if pos.sum() == 0 or neg.sum() == 0:
++        return float("nan")
++    order = np.argsort(scores, kind="stable")
++    ranks = np.empty(len(scores), dtype=np.float64)
++    ranks[order] = np.arange(1, len(scores) + 1)
++    s = scores[order]
++    i = 0
++    while i < len(s):
++        j = i
++        while j + 1 < len(s) and s[j + 1] == s[i]:
++            j += 1
++        if j > i:
++            ranks[order[i:j + 1]] = (i + j + 2) / 2.0
++        i = j + 1
++    n_pos, n_neg = int(pos.sum()), int(neg.sum())
++    return float((ranks[pos].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
++
++
++def mask_grid_fractions(mask_path: Path, grid_hw):  # noqa: ANN001
++    import numpy as np
++    import torch
++    import torch.nn.functional as F
++    from PIL import Image
++    mask = np.asarray(Image.open(mask_path).convert("L"), dtype=np.float32) / 255.0
++    mask = (mask > 0.5).astype(np.float32)
++    if mask.shape[:2] != (1024, 1024):
++        mask = np.asarray(
++            Image.fromarray((mask * 255).astype(np.uint8)).resize((1024, 1024), Image.NEAREST),
++            dtype=np.float32) / 255.0
++        mask = (mask > 0.5).astype(np.float32)
++    h, w = grid_hw
++    t = torch.from_numpy(mask)[None, None]
++    return F.interpolate(t, size=(h, w), mode="area")[0, 0].numpy()
++
++
++def in_mask_flags(frac, threshold: float = 0.5):  # noqa: ANN001
++    import numpy as np
++    return (frac >= threshold).reshape(-1)
++
++
++def npz_recompute_auroc(npz_path: Path, late_layer: int, late_step: int,
++                        lat_in) -> float:  # noqa: ANN001
++    import numpy as np
++    with np.load(npz_path) as z:
++        key = f"flow_map_L{late_layer}_S{late_step}"
++        if key not in z.files:
++            cands = [k for k in z.files if k.startswith("flow_map_L") and k.endswith(f"_S{late_step}")]
++            if not cands:
++                return float("nan")
++            key = cands[0]
++        head_mean = z[key].astype(np.float32).mean(axis=0)
++    return auroc(head_mean, lat_in.astype("int8"))
++
++
++# ---------------------------------------------------------------------------
++# analysis
++# ---------------------------------------------------------------------------
++def detect_late(manifests: dict[str, dict[str, dict]]) -> dict:
++    """Late step = max captured probe step; late layer = that layer under the
++    probe.py L==S convention (fallback: max layer carrying flow metrics)."""
++    late_step = -1
++    for recs in manifests.values():
++        for rec in recs.values():
++            for s in rec.get("probe_steps", {}):
++                late_step = max(late_step, int(s))
++            break  # one record per manifest is enough (config is per-run)
++    flow_layers: set[int] = set()
++    for recs in manifests.values():
++        for rec in recs.values():
++            for L, row in rec.get("per_layer", {}).items():
++                if "flow_auroc" in row:
++                    flow_layers.add(int(L))
++            break
++    late_layer = late_step if late_step in flow_layers else (max(flow_layers) if flow_layers else -1)
++    return {"late_step": late_step, "late_layer": late_layer}
++
++
++def analyze_probe(manifests: dict[str, dict[str, dict]], n_boot: int, min_n: int) -> dict:
++    models = [m for m in MODEL_ORDER if m in manifests and manifests[m]]
++    common = None
++    for m in models:
++        common = set(manifests[m]) if common is None else (common & set(manifests[m]))
++    common = sorted(common or [])
++    layers = sorted({int(L) for m in models for rec in manifests[m].values()
++                     for L in rec.get("per_layer", {})})
++    result: dict = {"models": models, "n_pairs": len(common), "metrics": {}, "pairs_list":
++                    [pair_label(y, x) for (y, x) in available_pairs(models)]}
++
++    for metric, _desc in METRICS:
++        per_pair: dict[str, dict] = {}
++        for (y, x) in available_pairs(models):
++            rows: dict[int, dict] = {}
++            for L in layers:
++                ids = [pid for pid in common
++                       if layer_values(manifests[x][pid], L, metric) is not None
++                       and layer_values(manifests[y][pid], L, metric) is not None]
++                if len(ids) < min_n:
++                    continue
++                rows[L] = pair_stats(
++                    {pid: {"v": layer_values(manifests[x][pid], L, metric)} for pid in ids},
++                    {pid: {"v": layer_values(manifests[y][pid], L, metric)} for pid in ids},
++                    "v", ids, n_boot)
++            best_layer = None
++            if rows:
++                best_layer = max(rows, key=lambda L: (rows[L]["mean_diff_y_minus_x"], -L))
++            per_pair[pair_label(y, x)] = {"best_layer": best_layer,
++                                          "best": rows.get(best_layer),
++                                          "layers": {str(L): v for L, v in rows.items()}}
++        result["metrics"][metric] = per_pair
++
++    late = detect_late(manifests)
++    if late["late_layer"] >= 0:
++        L = late["late_layer"]
++        late_metrics: dict[str, dict] = {}
++        n_late = 0
++        for field in ("flow_auroc", "flow_log2_contrast", "flow_mass_in_frac"):
++            ids = [pid for pid in common
++                   if all(layer_values(manifests[m][pid], L, field) is not None for m in models)]
++            if len(ids) < min_n:
++                continue
++            n_late = max(n_late, len(ids))
++            late_metrics[field] = {}
++            for (y, x) in available_pairs(models):
++                late_metrics[field][pair_label(y, x)] = pair_stats(
++                    {pid: {"v": layer_values(manifests[x][pid], L, field)} for pid in ids},
++                    {pid: {"v": layer_values(manifests[y][pid], L, field)} for pid in ids},
++                    "v", ids, n_boot)
++        result["late"] = {**late, "layer": L, "stats": late_metrics,
++                          "n_pairs_with_flow": n_late}
++    return result
++
++
++# ---------------------------------------------------------------------------
++# markdown report
++# ---------------------------------------------------------------------------
++def markdown(result: dict, out: Path, n_boot: int) -> None:
++    models = result["models"]
++    lines = ["# E3 / E2 token probe: three-way comparison (51 val pairs)", "",
++             f"Paired diff = column model - row model; bootstrap 95% CI "
++             f"({n_boot} resamples, seed 1234). SIG = CI excludes 0. "
++             f"Best layer = layer with the largest mean paired diff.", ""]
++    if "late" in result:
++        late = result["late"]
++        lines += [f"## Late-step AUROC (step {late['late_step']}, layer L{late['layer']}, "
++                  f"n={late['n_pairs_with_flow']})", "",
++                  "| pair | diff | 95% CI | sig | w/l/t | wilcoxon p |",
++                  "|---|---|---|---|---|---|"]
++        for pair, e in late["stats"].get("flow_auroc", {}).items():
++            if not e or e.get("n", 0) == 0:
++                continue
++            lines.append(f"| {pair} | {e['mean_diff_y_minus_x']:+.4f} "
++                         f"| [{e['ci95'][0]:+.4f}, {e['ci95'][1]:+.4f}] "
++                         f"| {'YES' if e['significant'] else ''} "
++                         f"| {e['wins/losses/ties'][0]}/{e['wins/losses/ties'][1]}/{e['wins/losses/ties'][2]} "
++                         f"| {e['wilcoxon_p'] if e['wilcoxon_p'] is not None else 'n/a'} |")
++        lines.append("")
++    for metric, desc in METRICS:
++        lines += [f"## {metric}", f"*{desc}*", ""]
++        for pair, data in result["metrics"][metric].items():
++            b = data["best"]
++            if b and b.get("n", 0) > 0:
++                lines.append(f"- {pair}: best **L{data['best_layer']}** "
++                             f"{fmt_entry(b, 4)}")
++        lines.append("")
++    out.write_text("\n".join(lines), encoding="utf-8")
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--base-dir", type=Path, default=PROBE_ROOT / "probe_base")
++    parser.add_argument("--final991-dir", type=Path, default=PROBE_ROOT / "probe_final991")
++    parser.add_argument("--v6-dir", type=Path, default=CFCOT / "outputs/e3_eval/probe_v6")
++    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
++    parser.add_argument("--bootstrap", type=int, default=20000)
++    parser.add_argument("--min-n", type=int, default=5)
++    parser.add_argument("--verify-npz", action="store_true",
++                        help="recompute late AUROC from maps/*.npz (needs torch+PIL)")
++    parser.add_argument("--val", type=Path, default=DEFAULT_VAL)
++    parser.add_argument("--npz-tol", type=float, default=0.02)
++    args = parser.parse_args()
++
++    dirs = {"base": args.base_dir, "final991": args.final991_dir, "v6": args.v6_dir}
++    manifests: dict[str, dict[str, dict]] = {}
++    for m, d in dirs.items():
++        man = load_manifest(d / "probe_manifest.jsonl")
++        if man:
++            manifests[m] = man
++        else:
++            print(f"[warn] no ok pairs in {d}/probe_manifest.jsonl")
++    if len(manifests) < 2:
++        raise SystemExit("probe_stats: need >= 2 probe manifests with ok pairs")
++
++    result = analyze_probe(manifests, args.bootstrap, args.min_n)
++    result["experiment"] = "e3_e2_token_probe_threeway"
++
++    if args.verify_npz and "late" in result:
++        late = result["late"]
++        common = sorted(set.intersection(*[set(v) for v in manifests.values()]))
++        records = {}
++        for line in args.val.read_text(encoding="utf-8").splitlines():
++            if line.strip():
++                rec = json.loads(line)
++                records[rec["pair_id"]] = rec
++        lat_side = IMAGE_SIZE // LAT_DOWNSAMPLE
++        per_model: dict[str, dict] = {}
++        for m, d in dirs.items():
++            if m not in manifests:
++                continue
++            devs, checked = [], 0
++            for pid in common:
++                npz = d / "maps" / f"{pid}.npz"
++                rec = records.get(pid)
++                if not npz.exists() or rec is None:
++                    continue
++                lat_in = in_mask_flags(mask_grid_fractions(
++                    Path(rec["automatic_difference_mask"]["path"]), (lat_side, lat_side)))
++                got = npz_recompute_auroc(npz, late["late_layer"], late["late_step"], lat_in)
++                want = layer_values(manifests[m][pid], late["late_layer"], "flow_auroc")
++                if want is None or got != got:  # nan guard
++                    continue
++                devs.append(abs(got - want))
++                checked += 1
++            per_model[m] = {"n_checked": checked,
++                            "max_abs_diff": max(devs) if devs else None}
++        result["npz_check"] = {"tol": args.npz_tol, "per_model": per_model}
++        for m, c in per_model.items():
++            if c["max_abs_diff"] is not None and c["max_abs_diff"] > args.npz_tol:
++                print(f"[warn] npz vs manifest late AUROC drift for {m}: "
++                      f"{c['max_abs_diff']:.4f} > tol {args.npz_tol}")
++
++    args.out_dir.mkdir(parents=True, exist_ok=True)
++    out_json = args.out_dir / "probe_stats_threeway.json"
++    out_json.write_text(json.dumps(result, indent=1), encoding="utf-8")
++    markdown(result, args.out_dir / "probe_table.md", args.bootstrap)
++    print(json.dumps({"event": "probe_stats_done", "json": str(out_json),
++                      "n_pairs": result["n_pairs"]}))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
+new file mode 100644
+index 0000000..e6b82da
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
+@@ -0,0 +1,332 @@
++#!/usr/bin/env bash
++# E3 three-way evaluation launcher: base / final991 / v6 (align-loss model).
++#
++# Usage on the 2x A100 GPU machine (mounts /group):
++#   bash /group/40016/niightli/BAGEL/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
++# Stages:
++#   selftest   # CPU: 46-check mock suite (no GPU needed)
++#   preflight  # GPU machine: env + reusable-artifact audit, no generation
++#   smoke      # tiny v6-only pipeline (E1 6 imgs / A-module 2 pairs / probe 2) + stats
++#   run        # full three-way: v6 generation+scoring on 2 GPUs in parallel, stats + summary
++#   status     # progress file + artifact inventory + last log lines
++# Granular foreground stages (single GPU):
++#   e1-gen | e1-score | indomain-gen | indomain-score | probe | stats | summary
++#
++# Only v6 is generated/scored/probed; base/final991 rows come from the
++# existing E1 / final991_eval_v1 / E2 artifacts (copied into OUT, never rescored).
++# Override knobs: V6_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1
++#                 E1_MAX_ITEMS INDO_LIMIT PROBE_LIMIT PROBE_VERIFY_NPZ
++set -uo pipefail
++
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++CFCOT="$(cd "$HERE/.." && pwd)"
++OUT="$CFCOT/outputs/e3_eval"
++SMOKE_OUT="$CFCOT/outputs/e3_eval_smoke"
++PROGRESS="$CFCOT/wb_e3_eval_progress.txt"
++STAGE="${1:-run}"
++
++PY=python3
++EVAL_PY="${EVAL_PY:-/group/40016/niightli/BAGEL/venvs/geneval_eval/bin/python}"
++MODEL_DIR="${MODEL_DIR:-/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT}"
++V6_CKPT="${V6_CKPT:-$CFCOT/outputs/gold40_automask_v6_align_fsdp_full_shard/checkpoints/latest.pt}"
++SPLITS="$CFCOT/final991_automask_v5_data/artifacts/splits"
++E1_DIR="$CFCOT/e1_general_t2i"
++E1_PROMPTS="$E1_DIR/prompts"
++V5GEN="$CFCOT/gold40_automask_dual_target_cot1024_fsdp_v5/generate_same_seed_states.py"
++E2_PROBE="$CFCOT/e2_token_probe/probe.py"
++E1_SCORES_SRC="$CFCOT/outputs/e1_general_t2i/scores"
++IND_SCORES_SRC="$CFCOT/outputs/final991_eval_v1/scores"
++PROBE_ROOT="$CFCOT/outputs/e2_token_probe"
++N_BOOT="${N_BOOT:-20000}"
++GPU0="${GPU0:-0}"
++GPU1="${GPU1:-1}"
++PROBE_VERIFY_NPZ="${PROBE_VERIFY_NPZ:-1}"
++
++mkdir -p "$OUT/logs" 2>/dev/null || true
++
++write_progress() {
++  local tmp="$PROGRESS.tmp"
++  { echo "updated: $(date '+%F %T') (stage=$1)"; shift
++    for line in "$@"; do echo "$line"; done; } > "$tmp" && mv "$tmp" "$PROGRESS"
++}
++
++die() { write_progress "ERROR" "error: $*"; echo "[E3-EVAL FATAL] $*" >&2; exit 1; }
++
++count_lines() { [ -f "$1" ] && wc -l < "$1" | tr -d ' ' || echo 0; }
++
++# ---------------------------------------------------------------------------
++# reusable artifact copy (idempotent)
++# ---------------------------------------------------------------------------
++copy_reference_scores() { # out_root
++  local o="$1"
++  mkdir -p "$o/scores_t2i" "$o/scores_indomain"
++  for f in clipT_base.jsonl clipT_final991.jsonl; do
++    [ -f "$E1_SCORES_SRC/$f" ] && cp -f "$E1_SCORES_SRC/$f" "$o/scores_t2i/$f"
++  done
++  for f in indomain_base_val.jsonl indomain_base_test.jsonl \
++           indomain_final991_val.jsonl indomain_final991_test.jsonl; do
++    [ -f "$IND_SCORES_SRC/$f" ] && cp -f "$IND_SCORES_SRC/$f" "$o/scores_indomain/$f"
++  done
++}
++
++# ---------------------------------------------------------------------------
++# generation / scoring steps
++# ---------------------------------------------------------------------------
++e1_v6_gen() { # out_root [max_items]
++  local o="$1" extra=()
++  [ "${2:-0}" != "0" ] && extra+=(--max-items "$2")
++  CUDA_VISIBLE_DEVICES=$GPU0 $PY "$HERE/model_shim.py" \
++    --script "$E1_DIR/generate_t2i.py" --alias v6 --ckpt "$V6_CKPT" -- \
++    --model v6 --prompts-dir "$E1_PROMPTS" --output-dir "$o/gen_t2i/v6" \
++    --llm-path "$MODEL_DIR" --seed 1234 "${extra[@]}"
++}
++
++e1_v6_score() { # out_root
++  local o="$1"
++  CUDA_VISIBLE_DEVICES=$GPU0 $EVAL_PY "$E1_DIR/score_clip.py" \
++    --gen-root "$o/gen_t2i" --out-dir "$o/scores_t2i" --models v6
++}
++
++indomain_v6_gen() { # out_root splits_dir splits... (passed as array via globals)
++  local o="$1" splits_dir="$2"; shift 2
++  local split pairs expected manifest
++  for split in "$@"; do
++    manifest="$o/gen_indomain/v6/$split/generation_manifest.jsonl"
++    pairs=$(count_lines "$splits_dir/$split.jsonl")
++    expected=$((pairs * 2 * INDO_SEEDS_N))
++    if [ "$(count_lines "$manifest")" -ge "$expected" ] && [ "$expected" -gt 0 ]; then
++      echo "[indomain-gen] $split complete ($expected rows), skip"; continue
++    fi
++    local ow=()
++    [ -e "$o/gen_indomain/v6/$split" ] && [ -n "$(ls -A "$o/gen_indomain/v6/$split" 2>/dev/null)" ] \
++      && ow+=(--overwrite)
++    echo "[indomain-gen] $split: $pairs pairs x 2 states x $INDO_SEEDS_N seeds"
++    CUDA_VISIBLE_DEVICES=$GPU1 $PY "$V5GEN" \
++      --manifest "$splits_dir/$split.jsonl" \
++      --output-dir "$o/gen_indomain/v6/$split" \
++      --llm-path "$MODEL_DIR" --vae-path "$MODEL_DIR/ae.safetensors" \
++      --base-checkpoint-path "$MODEL_DIR/ema.safetensors" \
++      --trainable-checkpoint "$V6_CKPT" \
++      --seeds $INDO_SEEDS \
++      --num-timesteps 25 --cfg-text-scale 4.0 --cfg-img-scale 2.0 --timestep-shift 3.0 \
++      "${ow[@]}"
++  done
++}
++
++indomain_v6_score() { # out_root splits_dir splits...
++  local o="$1" splits_dir="$2"; shift 2
++  CUDA_VISIBLE_DEVICES=$GPU1 $EVAL_PY "$HERE/score_indomain_threeway.py" \
++    --models v6 --splits "$*" --splits-dir "$splits_dir" \
++    --gen-v6-dir "$o/gen_indomain/v6" --out-dir "$o/scores_indomain" --seeds $INDO_SEEDS
++}
++
++probe_v6() { # out_root limit probe_steps...
++  local o="$1" limit="$2"; shift 2
++  local extra=()
++  [ "$limit" != "0" ] && extra+=(--limit "$limit")
++  CUDA_VISIBLE_DEVICES=$GPU1 $PY "$HERE/model_shim.py" \
++    --script "$E2_PROBE" --alias v6 --ckpt "$V6_CKPT" -- \
++    --model v6 --out-dir "$o/probe_v6" --probe-steps "$@" "${extra[@]}"
++}
++
++stats_all() { # out_root probe_min_n
++  local o="$1" min_n="${2:-5}"
++  $PY "$HERE/stats_threeway.py" --scores-dir "$o/scores_t2i" --bootstrap "$N_BOOT" \
++    || die "E1 stats failed"
++  $PY "$HERE/indomain_stats.py" --scores-dir "$o/scores_indomain" \
++    --splits val test --bootstrap "$N_BOOT" \
++    || die "Module-A stats failed"
++  local pv=()
++  [ "$PROBE_VERIFY_NPZ" = "1" ] && pv+=(--verify-npz)
++  $PY "$HERE/probe_stats.py" --v6-dir "$o/probe_v6" --out-dir "$o/probe_stats" \
++    --bootstrap "$N_BOOT" --min-n "$min_n" "${pv[@]}" \
++    || die "E2 probe stats failed"
++  $PY "$HERE/summarize.py" --e3-root "$o" || die "summary failed"
++}
++
++# ---------------------------------------------------------------------------
++# GPU chains (background) + watcher
++# ---------------------------------------------------------------------------
++INDO_SEEDS="${INDO_SEEDS:-1234 2234 3234}"
++INDO_SEEDS_N=$(echo $INDO_SEEDS | wc -w | tr -d ' ')
++
++chain_gpu0() { # out_root e1_max_items
++  e1_v6_gen "$1" "${2:-0}" && copy_reference_scores "$1" && e1_v6_score "$1"
++}
++
++chain_gpu1() { # out_root splits_dir splits... (probe args via globals)
++  local o="$1" splits_dir="$2"; shift 2
++  indomain_v6_gen "$o" "$splits_dir" "$@" \
++    && probe_v6 "$o" "${PROBE_LIMIT:-0}" $PROBE_STEPS \
++    && copy_reference_scores "$o" \
++    && indomain_v6_score "$o" "$splits_dir" "$@"
++}
++PROBE_STEPS="${PROBE_STEPS:-0 11 23}"
++
++last_event() { grep -E '"event":' "$1" 2>/dev/null | tail -1 | cut -c1-160; }
++
++watch_chains() { # out_root pid0 pid1
++  local o="$1" p0="$2" p1="$3" i=0
++  while kill -0 "$p0" 2>/dev/null || kill -0 "$p1" 2>/dev/null; do
++    write_progress "${STAGE}" \
++      "gpu0 (E1 v6 gen+score): $(last_event "$o/logs/gpu0.log")" \
++      "gpu1 (A gen -> probe -> score): $(last_event "$o/logs/gpu1.log")"
++    sleep 60
++  done
++}
++
++# ---------------------------------------------------------------------------
++# stages
++# ---------------------------------------------------------------------------
++gpu_preflight() {
++  command -v nvidia-smi >/dev/null || die "nvidia-smi not found (need the 2x A100 machine)"
++  nvidia-smi --L | head -2
++  [ -f "$MODEL_DIR/ema.safetensors" ] && [ -f "$MODEL_DIR/ae.safetensors" ] \
++    || die "BAGEL weights missing: $MODEL_DIR"
++  [ -f "$V6_CKPT" ] || die "v6 checkpoint missing: $V6_CKPT"
++  [ -x "$EVAL_PY" ] || die "scoring python missing: $EVAL_PY"
++  "$EVAL_PY" -c "import torch, open_clip" 2>/dev/null \
++    || die "$EVAL_PY cannot import torch+open_clip"
++}
++
++artifact_preflight() {
++  local fail=0
++  [ "$(count_lines "$E1_PROMPTS/attribute_binding.jsonl")" = 150 ] \
++    && [ "$(count_lines "$E1_PROMPTS/counting.jsonl")" = 150 ] \
++    && [ "$(count_lines "$E1_PROMPTS/spatial_relations.jsonl")" = 150 ] \
++    || { echo "[FAIL] E1 prompts != 3x150 under $E1_PROMPTS"; fail=1; }
++  [ "$(count_lines "$SPLITS/val.jsonl")" = 51 ] && [ "$(count_lines "$SPLITS/test.jsonl")" = 44 ] \
++    || { echo "[FAIL] splits != 51/44 under $SPLITS"; fail=1; }
++  [ "$(count_lines "$E1_SCORES_SRC/clipT_base.jsonl")" = 450 ] \
++    && [ "$(count_lines "$E1_SCORES_SRC/clipT_final991.jsonl")" = 450 ] \
++    || { echo "[FAIL] E1 clipT rows != 450"; fail=1; }
++  [ -f "$IND_SCORES_SRC/indomain_base_val.jsonl" ] \
++    && [ -f "$IND_SCORES_SRC/indomain_final991_test.jsonl" ] \
++    || { echo "[FAIL] Module-A reference rows missing under $IND_SCORES_SRC"; fail=1; }
++  [ "$(grep -c '"status": "ok"' "$PROBE_ROOT/probe_base/probe_manifest.jsonl" 2>/dev/null)" = 51 ] \
++    && [ "$(grep -c '"status": "ok"' "$PROBE_ROOT/probe_final991/probe_manifest.jsonl" 2>/dev/null)" = 51 ] \
++    || { echo "[FAIL] E2 probe manifests != 51 ok pairs"; fail=1; }
++  grep -q '"status": "completed"' \
++    "$CFCOT/outputs/gold40_automask_v6_align_fsdp_full_shard/final_report.json" 2>/dev/null \
++    || echo "[warn] v6 final_report.json not 'completed' — checkpoint may be partial"
++  local free_gb
++  free_gb=$(df -Pk "$CFCOT" | awk 'NR==2 {print int($4/1048576)}')
++  [ "${free_gb:-999}" -lt 50 ] && echo "[warn] only ${free_gb}GB free on $(df -P "$CFCOT" | awk 'NR==1{print $6}')"
++  [ "$fail" = 0 ] || die "artifact preflight failed (reference rows incomplete)"
++  echo "[E3-EVAL] preflight OK: v6 ckpt + reusable base/final991 artifacts present"
++}
++
++stage_selftest() {
++  write_progress "selftest" "CPU mock suite running ..."
++  $PY "$HERE/selftest_e3_eval.py" 2>&1 | tee "$HERE/selftest_last.log" | grep -E "^(PASS|FAIL|SKIP|ALL)" \
++    || die "selftest failed; see $HERE/selftest_last.log"
++  write_progress "selftest_done" "all CPU mock tests passed"
++}
++
++stage_preflight() {
++  gpu_preflight
++  artifact_preflight
++  $PY "$HERE/model_shim.py" --script "$E2_PROBE" --alias v6 --ckpt "$V6_CKPT" --dry-run \
++    -- --model v6 --limit 1 2>/dev/null | tail -1 \
++    || die "shim dry-run against probe.py failed"
++  write_progress "preflight_done" "env + artifacts + shim OK"
++}
++
++stage_smoke() {
++  gpu_preflight
++  artifact_preflight
++  local o="$SMOKE_OUT"
++  rm -rf "$o"; mkdir -p "$o/logs" "$o/splits" "$o/manifests"
++  head -2 "$SPLITS/val.jsonl" > "$o/splits/val.jsonl"
++  copy_reference_scores "$o"
++  write_progress "smoke" "v6-only tiny pipeline starting (E1 6 / A 2x2x2 / probe 2)"
++  ( chain_gpu0 "$o" 6 ) > "$o/logs/gpu0.log" 2>&1 & local p0=$!
++  ( INDO_SEEDS="1234 2234" INDO_SEEDS_N=2 PROBE_LIMIT=2 \
++    chain_gpu1 "$o" "$o/splits" val ) > "$o/logs/gpu1.log" 2>&1 & local p1=$!
++  echo $p0 > "$o/gpu0.pid"; echo $p1 > "$o/gpu1.pid"
++  watch_chains "$o" "$p0" "$p1"
++  wait "$p0" || { tail -20 "$o/logs/gpu0.log"; die "smoke gpu0 chain failed"; }
++  wait "$p1" || { tail -20 "$o/logs/gpu1.log"; die "smoke gpu1 chain failed"; }
++  stats_all "$o" 2 || die "smoke stats failed"
++  write_progress "DONE" "smoke complete: $o/summary_table.md"
++  echo "[E3-EVAL] smoke summary: $o/summary_table.md"
++}
++
++stage_run() {
++  gpu_preflight
++  artifact_preflight
++  local o="$OUT"
++  mkdir -p "$o/logs"
++  copy_reference_scores "$o"
++  write_progress "run" "full three-way run starting (gpu0: E1 v6; gpu1: A+probe v6)"
++  ( chain_gpu0 "$o" 0 ) > "$o/logs/gpu0.log" 2>&1 & local p0=$!
++  ( chain_gpu1 "$o" "$SPLITS" val test ) > "$o/logs/gpu1.log" 2>&1 & local p1=$!
++  echo $p0 > "$o/gpu0.pid"; echo $p1 > "$o/gpu1.pid"
++  watch_chains "$o" "$p0" "$p1"
++  wait "$p0" || { tail -20 "$o/logs/gpu0.log"; die "gpu0 chain failed"; }
++  wait "$p1" || { tail -20 "$o/logs/gpu1.log"; die "gpu1 chain failed"; }
++  for f in scores_t2i/clipT_v6.jsonl scores_indomain/indomain_v6_val.jsonl \
++           scores_indomain/indomain_v6_test.jsonl probe_v6/probe_manifest.jsonl; do
++    [ -s "$o/$f" ] || die "missing artifact after chains: $o/$f (see $o/logs/)"
++  done
++  stats_all "$o" 5
++  write_progress "DONE" "three-way eval complete: $o/summary_table.md"
++  echo "[E3-EVAL] summary: $o/summary_table.md"
++}
++
++stage_status() {
++  echo "== progress file =="; cat "$PROGRESS" 2>/dev/null || echo "(none)"
++  local o out_root
++  for out_root in "$OUT" "$SMOKE_OUT"; do
++    echo "== artifacts under $out_root =="
++    for f in gen_t2i/v6/generation_manifest.jsonl scores_t2i/clipT_v6.jsonl \
++             gen_indomain/v6/val/generation_manifest.jsonl \
++             gen_indomain/v6/test/generation_manifest.jsonl \
++             scores_indomain/indomain_v6_val.jsonl scores_indomain/indomain_v6_test.jsonl \
++             probe_v6/probe_manifest.jsonl probe_stats/probe_stats_threeway.json \
++             scores_t2i/stats_threeway.json scores_indomain/indomain_stats_threeway.json \
++             summary_table.md; do
++      if [ -f "$out_root/$f" ]; then
++        echo "  [ok] $f ($(count_lines "$out_root/$f") lines)"
++      else
++        echo "  [..] $f"
++      fi
++    done
++    if [ -f "$out_root/probe_v6/probe_manifest.jsonl" ]; then
++      echo "  probe_v6 ok pairs: $(grep -c '"status": "ok"' "$out_root/probe_v6/probe_manifest.jsonl")"
++    fi
++    for lg in gpu0 gpu1; do
++      if [ -f "$out_root/logs/$lg.log" ]; then
++        echo "== last event ($lg) =="; last_event "$out_root/logs/$lg.log"
++      fi
++    done
++  done
++}
++
++# granular foreground stages -------------------------------------------------
++stage_e1_gen()   { gpu_preflight; e1_v6_gen "$OUT" "${E1_MAX_ITEMS:-0}"; }
++stage_e1_score() { e1_v6_score "$OUT"; }
++stage_indomain_gen() {
++  gpu_preflight
++  indomain_v6_gen "$OUT" "$SPLITS" val test
++}
++stage_indomain_score() { indomain_v6_score "$OUT" "$SPLITS" val test; }
++stage_probe()    { gpu_preflight; probe_v6 "$OUT" "${PROBE_LIMIT:-0}" $PROBE_STEPS; }
++stage_stats()    { copy_reference_scores "$OUT"; stats_all "$OUT" 5; }
++stage_summary()  { $PY "$HERE/summarize.py" --e3-root "$OUT"; }
++
++case "$STAGE" in
++  selftest) stage_selftest ;;
++  preflight) stage_preflight ;;
++  smoke) stage_smoke ;;
++  run) stage_run ;;
++  status) stage_status ;;
++  e1-gen) stage_e1_gen ;;
++  e1-score) stage_e1_score ;;
++  indomain-gen) stage_indomain_gen ;;
++  indomain-score) stage_indomain_score ;;
++  probe) stage_probe ;;
++  stats) stage_stats ;;
++  summary) stage_summary ;;
++  *) die "unknown stage: $STAGE (selftest|preflight|smoke|run|status|e1-gen|e1-score|indomain-gen|indomain-score|probe|stats|summary)" ;;
++esac
+diff --git a/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py b/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
+new file mode 100644
+index 0000000..76b8cca
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
+@@ -0,0 +1,238 @@
++#!/usr/bin/env python3
++"""Module-A scoring for the E3 three-way eval: per-item paired metrics.
++
++Adapted copy of final991_eval_v1/score_indomain.py with an auditable CLI
++patch — the METRIC CODE IS LINE-BY-LINE IDENTICAL (load_img / load_mask /
++psnr / ssim / clip / dino / lpips / mask decomposition / directionality);
++only the driver changed:
++
++  * --models base final991 v6 (subset; default v6 only — base/final991 rows
++    from final991_eval_v1 are copied into the e3_eval scores dir instead of
++    being rescored, so the replication pair stays byte-identical);
++  * per-model gen dirs (--gen-base-dir/--gen-final991-dir/--gen-v6-dir),
++    defaulting to the final991_eval_v1 gen layout and the e3_eval v6 layout;
++  * --splits/--splits-dir/--seeds; --rescore to overwrite; skip-if-exists
++    otherwise (resumable);
++  * heavy imports (torch/open_clip/dinov2/lpips) are lazy so the CPU
++    selftest can import this module;
++  * the paired-stats section moved to e3_eval/indomain_stats.py (pure).
++
++Rows: {pair_id, field, op, intervention_type, model, split,
++       src_mse, tgt_mse, tgt_psnr, tgt_ssim, tgt_lpips, clip_src, clip_tgt,
++       clip_tgt_vs_src, dino_tgt, in_mse, out_mse, strength, bg_drift,
++       directional}   (3-seed means, exactly like final991_eval_v1)
++
++Run with the open_clip-capable python:
++  /group/40016/niightli/BAGEL/venvs/geneval_eval/bin/python score_indomain_threeway.py
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import statistics
++import sys
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++CFCOT = HERE.parent
++BAGEL = Path("/group/40016/niightli/BAGEL")
++DEFAULT_SPLITS_DIR = CFCOT / "final991_automask_v5_data/artifacts/splits"
++DEFAULT_OUT_DIR = CFCOT / "outputs/e3_eval/scores_indomain"
++DEFAULT_GEN_DIRS = {
++    "base": CFCOT / "outputs/final991_eval_v1/gen/base",
++    "final991": CFCOT / "outputs/final991_eval_v1/gen/final991",
++    "v6": CFCOT / "outputs/e3_eval/gen_indomain/v6",
++}
++VENV_SITE = BAGEL / "venvs/geneval_eval/lib/python3.10/site-packages"
++SIZE = 512
++
++
++def parse_args() -> argparse.Namespace:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--models", nargs="*", default=["v6"],
++                        help="subset of: base final991 v6 (default: v6 only)")
++    parser.add_argument("--splits", nargs="*", default=["val", "test"])
++    parser.add_argument("--splits-dir", type=Path, default=DEFAULT_SPLITS_DIR)
++    parser.add_argument("--gen-base-dir", type=Path, default=DEFAULT_GEN_DIRS["base"])
++    parser.add_argument("--gen-final991-dir", type=Path, default=DEFAULT_GEN_DIRS["final991"])
++    parser.add_argument("--gen-v6-dir", type=Path, default=DEFAULT_GEN_DIRS["v6"])
++    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
++    parser.add_argument("--seeds", nargs="*", default=["1234", "2234", "3234"])
++    parser.add_argument("--rescore", action="store_true", help="overwrite existing row files")
++    args = parser.parse_args()
++    bad = [m for m in args.models if m not in DEFAULT_GEN_DIRS]
++    if bad:
++        parser.error(f"unknown models: {bad} (base|final991|v6)")
++    return args
++
++
++def gen_dir_for(args: argparse.Namespace, model: str) -> Path:
++    return {"base": args.gen_base_dir, "final991": args.gen_final991_dir, "v6": args.gen_v6_dir}[model]
++
++
++def score_split(model: str, split: str, pairs: list[dict], gen_dir: Path,
++                seeds: list[str], ctx: dict) -> list[dict]:
++    """ctx carries the lazily-built feature models + metric closures."""
++    gen_manifest: dict[tuple, str] = {}
++    man = gen_dir / split / "generation_manifest.jsonl"
++    for line in man.read_text(encoding="utf-8").splitlines():
++        if line.strip():
++            r = json.loads(line)
++            gen_manifest[(r["pair_id"], r["state"], str(r["seed"]))] = r["output_path"]
++    out_rows = []
++    missing = []
++    for p in pairs:
++        pid = p["pair_id"]
++        gold_src, gold_tgt = p["source"]["image"], p["target"]["image"]
++        mask = ctx["load_mask"](p["automatic_difference_mask"]["path"])
++        m_in, m_out = mask, ~mask
++        row = {"pair_id": pid, "field": p["intervention"]["field"], "op": p["intervention"]["operation"],
++               "intervention_type": p["intervention_type"], "model": model, "split": split}
++        acc = {k: [] for k in ("src_mse", "tgt_mse", "tgt_psnr", "tgt_ssim", "tgt_lpips",
++                               "clip_src", "clip_tgt", "clip_tgt_vs_src", "dino_tgt",
++                               "in_mse", "out_mse", "strength", "bg_drift")}
++        for seed in seeds:
++            key_src = (pid, "source_state", seed)
++            key_tgt = (pid, "target_state", seed)
++            if key_src not in gen_manifest or key_tgt not in gen_manifest:
++                missing.append(f"{pid}/{seed}")
++                continue
++            gs, gt = gen_manifest[key_src], gen_manifest[key_tgt]
++            a_src, a_tgt = ctx["load_img"](gs), ctx["load_img"](gt)
++            g_src, g_tgt = ctx["load_img"](gold_src), ctx["load_img"](gold_tgt)
++            # pixel
++            acc["src_mse"].append(float(((a_src - g_src) ** 2).mean()))
++            tgt_mse = float(((a_tgt - g_tgt) ** 2).mean())
++            acc["tgt_mse"].append(tgt_mse)
++            acc["tgt_psnr"].append(ctx["psnr"](tgt_mse))
++            acc["tgt_ssim"].append(ctx["ssim"](a_tgt, g_tgt))
++            if ctx["lp"] is not None:
++                acc["tgt_lpips"].append(float(ctx["lp"](ctx["to_tensor"](a_tgt), ctx["to_tensor"](g_tgt))))
++            # semantic
++            acc["clip_src"].append(ctx["cos"](ctx["clip_emb"](gs), ctx["clip_emb"](gold_src)))
++            acc["clip_tgt"].append(ctx["cos"](ctx["clip_emb"](gt), ctx["clip_emb"](gold_tgt)))
++            acc["clip_tgt_vs_src"].append(ctx["cos"](ctx["clip_emb"](gt), ctx["clip_emb"](gold_src)))
++            if ctx["dino_emb"] is not None:
++                acc["dino_tgt"].append(ctx["cos"](ctx["dino_emb"](gt), ctx["dino_emb"](gold_tgt)))
++            # mask decomposition
++            sq = ((a_tgt - g_tgt) ** 2).mean(-1)
++            acc["in_mse"].append(float(sq[m_in].mean()) if m_in.any() else 0.0)
++            acc["out_mse"].append(float(sq[m_out].mean()) if m_out.any() else 0.0)
++            gold_change = float(((g_tgt - g_src) ** 2).mean(-1)[m_in].mean()) if m_in.any() else 1e-8
++            gen_change = float(((a_tgt - a_src) ** 2).mean(-1)[m_in].mean()) if m_in.any() else 0.0
++            acc["strength"].append(gen_change / (gold_change + 1e-8))
++            acc["bg_drift"].append(float(((a_tgt - a_src) ** 2).mean(-1)[m_out].mean()) if m_out.any() else 0.0)
++        for k, v in acc.items():
++            row[k] = float(statistics.mean(v)) if v else None
++        row["directional"] = row["clip_tgt"] - row["clip_tgt_vs_src"] \
++            if row["clip_tgt"] is not None and row["clip_tgt_vs_src"] is not None else None
++        out_rows.append(row)
++    if missing:
++        raise RuntimeError(
++            f"gen manifest {man} is missing {len(missing)} (pair/seed) combos, "
++            f"e.g. {missing[:3]} — generation incomplete; rerun the indomain-gen stage")
++    return out_rows
++
++
++def build_ctx() -> dict:
++    """Lazy heavy imports + feature models (verbatim from score_indomain.py)."""
++    import numpy as np  # noqa: F401
++    import torch
++    import torch.nn.functional as F
++    from PIL import Image
++
++    if str(VENV_SITE) not in sys.path:
++        sys.path.insert(0, str(VENV_SITE))
++    import open_clip  # noqa: E402
++
++    dev = "cuda" if torch.cuda.is_available() else "cpu"
++
++    def load_img(path: str, size: int = SIZE):
++        return np.asarray(Image.open(path).convert("RGB").resize((size, size), Image.BICUBIC),
++                          dtype=np.float32) / 255.0
++
++    def load_mask(path: str, size: int = SIZE):
++        m = np.asarray(Image.open(path).convert("L").resize((size, size), Image.NEAREST),
++                       dtype=np.float32) / 255.0
++        return m > 0.5
++
++    def psnr(mse: float):
++        return float("inf") if mse <= 0 else -10.0 * np.log10(mse)
++
++    def to_tensor(img):
++        return torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).to(dev)
++
++    def ssim(a, b):
++        """8x8-window SSIM, single channel averaged over RGB."""
++        try:
++            from skimage.metrics import structural_similarity
++            return float(structural_similarity(a, b, channel_axis=2, data_range=1.0))
++        except Exception:
++            C1, C2 = 0.01 ** 2, 0.03 ** 2
++            a_t, b_t = to_tensor(a), to_tensor(b)
++            mu_a, mu_b = F.avg_pool2d(a_t, 8, 8), F.avg_pool2d(b_t, 8, 8)
++            mu_a2, mu_b2, mu_ab = mu_a ** 2, mu_b ** 2, mu_a * mu_b
++            var_a = F.avg_pool2d(a_t ** 2, 8, 8) - mu_a2
++            var_b = F.avg_pool2d(b_t ** 2, 8, 8) - mu_b2
++            cov = F.avg_pool2d(a_t * b_t, 8, 8) - mu_ab
++            ssim_map = ((2 * mu_ab + C1) * (2 * cov + C2)) / (
++                (mu_a2 + mu_b2 + C1) * (var_a + var_b + C2))
++            return float(ssim_map.mean())
++
++    clip_model, _, clip_pre = open_clip.create_model_and_transforms(
++        "ViT-g-14", pretrained="laion2b_s34b_b88k")
++    clip_model = clip_model.eval().to(dev)
++
++    dino_emb = None
++    try:
++        dino = torch.hub.load("facebookresearch/dinov2", "dinov2_vitb14").eval().to(dev)
++
++        def dino_emb(path: str):
++            im = Image.open(path).convert("RGB").resize((224, 224), Image.BICUBIC)
++            x = torch.from_numpy(np.asarray(im)).permute(2, 0, 1).unsqueeze(0).float() / 255.0
++            x = (x - 0.485) / 0.229  # approx imagenet norm
++            return F.normalize(dino(x.to(dev)))
++    except Exception as exc:  # noqa: BLE001
++        print(f"[warn] dinov2 unavailable ({exc!r}); dino_tgt rows will be null", flush=True)
++
++    try:
++        import lpips as lpips_lib
++        lp = lpips_lib.LPIPS(net="alex").to(dev)
++    except Exception as exc:  # noqa: BLE001
++        print(f"[warn] lpips unavailable ({exc!r}); tgt_lpips rows will be null", flush=True)
++        lp = None
++
++    @torch.no_grad()
++    def clip_emb(path: str):
++        return F.normalize(clip_model.encode_image(
++            clip_pre(Image.open(path).convert("RGB")).unsqueeze(0).to(dev)))
++
++    def cos(a: torch.Tensor, b: torch.Tensor) -> float:
++        return float((a @ b.T).item())
++
++    return {"load_img": load_img, "load_mask": load_mask, "psnr": psnr,
++            "to_tensor": to_tensor, "ssim": ssim, "clip_emb": clip_emb,
++            "dino_emb": dino_emb, "lp": lp, "cos": cos}
++
++
++def main() -> None:
++    args = parse_args()
++    args.out_dir.mkdir(parents=True, exist_ok=True)
++    ctx = build_ctx()
++    for model in args.models:
++        for split in args.splits:
++            out = args.out_dir / f"indomain_{model}_{split}.jsonl"
++            if out.exists() and not args.rescore:
++                print(f"[skip] {out} exists (use --rescore to overwrite)", flush=True)
++                continue
++            pairs = [json.loads(l) for l in
++                     (args.splits_dir / f"{split}.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
++            rows = score_split(model, split, pairs, gen_dir_for(args, model), args.seeds, ctx)
++            with out.open("w", encoding="utf-8") as f:
++                for r in rows:
++                    f.write(json.dumps(r) + "\n")
++            print(f"[scored] {model}/{split}: {len(rows)} items -> {out}", flush=True)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
+new file mode 100644
+index 0000000..0358cb3
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
+@@ -0,0 +1,456 @@
++#!/usr/bin/env python3
++"""E3 eval CPU selftest (no GPU, no BAGEL stack, no heavy imports).
++
++Covers:
++  1. paired_bootstrap / pair_stats math (determinism, CI, significance,
++     non-finite dropping)
++  2. wilcoxon fallback
++  3. indomain_stats CLI on synthetic Module-A rows (3-way + replication)
++  4. stats_threeway CLI on synthetic CLIP-T rows (subsets + ALL)
++  5. probe_stats CLI on synthetic probe manifests (best layer + late AUROC)
++  6. probe npz cross-check path (skipped if torch/PIL unavailable)
++  7. model_shim dry-run + real injection on a toy script
++  8. score_indomain_threeway --help (lazy-import check)
++  9. summarize on synthetic stats files
++
++Usage:  python3 selftest_e3_eval.py
++Exit 0 only if every test passes.
++"""
++from __future__ import annotations
++
++import importlib.util
++import json
++import random
++import shutil
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++PASS, FAIL = 0, 0
++FAILURES: list[str] = []
++
++
++def check(name: str, cond: bool, detail: str = "") -> None:
++    global PASS, FAIL
++    if cond:
++        PASS += 1
++        print(f"PASS {name}")
++    else:
++        FAIL += 1
++        FAILURES.append(name)
++        print(f"FAIL {name} {detail}")
++
++
++def load_module(name: str, path: Path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    mod = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(mod)
++    return mod
++
++
++def run_cli(args: list[str]) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, *args], capture_output=True, text=True,
++                         cwd=str(HERE))
++
++
++# ---------------------------------------------------------------------------
++# 1-2: pure stats math
++# ---------------------------------------------------------------------------
++def test_pair_stats(tmp: Path) -> None:
++    istats = load_module("istats_selftest", HERE / "indomain_stats.py")
++    diffs = [0.02 + 0.01 * ((i % 5) - 2) / 2 for i in range(30)]
++    lo, hi, mean = istats.paired_bootstrap(diffs, 2000, 1234)
++    check("bootstrap_deterministic", abs(mean - sum(diffs) / len(diffs)) < 1e-12)
++    check("bootstrap_ci_order", lo <= mean <= hi)
++    lo2, hi2, _ = istats.paired_bootstrap(diffs, 2000, 1234)
++    check("bootstrap_seed_reproducible", (lo, hi) == (lo2, hi2))
++    rows_x = {f"p{i:03d}": {"v": 1.0 + 0.01 * (i % 7)} for i in range(20)}
++    rows_y = {k: {"v": v["v"] + 0.05} for k, v in rows_x.items()}
++    e = istats.pair_stats(rows_x, rows_y, "v", sorted(rows_x), 500)
++    check("pair_stats_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
++    check("pair_stats_wlt", e["wins/losses/ties"] == [20, 0, 0])
++    # non-finite + None dropping (json reads inf as float('inf'))
++    rows_x["pInf"] = {"v": float("inf")}
++    rows_y["pInf"] = {"v": 1.0}
++    rows_x["pNone"] = {"v": None}
++    rows_y["pNone"] = {"v": 2.0}
++    e2 = istats.pair_stats(rows_x, rows_y, "v", sorted(rows_x), 500)
++    check("pair_stats_drops_nonfinite", e2["n"] == 20 and e2["n_dropped"] == 2)
++    # ties only -> not significant
++    e3 = istats.pair_stats(rows_x, {k: dict(v) for k, v in rows_x.items()}, "v",
++                           sorted(rows_x)[:10], 200)
++    check("pair_stats_ties_not_sig", not e3["significant"] and e3["n"] == 10)
++
++
++def test_wilcoxon() -> None:
++    istats = load_module("istats_selftest2", HERE / "indomain_stats.py")
++    try:
++        import scipy  # noqa: F401
++        have_scipy = True
++    except Exception:
++        have_scipy = False
++    p = istats.wilcoxon_p([0.1 * (i + 1) for i in range(20)])
++    if have_scipy:
++        check("wilcoxon_strong_effect", p is not None and p < 0.05, f"p={p}")
++    else:
++        check("wilcoxon_no_scipy_none", p is None)
++    check("wilcoxon_too_few", istats.wilcoxon_p([1.0, 2.0]) is None)
++
++
++# ---------------------------------------------------------------------------
++# 3: Module-A stats CLI
++# ---------------------------------------------------------------------------
++def test_indomain_stats_cli(tmp: Path) -> None:
++    rng = random.Random(7)
++    scores = tmp / "scores_indomain"
++    scores.mkdir(parents=True)
++    n = 40
++    for model, lift in (("base", 0.0), ("final991", 0.03), ("v6", 0.04)):
++        for split in ("val", "test"):
++            rows = []
++            for i in range(n):
++                shared = rng.random() * 0.1
++                row = {"pair_id": f"{split}_p{i:03d}", "model": model, "split": split}
++                for m in ("tgt_mse", "src_mse", "in_mse", "out_mse", "bg_drift"):
++                    row[m] = 0.1 + shared - lift * (0.5 if m == "tgt_mse" else 0.2)
++                for m in ("tgt_ssim", "clip_tgt", "dino_tgt", "clip_src"):
++                    row[m] = 0.5 + shared + lift
++                row["tgt_psnr"] = 20.0 + shared + lift
++                row["tgt_lpips"] = 0.3 - shared - lift
++                row["strength"] = 1.0 + shared * 0.5
++                row["clip_tgt_vs_src"] = 0.4 + shared
++                row["directional"] = row["clip_tgt"] - row["clip_tgt_vs_src"]
++                if i == 0 and model == "v6" and split == "val":
++                    row["tgt_psnr"] = float("inf")  # non-finite dropping
++                    row["dino_tgt"] = None
++                rows.append(row)
++            with (scores / f"indomain_{model}_{split}.jsonl").open("w") as f:
++                for r in rows:
++                    f.write(json.dumps(r) + "\n")
++    proc = run_cli(["indomain_stats.py", "--scores-dir", str(scores),
++                    "--splits", "val", "test", "--bootstrap", "300"])
++    check("indomain_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
++    data = json.loads((scores / "indomain_stats_threeway.json").read_text())
++    pooled = data["splits"]["pooled"]
++    check("indomain_models3", pooled["models"] == ["base", "final991", "v6"])
++    e = pooled["pairs"]["v6-final991"]["metrics"]["tgt_ssim"]
++    check("indomain_v6_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
++    e_inf = pooled["pairs"]["v6-final991"]["metrics"]["tgt_psnr"]
++    check("indomain_inf_dropped", e_inf["n"] == 79 and e_inf["n_dropped"] == 1,
++          f"n={e_inf['n']} dropped={e_inf['n_dropped']}")
++    # replication pair matches a direct helper computation
++    istats = load_module("istats_selftest3", HERE / "indomain_stats.py")
++    rows_b = {r["pair_id"]: r for split in ("val", "test")
++              for r in (json.loads(l) for l in
++                        (scores / f"indomain_base_{split}.jsonl").read_text().splitlines())}
++    rows_f = {r["pair_id"]: r for split in ("val", "test")
++              for r in (json.loads(l) for l in
++                        (scores / f"indomain_final991_{split}.jsonl").read_text().splitlines())}
++    ids = sorted(set(rows_b) & set(rows_f))
++    direct = istats.pair_stats(rows_b, rows_f, "tgt_ssim", ids, 300)  # same n_boot as CLI
++    rep = pooled["pairs"]["final991-base"]["metrics"]["tgt_ssim"]
++    check("indomain_replication_match",
++          abs(rep["ci95"][0] - direct["ci95"][0]) < 1e-9
++          and abs(rep["mean_diff_y_minus_x"] - direct["mean_diff_y_minus_x"]) < 1e-9)
++    check("indomain_md_written", (scores / "indomain_table.md").exists())
++
++
++# ---------------------------------------------------------------------------
++# 4: E1 CLIP-T stats CLI
++# ---------------------------------------------------------------------------
++def test_stats_threeway_cli(tmp: Path) -> None:
++    rng = random.Random(11)
++    scores = tmp / "scores_t2i"
++    scores.mkdir(parents=True)
++    for model, lift in (("base", 0.0), ("final991", 0.012), ("v6", 0.018)):
++        rows = []
++        for i in range(60):
++            subset = "attribute_binding" if i % 2 == 0 else "counting"
++            shared = rng.random() * 0.02
++            rows.append({"item_id": f"it{i:03d}", "subset": subset, "model": model,
++                         "clip_cos": 0.30 + shared + lift + 0.004 * rng.random()})
++        with (scores / f"clipT_{model}.jsonl").open("w") as f:
++            for r in rows:
++                f.write(json.dumps(r) + "\n")
++    proc = run_cli(["stats_threeway.py", "--scores-dir", str(scores),
++                    "--bootstrap", "300"])
++    check("e1_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
++    data = json.loads((scores / "stats_threeway.json").read_text())
++    all_e = data["clipT"]["ALL"]
++    check("e1_all_n60", all_e["n"] == 60)
++    check("e1_subsets_present",
++          {"attribute_binding", "counting"} <= set(data["clipT"].keys()))
++    e = all_e["pairs"]["v6-final991"]
++    check("e1_v6_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
++    rep = all_e["pairs"]["final991-base"]
++    check("e1_replication_pos_sig", rep["significant"] and rep["mean_diff_y_minus_x"] > 0)
++    check("e1_vqa_skipped", data["vqa"] is None)
++    check("e1_md_written", (scores / "comparison_table.md").exists())
++    # tolerance: drop v6 -> still runs on 2 models
++    (scores / "clipT_v6.jsonl").unlink()
++    proc2 = run_cli(["stats_threeway.py", "--scores-dir", str(scores),
++                     "--bootstrap", "200"])
++    data2 = json.loads((scores / "stats_threeway.json").read_text())
++    check("e1_two_model_fallback",
++          data2["clipT"]["models"] == ["base", "final991"]
++          and "v6-final991" not in data2["clipT"]["ALL"]["pairs"])
++
++
++# ---------------------------------------------------------------------------
++# 5-6: probe stats CLI (+npz cross-check)
++# ---------------------------------------------------------------------------
++def synth_probe_dir(root: Path, model: str, lift: float, rng: random.Random,
++                    layers=(3, 7, 23), n_pairs=16) -> Path:
++    d = root / f"probe_{model}"
++    (d / "maps").mkdir(parents=True)
++    rows = []
++    for i in range(n_pairs):
++        pid = f"pr{i:03d}"
++        per_layer = {}
++        for L in layers:
++            base_val = 0.4 + 0.1 * rng.random()
++            row = {m: base_val + lift for m in
++                   ("norm_ratio_vae", "norm_ratio_vit", "norm_ratio_visual", "mass_visual",
++                    "margin_vae", "margin_vit", "margin_lat")}
++            if L >= 7:
++                for fm in ("flow_log2_contrast", "flow_mass_in_frac", "flow_auroc"):
++                    row[fm] = base_val + lift
++            per_layer[str(L)] = row
++        rows.append({"pair_id": pid, "status": "ok", "n_latent": 256,
++                     "n_latent_in": 128,
++                     "probe_steps": {"0": 1.0, "11": 0.5, "23": 0.1},
++                     "per_layer": per_layer})
++    with (d / "probe_manifest.jsonl").open("w") as f:
++        for r in rows:
++            f.write(json.dumps(r) + "\n")
++    return d
++
++
++def test_probe_stats_cli(tmp: Path) -> None:
++    pstats = load_module("pstats_selftest", HERE / "probe_stats.py")
++    rng = random.Random(13)
++    d_base = synth_probe_dir(tmp, "base", 0.0, rng)
++    d_final = synth_probe_dir(tmp, "final991", 0.05, rng)
++    d_v6 = synth_probe_dir(tmp, "v6", 0.08, rng)
++    out = tmp / "probe_stats"
++    argv = ["probe_stats.py", "--base-dir", str(d_base), "--final991-dir", str(d_final),
++            "--v6-dir", str(d_v6), "--out-dir", str(out), "--bootstrap", "300",
++            "--min-n", "5"]
++    proc = run_cli(argv)
++    check("probe_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
++    data = json.loads((out / "probe_stats_threeway.json").read_text())
++    check("probe_models3", data["models"] == ["base", "final991", "v6"])
++    check("probe_npairs16", data["n_pairs"] == 16)
++    late = data["late"]
++    check("probe_late_detection", late["late_step"] == 23 and late["late_layer"] == 23)
++    e = late["stats"]["flow_auroc"]["v6-final991"]
++    check("probe_late_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
++    # best layer on a metric present at all layers; lift equal everywhere ->
++    # best layer should exist and be positive
++    best = data["metrics"]["norm_ratio_vae"]["v6-final991"]["best"]
++    check("probe_best_layer_pos", best is not None and best["mean_diff_y_minus_x"] > 0)
++    # auroc pure function on synthetic arrays
++    import numpy as np
++    scores = np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.95, 0.05, 0.85])
++    labels = np.array([0, 1, 0, 1, 0, 1, 0, 1], dtype=np.int8)
++    check("auroc_perfect", abs(pstats.auroc(scores, labels) - 1.0) < 1e-9)
++    tie_scores = np.zeros(10)
++    tie_labels = np.array([0, 1] * 5, dtype=np.int8)
++    check("auroc_ties_half", abs(pstats.auroc(tie_scores, tie_labels) - 0.5) < 1e-9)
++
++
++def test_probe_npz_verify(tmp: Path) -> None:
++    try:
++        import numpy as np  # noqa: F401
++        import torch  # noqa: F401
++        from PIL import Image  # noqa: F401
++    except Exception:
++        print("SKIP probe_npz_verify (torch/PIL unavailable)")
++        return
++    import numpy as np
++    from PIL import Image, ImageDraw
++
++    pstats = load_module("pstats_selftest2", HERE / "probe_stats.py")
++    lat_side = pstats.IMAGE_SIZE // pstats.LAT_DOWNSAMPLE  # 64
++    n_lat = lat_side * lat_side
++    val = tmp / "val.jsonl"
++    records = []
++    d_map = {}
++    for i in range(6):
++        pid = f"vr{i:02d}"
++        mask = Image.new("L", (512, 512), 0)
++        ImageDraw.Draw(mask).rectangle([0, 0, 256, 512], fill=255)
++        mask_path = tmp / f"mask_{pid}.png"
++        mask.save(mask_path)
++        records.append({"pair_id": pid,
++                        "automatic_difference_mask": {"path": str(mask_path)}})
++        lat_in = pstats.in_mask_flags(
++            pstats.mask_grid_fractions(mask_path, (lat_side, lat_side)))
++        rng = np.random.RandomState(i)
++        head_mean = rng.rand(n_lat).astype(np.float32) * 0.1
++        head_mean[lat_in] += 0.8          # strong in-mask separation
++        maps = np.stack([head_mean, head_mean * 0.9]).astype(np.float16)
++        d_map[pid] = (maps, lat_in)
++    with val.open("w") as f:
++        for r in records:
++            f.write(json.dumps(r) + "\n")
++
++    lifts = {"base": 0.0, "final991": 0.03, "v6": 0.05}
++    rng = random.Random(21)
++    dirs = {}
++    for model, lift in lifts.items():
++        d = tmp / f"vp_{model}"
++        (d / "maps").mkdir(parents=True)
++        for pid, (maps, lat_in) in d_map.items():
++            # manifest late AUROC must equal the npz-recomputed value (no lift
++            # here) so the cross-check drift stays ~0; the lift is applied to
++            # the other two late metrics only.
++            auroc_val = pstats.auroc(maps.astype(np.float32).mean(axis=0),
++                                     lat_in.astype("int8"))
++            row = {"pair_id": pid, "status": "ok",
++                   "probe_steps": {"0": 1.0, "11": 0.5, "23": 0.1},
++                   "per_layer": {"23": {"flow_auroc": auroc_val,
++                                        "flow_log2_contrast": 1.0 + lift,
++                                        "flow_mass_in_frac": 0.5 + lift}}}
++            with (d / "probe_manifest.jsonl").open("a") as f:
++                f.write(json.dumps(row) + "\n")
++            np.savez_compressed(d / "maps" / f"{pid}.npz", **{"flow_map_L23_S23": maps})
++        dirs[model] = d
++    out = tmp / "vp_out"
++    proc = run_cli(["probe_stats.py", "--base-dir", str(dirs["base"]),
++                    "--final991-dir", str(dirs["final991"]),
++                    "--v6-dir", str(dirs["v6"]), "--out-dir", str(out),
++                    "--bootstrap", "300", "--min-n", "5",
++                    "--verify-npz", "--val", str(val), "--npz-tol", "0.02"])
++    check("probe_verify_exit0", proc.returncode == 0, proc.stderr[-400:])
++    data = json.loads((out / "probe_stats_threeway.json").read_text())
++    chk = data.get("npz_check", {}).get("per_model", {})
++    ok_drift = all(c.get("max_abs_diff") is not None and c["max_abs_diff"] < 0.02
++                   and c["n_checked"] == 6 for c in chk.values())
++    check("probe_npz_drift_small", bool(chk) and ok_drift, json.dumps(chk)[:300])
++
++
++# ---------------------------------------------------------------------------
++# 7: shim
++# ---------------------------------------------------------------------------
++def test_shim(tmp: Path) -> None:
++    toy = tmp / "toy_gen.py"
++    toy.write_text(
++        "import argparse, json\n"
++        "MODELS = {'base': {'trainable_checkpoint': None, 'skip_trainable_reload': True}}\n"
++        "def main():\n"
++        "    p = argparse.ArgumentParser()\n"
++        "    p.add_argument('--model', required=True, choices=list(MODELS))\n"
++        "    p.add_argument('--out-dir', required=True)\n"
++        "    a = p.parse_args()\n"
++        "    m = MODELS[a.model]\n"
++        "    print(json.dumps({'ran': True, 'model': a.model,\n"
++        "                      'ckpt': str(m['trainable_checkpoint'])}))\n")
++    ckpt = tmp / "latest.pt"
++    ckpt.write_bytes(b"fake-ckpt")
++    # dry run
++    proc = subprocess.run([sys.executable, str(HERE / "model_shim.py"),
++                           "--script", str(toy), "--alias", "v6", "--ckpt", str(ckpt),
++                           "--dry-run", "--", "--model", "v6", "--out-dir", str(tmp)],
++                          capture_output=True, text=True)
++    check("shim_dryrun_exit0", proc.returncode == 0, proc.stderr[-300:])
++    evt = json.loads(proc.stdout.strip().splitlines()[-1])
++    check("shim_dryrun_registered", "v6" in evt["registered"] and "base" in evt["registered"])
++    check("shim_dryrun_argv", evt["forwarded_argv"] == ["--model", "v6", "--out-dir", str(tmp)])
++    # real injection: toy main() accepts --model v6 through the injected alias
++    proc2 = subprocess.run([sys.executable, str(HERE / "model_shim.py"),
++                            "--script", str(toy), "--alias", "v6", "--ckpt", str(ckpt),
++                            "--", "--model", "v6", "--out-dir", str(tmp)],
++                           capture_output=True, text=True)
++    check("shim_realrun_exit0", proc2.returncode == 0, proc2.stderr[-300:])
++    ran = json.loads(proc2.stdout.strip().splitlines()[-1])
++    check("shim_realrun_model_v6", ran.get("model") == "v6" and ran.get("ckpt") == str(ckpt))
++    # missing checkpoint rejected
++    proc3 = subprocess.run([sys.executable, str(HERE / "model_shim.py"),
++                            "--script", str(toy), "--alias", "v6", "--ckpt", str(tmp / "nope.pt"),
++                            "--dry-run"], capture_output=True, text=True)
++    check("shim_missing_ckpt_rejected", proc3.returncode != 0)
++
++
++# ---------------------------------------------------------------------------
++# 8: lazy-import check
++# ---------------------------------------------------------------------------
++def test_score_lazy_import() -> None:
++    proc = subprocess.run([sys.executable, str(HERE / "score_indomain_threeway.py"),
++                          "--help"], capture_output=True, text=True, cwd=str(HERE))
++    check("score_cli_help", proc.returncode == 0 and "--gen-v6-dir" in proc.stdout,
++          proc.stderr[-300:])
++    src = (HERE / "score_indomain_threeway.py").read_text()
++    check("score_module_top_clean",
++          "import torch" not in src.split("def build_ctx")[0]
++          and "import open_clip" not in src.split("def build_ctx")[0])
++
++
++# ---------------------------------------------------------------------------
++# 9: summarize
++# ---------------------------------------------------------------------------
++def test_summarize(tmp: Path) -> None:
++    root = tmp / "e3root"
++    (root / "scores_t2i").mkdir(parents=True)
++    (root / "scores_indomain").mkdir(parents=True)
++    (root / "probe_stats").mkdir(parents=True)
++    pair = {"mean_diff_y_minus_x": 0.01, "ci95": [0.005, 0.02], "significant": True,
++            "wins/losses/ties": [3, 1, 0], "wilcoxon_p": 0.04, "n": 4, "n_dropped": 0,
++            "x_mean": 0.3, "y_mean": 0.31}
++    (root / "scores_t2i" / "stats_threeway.json").write_text(json.dumps({
++        "clipT": {"models": ["base", "final991", "v6"],
++                  "ALL": {"n": 450, "model_means": {}, "pairs": {"v6-final991": pair}}}}))
++    (root / "scores_indomain" / "indomain_stats_threeway.json").write_text(json.dumps({
++        "models": ["base", "final991", "v6"],
++        "metrics": {"tgt_ssim": "higher"},
++        "splits": {"pooled": {"models": ["base", "final991", "v6"], "n_pairs": 95,
++                              "model_means": {"tgt_ssim": {}},
++                              "pairs": {"v6-final991": {"diff": "v6 - final991",
++                                                        "metrics": {"tgt_ssim": pair}}}}}}))
++    (root / "probe_stats" / "probe_stats_threeway.json").write_text(json.dumps({
++        "models": ["base", "final991", "v6"], "n_pairs": 51,
++        "late": {"late_step": 23, "late_layer": 23, "n_pairs_with_flow": 51,
++                 "stats": {"flow_auroc": {"v6-final991": pair}}},
++        "metrics": {"norm_ratio_vae": {"v6-final991": {"best_layer": 13, "best": pair}}}}))
++    proc = run_cli(["summarize.py", "--e3-root", str(root)])
++    check("summarize_exit0", proc.returncode == 0, proc.stderr[-400:])
++    md = (root / "summary_table.md").read_text()
++    check("summarize_sections",
++          all(s in md for s in ("E1 general T2I", "Module A in-domain", "E2 token probe",
++                                "Late-step AUROC", "v6-final991")))
++    sj = json.loads((root / "summary.json").read_text())
++    check("summarize_json_components", set(sj["components"]) ==
++          {"e1_clipt", "module_a", "e2_probe"})
++    # missing component tolerance
++    (root / "probe_stats" / "probe_stats_threeway.json").unlink()
++    proc2 = run_cli(["summarize.py", "--e3-root", str(root)])
++    check("summarize_tolerant", proc2.returncode == 0)
++    md2 = (root / "summary_table.md").read_text()
++    check("summarize_missing_marked", "(missing)" in md2)
++
++
++def main() -> None:
++    tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
++    try:
++        test_pair_stats(tmp)
++        test_wilcoxon()
++        test_indomain_stats_cli(tmp)
++        test_stats_threeway_cli(tmp)
++        test_probe_stats_cli(tmp)
++        test_probe_npz_verify(tmp)
++        test_shim(tmp)
++        test_score_lazy_import()
++        test_summarize(tmp)
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    print()
++    if FAIL:
++        print(f"FAILED: {FAIL} ({', '.join(FAILURES)})")
++        sys.exit(1)
++    print(f"ALL PASS ({PASS} checks)")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/stats_threeway.py b/experiments/counterfactual_cot/e3_eval/stats_threeway.py
+new file mode 100644
+index 0000000..c8634ec
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/stats_threeway.py
+@@ -0,0 +1,137 @@
++#!/usr/bin/env python3
++"""E1 general-T2I three-way stats: CLIP-T per-item paired comparison.
++
++Reads clipT_{base,final991,v6}.jsonl (base/final991 rows are copies of the
++E1 run; v6 rows come from e1_general_t2i/score_clip.py --models v6 on the
++e3_eval v6 generation) and computes the same paired bootstrap recipe as
++e1_general_t2i/stats_paired.py (per-item diff, 20000 resamples seed 1234,
++2.5/97.5 CI, significant iff CI excludes 0, optional Wilcoxon), for all
++three model pairs and per T2I-CompBench subset.
++
++VQA faithfulness rows (vqa_{model}.jsonl) are merged when present for at
++least two models (binary match rate), mirroring stats_paired.py.
++
++Outputs (under --scores-dir):
++  stats_threeway.json
++  comparison_table.md
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import statistics
++from pathlib import Path
++
++from indomain_stats import (DEFAULT_PAIRS, MODEL_ORDER, available_pairs, fmt_entry,
++                            load_rows, pair_label, pair_stats)
++
++HERE = Path(__file__).resolve().parent
++DEFAULT_SCORES_DIR = HERE.parent / "outputs/e3_eval/scores_t2i"
++
++
++def analyze_subsets(rows_by_model: dict[str, dict[str, dict]], field: str,
++                    n_boot: int) -> dict:
++    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
++    if len(models) < 2:
++        return {"models": models, "skipped": True}
++    common = None
++    for m in models:
++        common = set(rows_by_model[m]) if common is None else (common & set(rows_by_model[m]))
++    subsets = sorted({r["subset"] for m in models for r in rows_by_model[m].values()})
++    result: dict = {"models": models}
++    for subset in subsets + ["ALL"]:
++        ids = [i for i in sorted(common)
++               if subset == "ALL" or rows_by_model[models[0]][i].get("subset") == subset]
++        if not ids:
++            continue
++        entry: dict = {"n": len(ids), "model_means": {}, "pairs": {}}
++        for m in models:
++            vals = [rows_by_model[m][i][field] for i in ids]
++            entry["model_means"][m] = statistics.fmean(vals)
++        for (y, x) in available_pairs(models):
++            entry["pairs"][pair_label(y, x)] = pair_stats(
++                rows_by_model[x], rows_by_model[y], field, ids, n_boot)
++        result[subset] = entry
++    return result
++
++
++def markdown(clip: dict, vqa: dict | None, out: Path, n_boot: int) -> None:
++    lines = ["# E3 / E1 general T2I: three-way comparison (CLIP-T, ViT-L/14)", "",
++             f"Paired per-item diff = column model - row model; bootstrap 95% CI "
++             f"({n_boot} resamples, seed 1234). Positive diff = better text-image "
++             f"alignment. SIG = CI excludes 0.", ""]
++    cols = [pair_label(y, x) for (y, x) in available_pairs(clip.get("models", []))]
++
++    def section(title: str, data: dict) -> None:
++        if data.get("skipped"):
++            lines.extend([f"## {title}: skipped (need >= 2 models)", ""])
++            return
++        lines.extend([f"## {title}", "",
++                      "| subset | n | " + " | ".join(f"{m} mean" for m in data["models"])
++                      + " | " + " | ".join(cols) + " |",
++                      "|" + "---|" * (2 + len(data["models"]) + len(cols))])
++        for subset in [k for k in data if k not in ("models", "skipped")]:
++            e = data[subset]
++            pcells = [fmt_entry(e["pairs"][c]) if c in e["pairs"] else "n/a" for c in cols]
++            mcells = [f"{e['model_means'][m]:.4f}" if m in e["model_means"] else "n/a"
++                      for m in data["models"]]
++            lines.append(f"| {subset} | {e['n']} | " + " | ".join(mcells) + " | "
++                         + " | ".join(pcells) + " |")
++        lines.append("")
++
++    section("CLIP-T cosine", clip)
++    if vqa:
++        section("VQA faithfulness (match rate)", vqa)
++    out.write_text("\n".join(lines), encoding="utf-8")
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
++    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
++    parser.add_argument("--field", default="clip_cos")
++    parser.add_argument("--bootstrap", type=int, default=20000)
++    args = parser.parse_args()
++
++    rows: dict[str, dict[str, dict]] = {}
++    for m in args.models:
++        r = load_rows(args.scores_dir / f"clipT_{m}.jsonl", key="item_id")
++        if r:
++            rows[m] = r
++        else:
++            print(f"[warn] no rows: clipT_{m}.jsonl under {args.scores_dir}")
++    clip_result = analyze_subsets(rows, args.field, args.bootstrap)
++
++    vqa_result = None
++    vqa_rows: dict[str, dict[str, dict]] = {}
++    for m in args.models:
++        r = load_rows(args.scores_dir / f"vqa_{m}.jsonl", key="item_id")
++        if r:
++            for row in r.values():
++                row["vqa_match_f"] = 1.0 if row.get("vqa_match") else 0.0
++            vqa_rows[m] = r
++    if len(vqa_rows) >= 2:
++        vqa_result = analyze_subsets(vqa_rows, "vqa_match_f", args.bootstrap)
++
++    summary = {
++        "experiment": "e3_e1_general_t2i_threeway",
++        "sampling": {"seed": 1234, "num_timesteps": 25, "cfg_text": 4.0, "cfg_img": 2.0,
++                     "shift": 3.0, "resolution": 1024,
++                     "prompts": "T2I-CompBench 3 subsets x 150"},
++        "bootstrap_resamples": args.bootstrap,
++        "clipT": clip_result,
++        "vqa": vqa_result,
++    }
++    args.scores_dir.mkdir(parents=True, exist_ok=True)
++    (args.scores_dir / "stats_threeway.json").write_text(json.dumps(summary, indent=1),
++                                                         encoding="utf-8")
++    markdown(clip_result, vqa_result, args.scores_dir / "comparison_table.md", args.bootstrap)
++    print(json.dumps({"event": "e1_stats_done",
++                      "json": str(args.scores_dir / "stats_threeway.json")}))
++    all_entry = clip_result.get("ALL", {}).get("pairs", {}).get("v6-final991")
++    if all_entry:
++        print(json.dumps({"pair": "v6-final991", "subset": "ALL", **all_entry}, indent=2))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/experiments/counterfactual_cot/e3_eval/summarize.py b/experiments/counterfactual_cot/e3_eval/summarize.py
+new file mode 100644
+index 0000000..8d16b9f
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/summarize.py
+@@ -0,0 +1,189 @@
++#!/usr/bin/env python3
++"""E3 unified summary: three-way (base / final991 / v6) x metrics + significance.
++
++Collects the three component stats files produced by run_e3_eval.sh:
++  <e3-root>/scores_t2i/stats_threeway.json            (E1 general T2I, CLIP-T)
++  <e3-root>/scores_indomain/indomain_stats_threeway.json (Module A, 95 pairs)
++  <e3-root>/probe_stats/probe_stats_threeway.json      (E2 token probe, 51 pairs)
++and writes a single markdown table + condensed json:
++  <e3-root>/summary_table.md
++  <e3-root>/summary.json
++
++Missing components are tolerated and reported (partial runs / smoke).
++"""
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++
++from indomain_stats import DEFAULT_PAIRS, MODEL_ORDER, fmt_entry
++
++HERE = Path(__file__).resolve().parent
++DEFAULT_ROOT = HERE.parent / "outputs/e3_eval"
++
++ALL_PAIRS = [f"{y}-{x}" for (y, x) in DEFAULT_PAIRS]
++
++
++def load_json(path: Path) -> dict | None:
++    if path.exists():
++        return json.loads(path.read_text(encoding="utf-8"))
++    return None
++
++
++def cell(entry: dict | None, prec: int = 4) -> str:
++    return fmt_entry(entry, prec) if entry else "n/a"
++
++
++def pair_cols(present_pairs: list[str]) -> list[str]:
++    return [p for p in ALL_PAIRS if p in present_pairs]
++
++
++def section_e1(data: dict) -> list[str]:
++    clip = data.get("clipT") or {}
++    lines = ["## E1 general T2I (T2I-CompBench 3x150, CLIP-T ViT-L/14)", ""]
++    if clip.get("skipped") or "ALL" not in clip:
++        lines += ["(E1 rows missing)", ""]
++        return lines
++    cols = pair_cols(list(clip["ALL"].get("pairs", {}).keys()))
++    lines += ["| subset | n | " + " | ".join(cols) + " |",
++              "|" + "---|" * (2 + len(cols))]
++    for subset in [k for k in clip if k not in ("models", "skipped")]:
++        e = clip[subset]
++        cells = [cell(e["pairs"].get(c)) for c in cols]
++        lines.append(f"| {subset} | {e['n']} | " + " | ".join(cells) + " |")
++    lines.append("")
++    if data.get("vqa") and not data["vqa"].get("skipped"):
++        lines += ["### VQA faithfulness (when vqa rows exist)", ""]
++        vqa = data["vqa"]
++        for subset in [k for k in vqa if k not in ("models", "skipped")]:
++            e = vqa[subset]
++            cells = [cell(e["pairs"].get(c), 3) for c in cols]
++            lines.append(f"- {subset} (n={e['n']}): " + "; ".join(
++                f"{c} {t}" for c, t in zip(cols, cells) if t != "n/a"))
++        lines.append("")
++    return lines
++
++
++def section_indomain(data: dict) -> list[str]:
++    lines = ["## Module A in-domain (95 counterfactual pairs, pooled val+test)", ""]
++    splits = data.get("splits", {})
++    pooled = splits.get("pooled", {})
++    if pooled.get("skipped") or "pairs" not in pooled:
++        lines += ["(Module-A rows missing)", ""]
++        return lines
++    cols = pair_cols(list(pooled["pairs"].keys()))
++    lines += ["| metric (better) | " + " | ".join(f"{m}" for m in pooled["models"])
++              + " | " + " | ".join(cols) + " |",
++              "|" + "---|" * (1 + len(pooled["models"]) + len(cols))]
++    for metric, better in data.get("metrics", {}).items():
++        means = pooled["model_means"].get(metric, {})
++        mcells = [f"{means[m]:.4f}" if m in means else "n/a" for m in pooled["models"]]
++        cells = [cell(pooled["pairs"][c]["metrics"].get(metric)) for c in cols]
++        lines.append(f"| {metric} ({better}) | " + " | ".join(mcells) + " | "
++                     + " | ".join(cells) + " |")
++    lines.append("")
++    for s in ("val", "test"):
++        d = splits.get(s, {})
++        if not d.get("skipped") and "pairs" in d:
++            lines.append(f"- split {s}: n={d['n_pairs']} (see indomain_stats_threeway.json)")
++    lines.append("")
++    return lines
++
++
++def section_probe(data: dict) -> list[str]:
++    lines = ["## E2 token probe (51 val pairs)", ""]
++    late = data.get("late")
++    if late:
++        cols = pair_cols(list(late["stats"].get("flow_auroc", {}).keys()))
++        lines += [f"Late-step AUROC (step {late.get('late_step')}, "
++                  f"layer L{late.get('layer', late.get('late_layer'))}, "
++                  f"n={late.get('n_pairs_with_flow')}):", "",
++                  "| pair | diff [95% CI] |", "|---|---|"]
++        for c in cols:
++            e = late["stats"]["flow_auroc"].get(c)
++            lines.append(f"| {c} | {cell(e)} |")
++        lines.append("")
++    else:
++        lines += ["(E2 probe rows missing)", ""]
++    lines += ["Best layer per metric (largest mean paired diff):", "",
++              "| metric | " + " | ".join(ALL_PAIRS) + " |",
++              "|" + "---|" * (1 + len(ALL_PAIRS))]
++    for metric, per_pair in data.get("metrics", {}).items():
++        cells = []
++        for c in ALL_PAIRS:
++            d = per_pair.get(c)
++            if d and d.get("best") and d["best"].get("n", 0) > 0:
++                cells.append(f"L{d['best_layer']} {d['best']['mean_diff_y_minus_x']:+.4f}"
++                             f"{' SIG' if d['best']['significant'] else ''}")
++            else:
++                cells.append("n/a")
++        lines.append(f"| {metric} | " + " | ".join(cells) + " |")
++    lines.append("")
++    chk = data.get("npz_check")
++    if chk:
++        lines.append(f"npz cross-check (tol {chk['tol']}): " + "; ".join(
++            f"{m}: max|Δ|={c['max_abs_diff']:.4f}" if c["max_abs_diff"] is not None
++            else f"{m}: no npz" for m, c in chk["per_model"].items()))
++        lines.append("")
++    return lines
++
++
++def condense(root: Path) -> dict:
++    out: dict = {"models": MODEL_ORDER,
++                 "pairs": ALL_PAIRS,
++                 "components": {}}
++    e1 = load_json(root / "scores_t2i" / "stats_threeway.json")
++    if e1:
++        clip = e1.get("clipT", {})
++        out["components"]["e1_clipt"] = {
++            s: {"n": e.get("n"), "pairs": e.get("pairs")}
++            for s, e in clip.items() if s not in ("models", "skipped")}
++    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
++    if ind:
++        out["components"]["module_a"] = {
++            s: {"n": d.get("n_pairs"), "pairs": d.get("pairs")}
++            for s, d in ind.get("splits", {}).items() if not d.get("skipped")}
++    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
++    if pr:
++        out["components"]["e2_probe"] = {
++            "n_pairs": pr.get("n_pairs"),
++            "late": pr.get("late"),
++            "best": {m: {p: {"layer": d.get("best_layer"), "diff": (d.get("best") or {}).get(
++                "mean_diff_y_minus_x")} for p, d in pp.items()}
++                for m, pp in pr.get("metrics", {}).items()}}
++    return out
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--e3-root", type=Path, default=DEFAULT_ROOT)
++    args = parser.parse_args()
++    root = args.e3_root
++    e1 = load_json(root / "scores_t2i" / "stats_threeway.json")
++    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
++    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
++
++    lines = ["# E3 three-way evaluation summary: base / final991 / v6", "",
++             "v6 = final991 SFT + token-region alignment loss (2973 steps, latest.pt, LoRA "
++             "direct-load). Pairs: v6-final991 / v6-base / final991-base (replication). "
++             "Bootstrap 95% CI (20000 resamples, seed 1234); SIG = CI excludes 0; "
++             "optional Wilcoxon signed-rank p in parentheses.", ""]
++    lines += section_e1(e1) if e1 else ["## E1 general T2I", "", "(missing)", ""]
++    lines += section_indomain(ind) if ind else ["## Module A in-domain", "", "(missing)", ""]
++    lines += section_probe(pr) if pr else ["## E2 token probe", "", "(missing)", ""]
++    lines += ["---", "Generated by e3_eval/summarize.py; per-component tables: "
++              "scores_t2i/comparison_table.md, indomain_table.md, probe_table.md"]
++
++    root.mkdir(parents=True, exist_ok=True)
++    (root / "summary_table.md").write_text("\n".join(lines), encoding="utf-8")
++    (root / "summary.json").write_text(json.dumps(condense(root), indent=1), encoding="utf-8")
++    print(json.dumps({"event": "summary_done",
++                      "md": str(root / "summary_table.md"),
++                      "json": str(root / "summary.json"),
++                      "components_present": [n for n, ok in
++                                             (("e1", e1), ("indomain", ind), ("probe", pr)) if ok]}))
++
++
++if __name__ == "__main__":
++    main()
+-- 
+2.43.7
+
