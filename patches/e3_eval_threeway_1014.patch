@@ -1,55 +1,9 @@
-From 6cae58416e82058c158f26c50b2df221319430e5 Mon Sep 17 00:00:00 2001
-From: nightlee1218-sudo <nightlee1218-sudo@users.noreply.github.com>
-Date: Wed, 14 Oct 2026 11:15:09 +0800
-Subject: [PATCH] E3 eval: three-way evaluation launcher (base/final991/v6)
-
-- run_e3_eval.sh: selftest|preflight|smoke|run|status stages (run_v6.sh
-  style) + granular e1-gen/e1-score/indomain-gen/indomain-score/probe/
-  stats/summary; 2-GPU chain orchestration + watchdog progress file
-- model_shim.py: import-time MODELS['v6'] injection into e1/e2 scripts
-  (no edits on feature/e1-general-t2i or exp/e2-token-probe)
-- E1 general T2I (3x150 T2I-CompBench): v6 generation via shim + reused
-  score_clip.py; stats_threeway.py = CLIP-T per-item 20k bootstrap (seed
-  1234) + Wilcoxon, 3 model pairs, subsets + ALL
-- Module A in-domain (95 pairs, 3 seeds x 2 states):
-  score_indomain_threeway.py (metric code line-identical to
-  final991_eval_v1/score_indomain.py, lazy heavy imports, --models,
-  skip-if-exists) + indomain_stats.py (pure shared stats helpers +
-  13-metric three-way CLI)
-- E2 probe (51 val pairs): v6 rerun via shim with identical probe-steps;
-  probe_stats.py = 10-metric best-layer paired diffs + late-step AUROC
-  (S23) + optional npz cross-check (validated, f16 drift < 5e-05)
-- summarize.py: unified summary_table.md / summary.json
-- selftest_e3_eval.py: 46 CPU checks ALL PASS; replication pair
-  (final991-base) validated against historical E1 / Module-A / E2
-  numbers (exact match)
----
- .../counterfactual_cot/e3_eval/README.md      | 141 ++++++
- .../e3_eval/indomain_stats.py                 | 273 +++++++++++
- .../counterfactual_cot/e3_eval/model_shim.py  |  91 ++++
- .../counterfactual_cot/e3_eval/probe_stats.py | 325 +++++++++++++
- .../counterfactual_cot/e3_eval/run_e3_eval.sh | 332 +++++++++++++
- .../e3_eval/score_indomain_threeway.py        | 238 +++++++++
- .../e3_eval/selftest_e3_eval.py               | 456 ++++++++++++++++++
- .../e3_eval/stats_threeway.py                 | 137 ++++++
- .../counterfactual_cot/e3_eval/summarize.py   | 189 ++++++++
- 9 files changed, 2182 insertions(+)
- create mode 100644 experiments/counterfactual_cot/e3_eval/README.md
- create mode 100644 experiments/counterfactual_cot/e3_eval/indomain_stats.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/model_shim.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/probe_stats.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
- create mode 100644 experiments/counterfactual_cot/e3_eval/score_indomain_threeway.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/stats_threeway.py
- create mode 100644 experiments/counterfactual_cot/e3_eval/summarize.py
-
 diff --git a/experiments/counterfactual_cot/e3_eval/README.md b/experiments/counterfactual_cot/e3_eval/README.md
 new file mode 100644
-index 0000000..2b0384c
+index 0000000..8bbc9c0
 --- /dev/null
 +++ b/experiments/counterfactual_cot/e3_eval/README.md
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,164 @@
 +# E3 three-way evaluation: base / final991 / v6
 +
 +E3 v6 (= Module-A SFT + token-region alignment loss, 2973 steps,
@@ -75,6 +29,7 @@ index 0000000..2b0384c
 +|---|---|
 +| `run_e3_eval.sh` | launcher: `selftest\|preflight\|smoke\|run\|status` + granular `e1-gen\|e1-score\|indomain-gen\|indomain-score\|probe\|stats\|summary` (run_v6.sh style, progress file `wb_e3_eval_progress.txt`) |
 +| `model_shim.py` | injects `MODELS["v6"] = {trainable_checkpoint: <ckpt>}` into e1/e2 scripts at import time (see below) |
++| `gen_same_seed_states_v6.py` | e3_eval-side copy of the v5 A-module generator; byte-identical except the checkpoint-format guard also accepts the v6 label (see "Guard fix" below) |
 +| `indomain_stats.py` | shared PURE stats helpers (bootstrap/wilcoxon/pair_stats) + Module-A three-way CLI |
 +| `score_indomain_threeway.py` | Module-A scoring, metric code line-identical to `final991_eval_v1/score_indomain.py`; lazy heavy imports, `--models`, skip-if-exists |
 +| `stats_threeway.py` | E1 CLIP-T three-way CLI (subsets + ALL, optional VQA merge) |
@@ -88,7 +43,7 @@ index 0000000..2b0384c
 +|---|---|---|
 +| E1 generation | existing `outputs/e1_general_t2i/gen/{base,final991}` | new: `gen_t2i/v6` via shim -> `generate_t2i.py` |
 +| E1 CLIP-T rows | copied `clipT_{base,final991}.jsonl` | new: `score_clip.py --models v6` |
-+| A gen (95x2x3) | existing `outputs/final991_eval_v1/gen/...` | new: `generate_same_seed_states.py --trainable-checkpoint <v6 latest.pt>` (no shim needed) |
++| A gen (95x2x3) | existing `outputs/final991_eval_v1/gen/...` | new: `gen_same_seed_states_v6.py --trainable-checkpoint <v6 latest.pt>` (e3_eval-side copy, guard relaxed; no shim needed) |
 +| A rows | copied `indomain_{base,final991}_{val,test}.jsonl` | new: `score_indomain_threeway.py --models v6` |
 +| E2 probe | existing `outputs/e2_token_probe/probe_{base,final991}` (51 ok pairs) | new: shim -> `probe.py`, same `--probe-steps 0 11 23` |
 +| stats | recomputed from the copied rows (replication pair) | — |
@@ -156,6 +111,28 @@ index 0000000..2b0384c
 +probe.py). Validated on the existing runs: max manifest-vs-npz drift
 +4.8e-05 (f16 rounding), tolerance 0.02.
 +
++## Guard fix (20261014 smoke finding)
++
++The first GPU smoke run passed the whole GPU0 chain (E1 v6 generation +
++CLIP-T) but the A-module v6 generation died at
++`generate_same_seed_states.py:181`: the v5 driver guards
++`payload["format"] == "gold40_automask_v5_paired_fsdp"`, while the v6
++trainer writes the label `gold40_automask_v6_align_fsdp` (keys identical,
++label different). Fix (e3_eval-side; the v5 script stays untouched as the
++final991 reference generator): `gen_same_seed_states_v6.py` is a
++byte-identical copy whose guard accepts BOTH labels — verified by diff (only
++lines 181-182 differ) and enforced by a selftest audit (≤4 diff lines, all
++inside the guard). `run_e3_eval.sh indomain-gen` now calls the copy. The
++`BAGEL_ROOT = Path(__file__).resolve().parents[3]` line resolves to the
++BAGEL root from `e3_eval/` as well (same tree depth), so every other line —
++defaults, sys.path, model build — behaves identically.
++
++Guard-risk audit of the other v6 paths (none found): `probe.py` loads the
++checkpoint only through `build_inference_model` -> `load_trainable_strict`
++(key-strict, no format check) and never touches `payload["format"]`;
++`generate_t2i.py` reads only `payload.get("step")`. The GPU0 smoke run
++passing end-to-end independently confirms both paths.
++
 +## Running (GPU instance, 2x A100)
 +
 +```bash
@@ -191,6 +168,270 @@ index 0000000..2b0384c
 +  the current E1 run has none, so the section is absent unless v6 adds it.
 +- The author delivered the launcher only; GPU evaluation itself was NOT
 +  run from the authoring session (per task scope).
+diff --git a/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py b/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py
+new file mode 100644
+index 0000000..828246d
+--- /dev/null
++++ b/experiments/counterfactual_cot/e3_eval/gen_same_seed_states_v6.py
+@@ -0,0 +1,258 @@
++#!/usr/bin/env python3
++"""Generate same-seed source/target-state images from a Gold40 AutoMask-v5 checkpoint."""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++import random
++import sys
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any, Mapping
++
++import numpy as np
++import torch
++
++BAGEL_ROOT = Path(__file__).resolve().parents[3]
++if str(BAGEL_ROOT) not in sys.path:
++    sys.path.insert(0, str(BAGEL_ROOT))
++
++from experiments.counterfactual_cot.full_backbone_lora_dual_target_cot1024_fsdp_v4 import train as v4_runtime
++from experiments.counterfactual_cot.full_backbone_lora_region1024_fsdp_v3 import train as v3_runtime
++from experiments.counterfactual_cot.full_backbone_lora_region1024_v2.train import DEFAULT_TRAINABLE_REGEX, _read_num_layers
++from experiments.counterfactual_cot.gold40_automask_dual_target_cot1024_fsdp_v5.paired_data import (
++    STATE_IDS,
++    load_automask_manifest,
++    prompt_audit,
++    render_state_prompt,
++)
++from experiments.counterfactual_cot.training.gold40_overfit import _generate_one, _load_tokenizer, _make_inferencer
++from experiments.counterfactual_cot.training.lora_2step_smoke import _iter_target_linear_names, inject_lora, load_trainable_strict, set_trainable
++from modeling.autoencoder import load_ae
++
++DEFAULT_MODEL = Path("/dockerdata/niightli/BAGEL/models/BAGEL-7B-MoT")
++DEFAULT_CHECKPOINT = BAGEL_ROOT / "experiments/counterfactual_cot/outputs/gold40_automask_v5_train960/checkpoints/latest.pt"
++DEFAULT_MANIFEST = BAGEL_ROOT / "experiments/counterfactual_cot/gold40_automask_v5_data/artifacts/splits/val.jsonl"
++DEFAULT_OUTPUT = BAGEL_ROOT / "experiments/counterfactual_cot/outputs/gold40_automask_v5_val_same_seed_generation"
++EXPECTED_LAYERS = 28
++
++
++def sha256_file(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(1 << 20), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def atomic_json(path: Path, payload: Any) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    temporary = path.with_name(path.name + ".tmp")
++    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
++    temporary.replace(path)
++
++
++def parse_args() -> argparse.Namespace:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
++    parser.add_argument("--trainable-checkpoint", type=Path, default=DEFAULT_CHECKPOINT)
++    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
++    parser.add_argument("--llm-path", type=Path, default=DEFAULT_MODEL)
++    parser.add_argument("--vae-path", type=Path, default=DEFAULT_MODEL / "ae.safetensors")
++    parser.add_argument("--base-checkpoint-path", type=Path, default=DEFAULT_MODEL / "ema.safetensors")
++    parser.add_argument("--seeds", type=int, nargs="+", default=list(range(1234, 1250)))
++    parser.add_argument("--num-timesteps", type=int, default=50)
++    parser.add_argument("--cfg-text-scale", type=float, default=4.0)
++    parser.add_argument("--cfg-img-scale", type=float, default=2.0)
++    parser.add_argument("--cfg-interval-start", type=float, default=0.0)
++    parser.add_argument("--cfg-interval-end", type=float, default=1.0)
++    parser.add_argument("--timestep-shift", type=float, default=3.0)
++    parser.add_argument("--cfg-renorm-min", type=float, default=0.0)
++    parser.add_argument("--cfg-renorm-type", default="text_channel")
++    parser.add_argument(
++        "--skip-trainable-reload",
++        action="store_true",
++        help="BASE/STEP0 control: load only base ema.safetensors and keep LoRA at zero-init "
++        "(lora_B == 0, so the LoRA path contributes exactly 0). No trainable checkpoint is required.",
++    )
++    parser.add_argument("--overwrite", action="store_true")
++    args = parser.parse_args()
++    if not args.seeds or len(set(args.seeds)) != len(args.seeds):
++        parser.error("--seeds must contain at least one unique integer")
++    if args.num_timesteps < 1:
++        parser.error("--num-timesteps must be positive")
++    return args
++
++
++def build_inference_model(args: argparse.Namespace) -> tuple[Any, Any, Any, dict[str, int], dict[str, Any]]:
++    device = torch.device("cuda")
++    if not torch.cuda.is_available():
++        raise RuntimeError("AutoMask-v5 generation requires CUDA")
++    tokenizer, special_tokens, added_tokens = _load_tokenizer(str(args.llm_path))
++    build_args = argparse.Namespace(
++        llm_path=args.llm_path,
++        checkpoint_path=args.base_checkpoint_path,
++    )
++    model, base_report = v3_runtime._build_cpu_model(build_args, len(tokenizer), added_tokens)
++    layers = _read_num_layers(args.llm_path)
++    if layers != EXPECTED_LAYERS:
++        raise RuntimeError(f"expected {EXPECTED_LAYERS} decoder layers, found {layers}")
++    model.timestep_shift = args.timestep_shift
++    model.config.timestep_shift = args.timestep_shift
++    target_names = _iter_target_linear_names(model, list(range(layers)))
++    wrappers = inject_lora(model, target_names, 8, 16, 0.0)
++    trainable_report = set_trainable(model, DEFAULT_TRAINABLE_REGEX, wrappers)
++    trainable = [(name, parameter) for name, parameter in model.named_parameters() if parameter.requires_grad]
++    if not trainable:
++        raise RuntimeError("no trainable LoRA/bridge parameters after v5 model reconstruction")
++    for _, parameter in trainable:
++        parameter.data = parameter.data.to(dtype=torch.float32)
++    model.to(device=device)
++    hooks, bridge_report = v4_runtime._install_bridge_output_cast_hooks(model)
++    if args.skip_trainable_reload:
++        zero_b = all(bool((wrapper.lora_B == 0).all()) for wrapper in wrappers.values())
++        if not zero_b:
++            raise RuntimeError("BASE mode requires every lora_B to be zero-initialized")
++        load_report = {
++            "mode": "base_skip_trainable_reload",
++            "num_trainable_tensors": len(trainable),
++            "lora_all_zero": zero_b,
++        }
++    else:
++        load_report = load_trainable_strict(args.trainable_checkpoint, model)
++        expected = len(trainable)
++        if load_report["num_loaded_tensors"] != expected or load_report["max_abs_load_copy_diff"] != 0.0:
++            raise RuntimeError(f"strict trainable reload failed: {load_report}")
++    model.eval()
++    vae, _ = load_ae(str(args.vae_path))
++    vae.to(device=device, dtype=torch.bfloat16).eval()
++    infer_args = argparse.Namespace(
++        visual_image_size=1024,
++        visual_vae_min_image_size=512,
++        visual_vit_image_size=980,
++        visual_vit_min_image_size=224,
++        cfg_text_scale=args.cfg_text_scale,
++        cfg_img_scale=args.cfg_img_scale,
++        cfg_interval_start=args.cfg_interval_start,
++        cfg_interval_end=args.cfg_interval_end,
++        timestep_shift=args.timestep_shift,
++        num_timesteps=args.num_timesteps,
++        cfg_renorm_min=args.cfg_renorm_min,
++        cfg_renorm_type=args.cfg_renorm_type,
++    )
++    inferencer = _make_inferencer(model, vae, tokenizer, special_tokens, infer_args)
++    audit = {
++        "base_load_report": base_report,
++        "trainable_reload": load_report,
++        "num_layers": layers,
++        "lora_wrappers": len(wrappers),
++        "trainable_report": trainable_report,
++        "bridge_output_cast": bridge_report,
++        "hook_count": len(hooks),
++    }
++    return model, vae, inferencer, infer_args, audit
++
++
++def main() -> None:
++    args = parse_args()
++    required_fields = ["manifest", "llm_path", "vae_path", "base_checkpoint_path"]
++    if not args.skip_trainable_reload:
++        required_fields.append("trainable_checkpoint")
++    for field in required_fields:
++        value = getattr(args, field)
++        if not value.exists():
++            raise FileNotFoundError(f"missing {field}: {value}")
++    if args.output_dir.exists() and any(args.output_dir.iterdir()) and not args.overwrite:
++        raise FileExistsError(f"output directory is non-empty: {args.output_dir}; use a new directory or --overwrite")
++    if args.output_dir.exists() and args.overwrite:
++        previous = args.output_dir / "generation_manifest.jsonl"
++        if previous.exists():
++            previous.unlink()
++    args.output_dir.mkdir(parents=True, exist_ok=True)
++    records, record_audit = load_automask_manifest(args.manifest, require_files=True)
++    model, vae, inferencer, infer_args, model_audit = build_inference_model(args)
++    if args.skip_trainable_reload:
++        checkpoint_payload: dict[str, Any] = {"format": "base_skip_trainable_reload", "step": 0}
++        checkpoint_sha256: str | None = None
++        checkpoint_path_str: str | None = None
++    else:
++        checkpoint_payload = torch.load(args.trainable_checkpoint, map_location="cpu", weights_only=False)
++        if checkpoint_payload.get("format") not in ("gold40_automask_v5_paired_fsdp", "gold40_automask_v6_align_fsdp"):
++            raise RuntimeError(f"not a Gold40 AutoMask-v5/v6-align checkpoint: {checkpoint_payload.get('format')!r}")
++        checkpoint_sha256 = sha256_file(args.trainable_checkpoint)
++        checkpoint_path_str = str(args.trainable_checkpoint.resolve())
++    manifest_path = args.output_dir / "generation_manifest.jsonl"
++    image_root = args.output_dir / "images"
++    rows: list[dict[str, Any]] = []
++    try:
++        with torch.no_grad():
++            for pair_index, record in enumerate(records):
++                pair_id = record["pair_id"]
++                for seed in args.seeds:
++                    for state in STATE_IDS:
++                        output_path = image_root / pair_id / f"seed_{seed:010d}__{state}.png"
++                        if output_path.exists() and not args.overwrite:
++                            raise FileExistsError(f"refusing to overwrite generation: {output_path}")
++                        random.seed(seed)
++                        np.random.seed(seed)
++                        torch.manual_seed(seed)
++                        torch.cuda.manual_seed_all(seed)
++                        generated = _generate_one(
++                            inferencer,
++                            record,
++                            output_path,
++                            infer_args,
++                            seed=seed,
++                            prompt=render_state_prompt(record, state),
++                        )
++                        path = Path(generated).resolve()
++                        if not path.is_file() or path.stat().st_size == 0:
++                            raise RuntimeError(f"generation failed for {pair_id}/{seed}/{state}")
++                        row = {
++                            "schema_version": "gold40_automask_v5_same_seed_generation_v1",
++                            "pair_id": pair_id,
++                            "source_scene_id": record["source_scene_id"],
++                            "intervention_type": record["intervention_type"],
++                            "seed": seed,
++                            "state": state,
++                            "output_path": str(path),
++                            "output_sha256": sha256_file(path),
++                            "checkpoint_path": checkpoint_path_str,
++                            "checkpoint_sha256": checkpoint_sha256,
++                            "checkpoint_step": checkpoint_payload.get("step"),
++                            "prompt": render_state_prompt(record, state),
++                            "prompt_sha256": hashlib.sha256(render_state_prompt(record, state).encode()).hexdigest(),
++                            "generation": {
++                                "num_timesteps": args.num_timesteps,
++                                "cfg_text_scale": args.cfg_text_scale,
++                                "cfg_img_scale": args.cfg_img_scale,
++                                "cfg_interval": [args.cfg_interval_start, args.cfg_interval_end],
++                                "timestep_shift": args.timestep_shift,
++                                "visual_image_size": 1024,
++                            },
++                        }
++                        rows.append(row)
++                        with manifest_path.open("a", encoding="utf-8") as handle:
++                            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
++                        print(json.dumps({"event": "generated", "pair_index": pair_index, "pair_id": pair_id, "seed": seed, "state": state, "output": str(path)}, ensure_ascii=False), flush=True)
++    finally:
++        del inferencer, vae, model
++        torch.cuda.empty_cache()
++    atomic_json(args.output_dir / "generation_report.json", {
++        "status": "completed",
++        "created_at": datetime.now(timezone.utc).isoformat(),
++        "manifest": str(args.manifest.resolve()),
++        "manifest_prompt_sha256": prompt_audit(records),
++        "checkpoint": {"path": checkpoint_path_str, "sha256": checkpoint_sha256, "step": checkpoint_payload.get("step"), "mode": "base" if args.skip_trainable_reload else "gold40_trainable"},
++        "seeds": args.seeds,
++        "expected_records": len(records) * len(args.seeds) * len(STATE_IDS),
++        "generated_records": len(rows),
++        "generation_manifest": str(manifest_path.resolve()),
++        "record_audit": record_audit,
++        "model_audit": model_audit,
++    })
++
++
++if __name__ == "__main__":
++    main()
 diff --git a/experiments/counterfactual_cot/e3_eval/indomain_stats.py b/experiments/counterfactual_cot/e3_eval/indomain_stats.py
 new file mode 100644
 index 0000000..d332642
@@ -900,10 +1141,10 @@ index 0000000..bf5f377
 +    main()
 diff --git a/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
 new file mode 100644
-index 0000000..e6b82da
+index 0000000..c246553
 --- /dev/null
 +++ b/experiments/counterfactual_cot/e3_eval/run_e3_eval.sh
-@@ -0,0 +1,332 @@
+@@ -0,0 +1,337 @@
 +#!/usr/bin/env bash
 +# E3 three-way evaluation launcher: base / final991 / v6 (align-loss model).
 +#
@@ -939,6 +1180,11 @@ index 0000000..e6b82da
 +E1_DIR="$CFCOT/e1_general_t2i"
 +E1_PROMPTS="$E1_DIR/prompts"
 +V5GEN="$CFCOT/gold40_automask_dual_target_cot1024_fsdp_v5/generate_same_seed_states.py"
++# v6 A-module generation goes through the e3_eval-side copy of the v5
++# generator: byte-identical except the checkpoint-format guard also accepts
++# the v6 label 'gold40_automask_v6_align_fsdp' (the v5 original must stay
++# untouched as the final991 reference generator).
++V6GEN="$HERE/gen_same_seed_states_v6.py"
 +E2_PROBE="$CFCOT/e2_token_probe/probe.py"
 +E1_SCORES_SRC="$CFCOT/outputs/e1_general_t2i/scores"
 +IND_SCORES_SRC="$CFCOT/outputs/final991_eval_v1/scores"
@@ -1007,7 +1253,7 @@ index 0000000..e6b82da
 +    [ -e "$o/gen_indomain/v6/$split" ] && [ -n "$(ls -A "$o/gen_indomain/v6/$split" 2>/dev/null)" ] \
 +      && ow+=(--overwrite)
 +    echo "[indomain-gen] $split: $pairs pairs x 2 states x $INDO_SEEDS_N seeds"
-+    CUDA_VISIBLE_DEVICES=$GPU1 $PY "$V5GEN" \
++    CUDA_VISIBLE_DEVICES=$GPU1 $PY "$V6GEN" \
 +      --manifest "$splits_dir/$split.jsonl" \
 +      --output-dir "$o/gen_indomain/v6/$split" \
 +      --llm-path "$MODEL_DIR" --vae-path "$MODEL_DIR/ae.safetensors" \
@@ -1482,10 +1728,10 @@ index 0000000..76b8cca
 +    main()
 diff --git a/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
 new file mode 100644
-index 0000000..0358cb3
+index 0000000..3841f2b
 --- /dev/null
 +++ b/experiments/counterfactual_cot/e3_eval/selftest_e3_eval.py
-@@ -0,0 +1,456 @@
+@@ -0,0 +1,500 @@
 +#!/usr/bin/env python3
 +"""E3 eval CPU selftest (no GPU, no BAGEL stack, no heavy imports).
 +
@@ -1919,6 +2165,49 @@ index 0000000..0358cb3
 +    check("summarize_missing_marked", "(missing)" in md2)
 +
 +
++# ---------------------------------------------------------------------------
++# 10: v6 generator copy guard audit (20261014 smoke fix)
++# ---------------------------------------------------------------------------
++def test_guard_copy() -> None:
++    copy_path = HERE / "gen_same_seed_states_v6.py"
++    check("guard_copy_exists", copy_path.is_file())
++    if not copy_path.is_file():
++        return
++    copy_src = copy_path.read_text(encoding="utf-8")
++    check("guard_copy_accepts_v6_label", '"gold40_automask_v6_align_fsdp"' in copy_src)
++    check("guard_copy_keeps_v5_label", '"gold40_automask_v5_paired_fsdp"' in copy_src)
++    orig_path = HERE.parent / "gold40_automask_dual_target_cot1024_fsdp_v5" / \
++        "generate_same_seed_states.py"
++    if not orig_path.is_file():
++        print(f"SKIP guard_copy_vs_original diff audit (no {orig_path})")
++        return
++    orig_src = orig_path.read_text(encoding="utf-8")
++    check("guard_v6_label_absent_from_original",
++          "gold40_automask_v6_align_fsdp" not in orig_src)
++    # line-by-line diff: only the guard lines may differ
++    o_lines = orig_src.splitlines()
++    c_lines = copy_src.splitlines()
++    diffs = [(i, o, c) for i, (o, c) in enumerate(zip(o_lines, c_lines)) if o != c]
++    tail_same = len(o_lines) == len(c_lines)
++    check("guard_copy_sameline_count", tail_same,
++          f"orig {len(o_lines)} vs copy {len(c_lines)}")
++    check("guard_copy_diff_lines_minimal", len(diffs) <= 4,
++          f"diffs at {[i + 1 for i, _, _ in diffs]}")
++    check("guard_copy_diff_only_in_guard",
++          all("automask" in c.lower() and "automask" in o.lower() for _, o, c in diffs),
++          "; ".join(repr(c)[:80] for _, _, c in diffs))
++    check("guard_copy_root_resolution_unchanged",
++          "Path(__file__).resolve().parents[3]" in copy_src)
++    # the E1 / E2 chains load the v6 checkpoint WITHOUT any format-label
++    # guard (build_inference_model -> load_trainable_strict is key-strict;
++    # generate_t2i only reads payload["step"]) — assert that stays true.
++    for script in ("e2_token_probe/probe.py", "e1_general_t2i/generate_t2i.py"):
++        s = (HERE.parent / script)
++        src = s.read_text(encoding="utf-8") if s.is_file() else ""
++        check(f"no_format_guard:{script.split('/')[-1]}",
++              '.get("format")' not in src and ".get('format')" not in src)
++
++
 +def main() -> None:
 +    tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
 +    try:
@@ -1931,6 +2220,7 @@ index 0000000..0358cb3
 +        test_shim(tmp)
 +        test_score_lazy_import()
 +        test_summarize(tmp)
++        test_guard_copy()
 +    finally:
 +        shutil.rmtree(tmp, ignore_errors=True)
 +    print()
@@ -2280,6 +2570,3 @@ index 0000000..8d16b9f
 +
 +if __name__ == "__main__":
 +    main()
--- 
-2.43.7
-
