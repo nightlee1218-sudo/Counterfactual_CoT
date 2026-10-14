@@ -441,6 +441,7 @@ def test_guard_copy() -> None:
         return
     copy_src = copy_path.read_text(encoding="utf-8")
     check("guard_copy_accepts_v6_label", '"gold40_automask_v6_align_fsdp"' in copy_src)
+    check("guard_copy_accepts_v7_label", '"gold40_automask_v7_align_fsdp"' in copy_src)
     check("guard_copy_keeps_v5_label", '"gold40_automask_v5_paired_fsdp"' in copy_src)
     orig_path = HERE.parent / "gold40_automask_dual_target_cot1024_fsdp_v5" / \
         "generate_same_seed_states.py"
@@ -474,6 +475,69 @@ def test_guard_copy() -> None:
               '.get("format")' not in src and ".get('format')" not in src)
 
 
+# ---------------------------------------------------------------------------
+# 11: four-way (base/final991/v6/v7) auto-detection + pair enumeration
+# ---------------------------------------------------------------------------
+def test_four_way_models(tmp: Path) -> None:
+    istats = load_module("istats_4way", HERE / "indomain_stats.py")
+    # backward-compat: the 3-model pair order is unchanged
+    check("pairs_3way_compat",
+          istats.pairs_for(["base", "final991", "v6"])
+          == [("v6", "final991"), ("v6", "base"), ("final991", "base")])
+    # 4 models -> 6 ordered pairs, v7 pairs appended after the v6 three-way
+    check("pairs_4way_count",
+          istats.pairs_for(["base", "final991", "v6", "v7"])
+          == [("v6", "final991"), ("v6", "base"), ("final991", "base"),
+              ("v7", "v6"), ("v7", "final991"), ("v7", "base")])
+    # indomain CLI auto-detects 4 models and emits all 6 pairs
+    scores = tmp / "scores_indomain_4w"
+    scores.mkdir(parents=True)
+    n = 40
+    for model, lift in (("base", 0.0), ("final991", 0.03), ("v6", 0.01), ("v7", 0.04)):
+        rows = []
+        for i in range(n):
+            shared = (i % 50) / 500.0  # identical across models: pure paired design
+            rows.append({"pair_id": f"p{i:03d}", "model": model, "split": "val",
+                         "tgt_ssim": 0.5 + shared + lift,
+                         "tgt_mse": 0.1 + shared - lift,
+                         "in_mse": 0.1 + shared - lift, "out_mse": 0.1 + shared,
+                         "tgt_psnr": 20.0 + lift, "tgt_lpips": 0.3 - lift,
+                         "src_mse": 0.1 + shared, "clip_src": 0.5 + shared,
+                         "clip_tgt": 0.5 + shared + lift, "dino_tgt": 0.4 + lift,
+                         "strength": 1.0, "bg_drift": 0.05, "directional": 0.1 + lift})
+        with (scores / f"indomain_{model}_val.jsonl").open("w") as f:
+            for r in rows:
+                f.write(json.dumps(r) + "\n")
+    proc = run_cli(["indomain_stats.py", "--scores-dir", str(scores),
+                    "--splits", "val", "--bootstrap", "300"])
+    check("fourway_indomain_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
+    data = json.loads((scores / "indomain_stats_threeway.json").read_text())
+    pooled = data["splits"]["pooled"]
+    check("fourway_models_detected", pooled["models"] == ["base", "final991", "v6", "v7"])
+    check("fourway_six_pairs",
+          set(pooled["pairs"]) == {"v6-final991", "v6-base", "final991-base",
+                                   "v7-v6", "v7-final991", "v7-base"})
+    e = pooled["pairs"]["v7-final991"]["metrics"]["tgt_ssim"]
+    check("fourway_v7_sig_pos", e["significant"] and e["mean_diff_y_minus_x"] > 0)
+    md = (scores / "indomain_table.md").read_text()
+    check("fourway_md_columns", all(c in md for c in ("v7-v6", "v7-final991", "v7-base")))
+    # E1 CLIP-T: auto-detect 4 models from clipT_*.jsonl
+    rng = random.Random(19)
+    t2i = tmp / "scores_t2i_4w"
+    t2i.mkdir(parents=True)
+    for model, lift in (("base", 0.0), ("final991", 0.02), ("v6", 0.012), ("v7", 0.03)):
+        with (t2i / f"clipT_{model}.jsonl").open("w") as f:
+            for i in range(50):
+                f.write(json.dumps({"item_id": f"it{i:03d}", "subset": "counting",
+                                    "clip_cos": 0.30 + 0.01 * rng.random() + lift}) + "\n")
+    proc = run_cli(["stats_threeway.py", "--scores-dir", str(t2i), "--bootstrap", "300"])
+    check("fourway_e1_cli_exit0", proc.returncode == 0, proc.stderr[-400:])
+    e1 = json.loads((t2i / "stats_threeway.json").read_text())["clipT"]
+    check("fourway_e1_models", e1["models"] == ["base", "final991", "v6", "v7"])
+    check("fourway_e1_pairs", set(e1["ALL"]["pairs"]) ==
+          {"v6-final991", "v6-base", "final991-base", "v7-v6", "v7-final991", "v7-base"})
+
+
 def main() -> None:
     tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
     try:
@@ -487,6 +551,7 @@ def main() -> None:
         test_score_lazy_import()
         test_summarize(tmp)
         test_guard_copy()
+        test_four_way_models(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print()

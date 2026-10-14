@@ -17,12 +17,10 @@ import argparse
 import json
 from pathlib import Path
 
-from indomain_stats import DEFAULT_PAIRS, MODEL_ORDER, fmt_entry
+from indomain_stats import fmt_entry, ordered_models, pairs_for
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_ROOT = HERE.parent / "outputs/e3_eval"
-
-ALL_PAIRS = [f"{y}-{x}" for (y, x) in DEFAULT_PAIRS]
 
 
 def load_json(path: Path) -> dict | None:
@@ -36,7 +34,8 @@ def cell(entry: dict | None, prec: int = 4) -> str:
 
 
 def pair_cols(present_pairs: list[str]) -> list[str]:
-    return [p for p in ALL_PAIRS if p in present_pairs]
+    """Column order comes from the stats producers (pairs_for ordering)."""
+    return list(present_pairs)
 
 
 def section_e1(data: dict) -> list[str]:
@@ -106,12 +105,16 @@ def section_probe(data: dict) -> list[str]:
         lines.append("")
     else:
         lines += ["(E2 probe rows missing)", ""]
+    models = data.get("models") or []
+    preferred = [f"{y}-{x}" for (y, x) in pairs_for(models)]
+    present = {pair for per_pair in data.get("metrics", {}).values() for pair in per_pair}
+    cols = [c for c in preferred if c in present] + sorted(present - set(preferred))
     lines += ["Best layer per metric (largest mean paired diff):", "",
-              "| metric | " + " | ".join(ALL_PAIRS) + " |",
-              "|" + "---|" * (1 + len(ALL_PAIRS))]
+              "| metric | " + " | ".join(cols) + " |",
+              "|" + "---|" * (1 + len(cols))]
     for metric, per_pair in data.get("metrics", {}).items():
         cells = []
-        for c in ALL_PAIRS:
+        for c in cols:
             d = per_pair.get(c)
             if d and d.get("best") and d["best"].get("n", 0) > 0:
                 cells.append(f"L{d['best_layer']} {d['best']['mean_diff_y_minus_x']:+.4f}"
@@ -130,21 +133,28 @@ def section_probe(data: dict) -> list[str]:
 
 
 def condense(root: Path) -> dict:
-    out: dict = {"models": MODEL_ORDER,
-                 "pairs": ALL_PAIRS,
-                 "components": {}}
     e1 = load_json(root / "scores_t2i" / "stats_threeway.json")
+    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
+    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
+    models: set[str] = set()
+    if e1:
+        models.update(e1.get("clipT", {}).get("models", []))
+    if ind:
+        models.update(ind.get("models", []))
+    if pr:
+        models.update(pr.get("models", []))
+    out: dict = {"models": ordered_models(sorted(models)),
+                 "pairs": [f"{y}-{x}" for (y, x) in pairs_for(models)],
+                 "components": {}}
     if e1:
         clip = e1.get("clipT", {})
         out["components"]["e1_clipt"] = {
             s: {"n": e.get("n"), "pairs": e.get("pairs")}
             for s, e in clip.items() if s not in ("models", "skipped")}
-    ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
     if ind:
         out["components"]["module_a"] = {
             s: {"n": d.get("n_pairs"), "pairs": d.get("pairs")}
             for s, d in ind.get("splits", {}).items() if not d.get("skipped")}
-    pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
     if pr:
         out["components"]["e2_probe"] = {
             "n_pairs": pr.get("n_pairs"),
@@ -164,9 +174,10 @@ def main() -> None:
     ind = load_json(root / "scores_indomain" / "indomain_stats_threeway.json")
     pr = load_json(root / "probe_stats" / "probe_stats_threeway.json")
 
-    lines = ["# E3 three-way evaluation summary: base / final991 / v6", "",
-             "v6 = final991 SFT + token-region alignment loss (2973 steps, latest.pt, LoRA "
-             "direct-load). Pairs: v6-final991 / v6-base / final991-base (replication). "
+    lines = ["# E3 evaluation summary: base / final991 / v6 / v7 (whichever rows exist)", "",
+             "v6 = final991 SFT + token-region alignment loss; v7 = v6 + thrust fixes "
+             "(lambda 0.3, tau 0.1, strength reg, plateau guard). Pairs: v6-final991 / "
+             "v6-base / final991-base (replication) / v7-v6 / v7-final991 / v7-base. "
              "Bootstrap 95% CI (20000 resamples, seed 1234); SIG = CI excludes 0; "
              "optional Wilcoxon signed-rank p in parentheses.", ""]
     lines += section_e1(e1) if e1 else ["## E1 general T2I", "", "(missing)", ""]

@@ -178,8 +178,8 @@ def main() -> None:
         checkpoint_path_str: str | None = None
     else:
         checkpoint_payload = torch.load(args.trainable_checkpoint, map_location="cpu", weights_only=False)
-        if checkpoint_payload.get("format") not in ("gold40_automask_v5_paired_fsdp", "gold40_automask_v6_align_fsdp"):
-            raise RuntimeError(f"not a Gold40 AutoMask-v5/v6-align checkpoint: {checkpoint_payload.get('format')!r}")
+        if checkpoint_payload.get("format") not in ("gold40_automask_v5_paired_fsdp", "gold40_automask_v6_align_fsdp", "gold40_automask_v7_align_fsdp"):
+            raise RuntimeError(f"not a Gold40 AutoMask-v5/v6/v7-align checkpoint: {checkpoint_payload.get('format')!r}")
         checkpoint_sha256 = sha256_file(args.trainable_checkpoint)
         checkpoint_path_str = str(args.trainable_checkpoint.resolve())
     manifest_path = args.output_dir / "generation_manifest.jsonl"

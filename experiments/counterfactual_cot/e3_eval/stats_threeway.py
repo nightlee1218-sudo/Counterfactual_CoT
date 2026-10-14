@@ -22,8 +22,8 @@ import json
 import statistics
 from pathlib import Path
 
-from indomain_stats import (DEFAULT_PAIRS, MODEL_ORDER, available_pairs, fmt_entry,
-                            load_rows, pair_label, pair_stats)
+from indomain_stats import (available_pairs, detect_clip_models, fmt_entry, load_rows,
+                            ordered_models, pair_label, pair_stats)
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_SCORES_DIR = HERE.parent / "outputs/e3_eval/scores_t2i"
@@ -31,7 +31,7 @@ DEFAULT_SCORES_DIR = HERE.parent / "outputs/e3_eval/scores_t2i"
 
 def analyze_subsets(rows_by_model: dict[str, dict[str, dict]], field: str,
                     n_boot: int) -> dict:
-    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
+    models = ordered_models([m for m, rows in rows_by_model.items() if rows])
     if len(models) < 2:
         return {"models": models, "skipped": True}
     common = None
@@ -88,10 +88,14 @@ def markdown(clip: dict, vqa: dict | None, out: Path, n_boot: int) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
-    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
+    parser.add_argument("--models", nargs="*", default=None,
+                        help="default: auto-detect every model with clipT rows (base/final991/v6/v7)")
     parser.add_argument("--field", default="clip_cos")
     parser.add_argument("--bootstrap", type=int, default=20000)
     args = parser.parse_args()
+    if args.models is None:
+        args.models = detect_clip_models(args.scores_dir)
+        print(f"[auto] models detected: {args.models}")
 
     rows: dict[str, dict[str, dict]] = {}
     for m in args.models:

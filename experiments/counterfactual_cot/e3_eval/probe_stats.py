@@ -29,7 +29,7 @@ import argparse
 import json
 from pathlib import Path
 
-from indomain_stats import MODEL_ORDER, available_pairs, fmt_entry, pair_label, pair_stats
+from indomain_stats import available_pairs, fmt_entry, ordered_models, pair_label, pair_stats
 
 HERE = Path(__file__).resolve().parent
 CFCOT = HERE.parent
@@ -161,7 +161,7 @@ def detect_late(manifests: dict[str, dict[str, dict]]) -> dict:
 
 
 def analyze_probe(manifests: dict[str, dict[str, dict]], n_boot: int, min_n: int) -> dict:
-    models = [m for m in MODEL_ORDER if m in manifests and manifests[m]]
+    models = ordered_models([m for m, recs in manifests.items() if recs])
     common = None
     for m in models:
         common = set(manifests[m]) if common is None else (common & set(manifests[m]))
@@ -255,6 +255,8 @@ def main() -> None:
     parser.add_argument("--base-dir", type=Path, default=PROBE_ROOT / "probe_base")
     parser.add_argument("--final991-dir", type=Path, default=PROBE_ROOT / "probe_final991")
     parser.add_argument("--v6-dir", type=Path, default=CFCOT / "outputs/e3_eval/probe_v6")
+    parser.add_argument("--v7-dir", type=Path, default=CFCOT / "outputs/e3_eval/probe_v7",
+                        help="v7 probe dir (e3_align_v7 model); skipped when absent")
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--bootstrap", type=int, default=20000)
     parser.add_argument("--min-n", type=int, default=5)
@@ -264,7 +266,8 @@ def main() -> None:
     parser.add_argument("--npz-tol", type=float, default=0.02)
     args = parser.parse_args()
 
-    dirs = {"base": args.base_dir, "final991": args.final991_dir, "v6": args.v6_dir}
+    dirs = {"base": args.base_dir, "final991": args.final991_dir,
+            "v6": args.v6_dir, "v7": args.v7_dir}
     manifests: dict[str, dict[str, dict]] = {}
     for m, d in dirs.items():
         man = load_manifest(d / "probe_manifest.jsonl")

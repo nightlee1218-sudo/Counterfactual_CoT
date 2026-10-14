@@ -42,6 +42,7 @@ DEFAULT_GEN_DIRS = {
     "base": CFCOT / "outputs/final991_eval_v1/gen/base",
     "final991": CFCOT / "outputs/final991_eval_v1/gen/final991",
     "v6": CFCOT / "outputs/e3_eval/gen_indomain/v6",
+    "v7": CFCOT / "outputs/e3_eval/gen_indomain/v7",
 }
 VENV_SITE = BAGEL / "venvs/geneval_eval/lib/python3.10/site-packages"
 SIZE = 512
@@ -56,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gen-base-dir", type=Path, default=DEFAULT_GEN_DIRS["base"])
     parser.add_argument("--gen-final991-dir", type=Path, default=DEFAULT_GEN_DIRS["final991"])
     parser.add_argument("--gen-v6-dir", type=Path, default=DEFAULT_GEN_DIRS["v6"])
+    parser.add_argument("--gen-v7-dir", type=Path, default=DEFAULT_GEN_DIRS["v7"])
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--seeds", nargs="*", default=["1234", "2234", "3234"])
     parser.add_argument("--rescore", action="store_true", help="overwrite existing row files")
@@ -67,7 +69,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def gen_dir_for(args: argparse.Namespace, model: str) -> Path:
-    return {"base": args.gen_base_dir, "final991": args.gen_final991_dir, "v6": args.gen_v6_dir}[model]
+    return {"base": args.gen_base_dir, "final991": args.gen_final991_dir,
+            "v6": args.gen_v6_dir, "v7": args.gen_v7_dir}[model]
 
 
 def score_split(model: str, split: str, pairs: list[dict], gen_dir: Path,

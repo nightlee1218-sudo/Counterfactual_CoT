@@ -1,4 +1,4 @@
-# E3 three-way evaluation: base / final991 / v6
+# E3 evaluation: base / final991 / v6 (/ v7)
 
 E3 v6 (= Module-A SFT + token-region alignment loss, 2973 steps,
 `outputs/gold40_automask_v6_align_fsdp_full_shard/checkpoints/latest.pt`,
@@ -76,6 +76,20 @@ probe_v6/                         E2 v6 probe (manifest + maps/*.npz)
 probe_stats/probe_stats_threeway.json + probe_table.md
 summary_table.md + summary.json   unified three-way summary
 ```
+
+## N-way models (v7 support, added 20261014)
+
+Every stats CLI auto-detects the models that actually have rows
+(`indomain_stats.py` / `stats_threeway.py`: `--models` default None;
+`probe_stats.py`: `--v7-dir`, skipped when absent;
+`score_indomain_threeway.py`: `--gen-v7-dir`).  With v7 rows present the
+comparisons extend to six pairs — the v6 three-way order is preserved
+byte-identically, then `v7-v6`, `v7-final991`, `v7-base` are appended
+(`indomain_stats.pairs_for`; future models enumerate as later-minus-earlier).
+v7 generation for the A-module uses the same `gen_same_seed_states_v6.py`
+copy (its format guard accepts `gold40_automask_v7_align_fsdp` — same keys,
+label only); E1/probe v7 runs go through `model_shim.py --alias v7 --ckpt
+<v7 latest.pt>` exactly like v6.
 
 ## Stats recipe (all components, identical)
 

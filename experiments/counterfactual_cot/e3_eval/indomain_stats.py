@@ -36,8 +36,54 @@ HERE = Path(__file__).resolve().parent
 CFCOT = HERE.parent
 DEFAULT_SCORES_DIR = CFCOT / "outputs/e3_eval/scores_indomain"
 
-MODEL_ORDER = ["base", "final991", "v6"]
-DEFAULT_PAIRS = [("v6", "final991"), ("v6", "base"), ("final991", "base")]
+MODEL_ORDER = ["base", "final991", "v6", "v7"]
+# Ordered comparison pairs: the v6 three-way order is preserved first (existing
+# outputs stay byte-identical); v7 pairs are appended; any future models are
+# compared as (later - earlier) after the preferred list.
+DEFAULT_PAIRS = [
+    ("v6", "final991"), ("v6", "base"), ("final991", "base"),
+    ("v7", "v6"), ("v7", "final991"), ("v7", "base"),
+]
+
+
+def ordered_models(models) -> list[str]:
+    """Entry order: MODEL_PRIORITY first, unknown models after (sorted)."""
+    models = list(models)
+    known = [m for m in MODEL_ORDER if m in models]
+    extra = sorted(set(models) - set(MODEL_ORDER))
+    return known + extra
+
+
+def pairs_for(models) -> list[tuple[str, str]]:
+    """All (y, x) comparisons among `models`, preferred pairs first."""
+    have = set(models)
+    pairs = [p for p in DEFAULT_PAIRS if p[0] in have and p[1] in have]
+    covered = {(a, b) for a, b in pairs} | {(b, a) for a, b in pairs}
+    ranked = ordered_models(models)
+    for j in range(len(ranked)):
+        for i in range(j):
+            pair = (ranked[j], ranked[i])
+            if pair not in covered:
+                pairs.append(pair)
+    return pairs
+
+
+def detect_indomain_models(scores_dir: Path, splits) -> list[str]:
+    """Auto-detect models with indomain rows under --scores-dir."""
+    found: set[str] = set()
+    for split in splits:
+        for path in scores_dir.glob(f"indomain_*_{split}.jsonl"):
+            stem = path.stem
+            model = stem[len("indomain_"):-(len(split) + 1)]
+            if model:
+                found.add(model)
+    return ordered_models(found) if found else ["base", "final991", "v6"]
+
+
+def detect_clip_models(scores_dir: Path) -> list[str]:
+    """Auto-detect models with clipT rows under --scores-dir."""
+    found = {path.stem[len("clipT_"):] for path in scores_dir.glob("clipT_*.jsonl")}
+    return ordered_models(found) if found else ["base", "final991", "v6"]
 
 # (field, better) — polarity only annotates direction; significance is CI != 0
 IND_METRICS = [
@@ -142,8 +188,10 @@ def pair_stats(rows_x: dict[str, dict], rows_y: dict[str, dict], field: str,
 
 
 def available_pairs(models: list[str],
-                    pairs: list[tuple[str, str]] = DEFAULT_PAIRS) -> list[tuple[str, str]]:
+                    pairs: list[tuple[str, str]] | None = None) -> list[tuple[str, str]]:
     """Ordered pairs restricted to models actually present in the data."""
+    if pairs is None:
+        return pairs_for(models)
     return [(a, b) for (a, b) in pairs if a in models and b in models]
 
 
@@ -172,7 +220,7 @@ def fmt_entry(e: dict | None, prec: int = 4) -> str:
 def analyze_split(rows_by_model: dict[str, dict[str, dict]], metrics: list[tuple[str, str]],
                   n_boot: int) -> dict:
     """rows_by_model: {model: {pair_id: row}} for ONE split (already loaded)."""
-    models = [m for m in MODEL_ORDER if m in rows_by_model and rows_by_model[m]]
+    models = ordered_models([m for m, rows in rows_by_model.items() if rows])
     if len(models) < 2:
         return {"models": models, "skipped": True}
     ids = None
@@ -226,11 +274,15 @@ def markdown_report(summary: dict, out: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scores-dir", type=Path, default=DEFAULT_SCORES_DIR)
-    parser.add_argument("--models", nargs="*", default=MODEL_ORDER)
+    parser.add_argument("--models", nargs="*", default=None,
+                        help="default: auto-detect every model with indomain rows (base/final991/v6/v7)")
     parser.add_argument("--splits", nargs="*", default=["val", "test"])
     parser.add_argument("--bootstrap", type=int, default=20000)
     parser.add_argument("--out-prefix", default="indomain_stats_threeway")
     args = parser.parse_args()
+    if args.models is None:
+        args.models = detect_indomain_models(args.scores_dir, args.splits)
+        print(f"[auto] models detected: {args.models}")
 
     rows_all: dict[str, dict[str, dict[str, dict]]] = {}
     for split in args.splits:
@@ -255,7 +307,7 @@ def main() -> None:
 
     summary = {
         "experiment": "e3_module_a_indomain_threeway",
-        "models": [m for m in MODEL_ORDER if any(m in rows_all[s] for s in rows_all)],
+        "models": ordered_models([m for m in args.models if any(m in rows_all[s] for s in rows_all)]),
         "bootstrap_resamples": args.bootstrap,
         "splits": {s: analyze_split(rows_all[s], IND_METRICS, args.bootstrap)
                    for s in list(args.splits) + ["pooled"]},
