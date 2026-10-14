@@ -33,6 +33,11 @@ SPLITS="$CFCOT/final991_automask_v5_data/artifacts/splits"
 E1_DIR="$CFCOT/e1_general_t2i"
 E1_PROMPTS="$E1_DIR/prompts"
 V5GEN="$CFCOT/gold40_automask_dual_target_cot1024_fsdp_v5/generate_same_seed_states.py"
+# v6 A-module generation goes through the e3_eval-side copy of the v5
+# generator: byte-identical except the checkpoint-format guard also accepts
+# the v6 label 'gold40_automask_v6_align_fsdp' (the v5 original must stay
+# untouched as the final991 reference generator).
+V6GEN="$HERE/gen_same_seed_states_v6.py"
 E2_PROBE="$CFCOT/e2_token_probe/probe.py"
 E1_SCORES_SRC="$CFCOT/outputs/e1_general_t2i/scores"
 IND_SCORES_SRC="$CFCOT/outputs/final991_eval_v1/scores"
@@ -101,7 +106,7 @@ indomain_v6_gen() { # out_root splits_dir splits... (passed as array via globals
     [ -e "$o/gen_indomain/v6/$split" ] && [ -n "$(ls -A "$o/gen_indomain/v6/$split" 2>/dev/null)" ] \
       && ow+=(--overwrite)
     echo "[indomain-gen] $split: $pairs pairs x 2 states x $INDO_SEEDS_N seeds"
-    CUDA_VISIBLE_DEVICES=$GPU1 $PY "$V5GEN" \
+    CUDA_VISIBLE_DEVICES=$GPU1 $PY "$V6GEN" \
       --manifest "$splits_dir/$split.jsonl" \
       --output-dir "$o/gen_indomain/v6/$split" \
       --llm-path "$MODEL_DIR" --vae-path "$MODEL_DIR/ae.safetensors" \

@@ -23,6 +23,7 @@ Module-A / E1 / E2 result, as a sanity anchor).
 |---|---|
 | `run_e3_eval.sh` | launcher: `selftest\|preflight\|smoke\|run\|status` + granular `e1-gen\|e1-score\|indomain-gen\|indomain-score\|probe\|stats\|summary` (run_v6.sh style, progress file `wb_e3_eval_progress.txt`) |
 | `model_shim.py` | injects `MODELS["v6"] = {trainable_checkpoint: <ckpt>}` into e1/e2 scripts at import time (see below) |
+| `gen_same_seed_states_v6.py` | e3_eval-side copy of the v5 A-module generator; byte-identical except the checkpoint-format guard also accepts the v6 label (see "Guard fix" below) |
 | `indomain_stats.py` | shared PURE stats helpers (bootstrap/wilcoxon/pair_stats) + Module-A three-way CLI |
 | `score_indomain_threeway.py` | Module-A scoring, metric code line-identical to `final991_eval_v1/score_indomain.py`; lazy heavy imports, `--models`, skip-if-exists |
 | `stats_threeway.py` | E1 CLIP-T three-way CLI (subsets + ALL, optional VQA merge) |
@@ -36,7 +37,7 @@ Module-A / E1 / E2 result, as a sanity anchor).
 |---|---|---|
 | E1 generation | existing `outputs/e1_general_t2i/gen/{base,final991}` | new: `gen_t2i/v6` via shim -> `generate_t2i.py` |
 | E1 CLIP-T rows | copied `clipT_{base,final991}.jsonl` | new: `score_clip.py --models v6` |
-| A gen (95x2x3) | existing `outputs/final991_eval_v1/gen/...` | new: `generate_same_seed_states.py --trainable-checkpoint <v6 latest.pt>` (no shim needed) |
+| A gen (95x2x3) | existing `outputs/final991_eval_v1/gen/...` | new: `gen_same_seed_states_v6.py --trainable-checkpoint <v6 latest.pt>` (e3_eval-side copy, guard relaxed; no shim needed) |
 | A rows | copied `indomain_{base,final991}_{val,test}.jsonl` | new: `score_indomain_threeway.py --models v6` |
 | E2 probe | existing `outputs/e2_token_probe/probe_{base,final991}` (51 ok pairs) | new: shim -> `probe.py`, same `--probe-steps 0 11 23` |
 | stats | recomputed from the copied rows (replication pair) | — |
@@ -103,6 +104,28 @@ captured step (t≈0.115, near the trajectory end); **late-step AUROC** =
 AUROC vs mask flags rebuilt from the val records — helpers verbatim from
 probe.py). Validated on the existing runs: max manifest-vs-npz drift
 4.8e-05 (f16 rounding), tolerance 0.02.
+
+## Guard fix (20261014 smoke finding)
+
+The first GPU smoke run passed the whole GPU0 chain (E1 v6 generation +
+CLIP-T) but the A-module v6 generation died at
+`generate_same_seed_states.py:181`: the v5 driver guards
+`payload["format"] == "gold40_automask_v5_paired_fsdp"`, while the v6
+trainer writes the label `gold40_automask_v6_align_fsdp` (keys identical,
+label different). Fix (e3_eval-side; the v5 script stays untouched as the
+final991 reference generator): `gen_same_seed_states_v6.py` is a
+byte-identical copy whose guard accepts BOTH labels — verified by diff (only
+lines 181-182 differ) and enforced by a selftest audit (≤4 diff lines, all
+inside the guard). `run_e3_eval.sh indomain-gen` now calls the copy. The
+`BAGEL_ROOT = Path(__file__).resolve().parents[3]` line resolves to the
+BAGEL root from `e3_eval/` as well (same tree depth), so every other line —
+defaults, sys.path, model build — behaves identically.
+
+Guard-risk audit of the other v6 paths (none found): `probe.py` loads the
+checkpoint only through `build_inference_model` -> `load_trainable_strict`
+(key-strict, no format check) and never touches `payload["format"]`;
+`generate_t2i.py` reads only `payload.get("step")`. The GPU0 smoke run
+passing end-to-end independently confirms both paths.
 
 ## Running (GPU instance, 2x A100)
 

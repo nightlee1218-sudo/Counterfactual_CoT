@@ -431,6 +431,49 @@ def test_summarize(tmp: Path) -> None:
     check("summarize_missing_marked", "(missing)" in md2)
 
 
+# ---------------------------------------------------------------------------
+# 10: v6 generator copy guard audit (20261014 smoke fix)
+# ---------------------------------------------------------------------------
+def test_guard_copy() -> None:
+    copy_path = HERE / "gen_same_seed_states_v6.py"
+    check("guard_copy_exists", copy_path.is_file())
+    if not copy_path.is_file():
+        return
+    copy_src = copy_path.read_text(encoding="utf-8")
+    check("guard_copy_accepts_v6_label", '"gold40_automask_v6_align_fsdp"' in copy_src)
+    check("guard_copy_keeps_v5_label", '"gold40_automask_v5_paired_fsdp"' in copy_src)
+    orig_path = HERE.parent / "gold40_automask_dual_target_cot1024_fsdp_v5" / \
+        "generate_same_seed_states.py"
+    if not orig_path.is_file():
+        print(f"SKIP guard_copy_vs_original diff audit (no {orig_path})")
+        return
+    orig_src = orig_path.read_text(encoding="utf-8")
+    check("guard_v6_label_absent_from_original",
+          "gold40_automask_v6_align_fsdp" not in orig_src)
+    # line-by-line diff: only the guard lines may differ
+    o_lines = orig_src.splitlines()
+    c_lines = copy_src.splitlines()
+    diffs = [(i, o, c) for i, (o, c) in enumerate(zip(o_lines, c_lines)) if o != c]
+    tail_same = len(o_lines) == len(c_lines)
+    check("guard_copy_sameline_count", tail_same,
+          f"orig {len(o_lines)} vs copy {len(c_lines)}")
+    check("guard_copy_diff_lines_minimal", len(diffs) <= 4,
+          f"diffs at {[i + 1 for i, _, _ in diffs]}")
+    check("guard_copy_diff_only_in_guard",
+          all("automask" in c.lower() and "automask" in o.lower() for _, o, c in diffs),
+          "; ".join(repr(c)[:80] for _, _, c in diffs))
+    check("guard_copy_root_resolution_unchanged",
+          "Path(__file__).resolve().parents[3]" in copy_src)
+    # the E1 / E2 chains load the v6 checkpoint WITHOUT any format-label
+    # guard (build_inference_model -> load_trainable_strict is key-strict;
+    # generate_t2i only reads payload["step"]) — assert that stays true.
+    for script in ("e2_token_probe/probe.py", "e1_general_t2i/generate_t2i.py"):
+        s = (HERE.parent / script)
+        src = s.read_text(encoding="utf-8") if s.is_file() else ""
+        check(f"no_format_guard:{script.split('/')[-1]}",
+              '.get("format")' not in src and ".get('format')" not in src)
+
+
 def main() -> None:
     tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
     try:
@@ -443,6 +486,7 @@ def main() -> None:
         test_shim(tmp)
         test_score_lazy_import()
         test_summarize(tmp)
+        test_guard_copy()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print()
