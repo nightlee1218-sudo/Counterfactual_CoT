@@ -121,7 +121,7 @@ indomain_v6_gen() { # out_root splits_dir splits... (passed as array via globals
 indomain_v6_score() { # out_root splits_dir splits...
   local o="$1" splits_dir="$2"; shift 2
   CUDA_VISIBLE_DEVICES=$GPU1 $EVAL_PY "$HERE/score_indomain_threeway.py" \
-    --models v6 --splits "$*" --splits-dir "$splits_dir" \
+    --models v6 --splits $* --splits-dir "$splits_dir" \
     --gen-v6-dir "$o/gen_indomain/v6" --out-dir "$o/scores_indomain" --seeds $INDO_SEEDS
 }
 
