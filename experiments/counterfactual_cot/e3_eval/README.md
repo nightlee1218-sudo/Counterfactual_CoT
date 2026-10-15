@@ -27,9 +27,10 @@ Module-A / E1 / E2 result, as a sanity anchor).
 | `indomain_stats.py` | shared PURE stats helpers (bootstrap/wilcoxon/pair_stats) + Module-A three-way CLI |
 | `score_indomain_threeway.py` | Module-A scoring, metric code line-identical to `final991_eval_v1/score_indomain.py`; lazy heavy imports, `--models`, skip-if-exists |
 | `stats_threeway.py` | E1 CLIP-T three-way CLI (subsets + ALL, optional VQA merge) |
+| `vqa_scorer.py` | local BLIP-2 VQA scorer: T2I-CompBench-style questions per subset + negative controls; writes `vqa_{model}.jsonl`; `--mock` CPU selftest mode (see below) |
 | `probe_stats.py` | E2 three-way CLI: 10 metrics x layers, best layer, late-step AUROC, optional npz cross-check |
 | `summarize.py` | unified `summary_table.md` + `summary.json` from the three stats files |
-| `selftest_e3_eval.py` | CPU mock suite (46 checks; no GPU/BAGEL stack) |
+| `selftest_e3_eval.py` | CPU mock suite (100 checks; no GPU/BAGEL stack) |
 
 ## What is reused vs. newly computed
 
@@ -90,6 +91,47 @@ v7 generation for the A-module uses the same `gen_same_seed_states_v6.py`
 copy (its format guard accepts `gold40_automask_v7_align_fsdp` — same keys,
 label only); E1/probe v7 runs go through `model_shim.py --alias v7 --ckpt
 <v7 latest.pt>` exactly like v6.
+
+## VQA scorer (local BLIP-2, added 20261015)
+
+`vqa_scorer.py` is the pure-local replacement of the E1 API-based scorer
+(`e1_general_t2i/score_vqa.py`, venus llmproxy -> HTTP 403 on the eval
+instance). It answers T2I-CompBench-style questions per generated image with
+`Salesforce/blip2-flan-t5-xl` (transformers 4.52.4; weight pull precedent:
+ViT-g-14 / dinov2 / lpips already came from HF on the GPU instance;
+`--local-vqa-dir` points at an offline copy if needed; /group has no VQA
+weights — BAGEL-7B-MoT only — which is why the model is not pre-cached).
+
+Templates per subset (paper convention) + sensitivity extensions (default ON,
+`--no-negatives` off):
+
+| subset | questions per image | negative controls |
+|---|---|---|
+| attribute_binding (color/shape/texture) | `Is there a {mod} {obj} in the image?` per binding | swapped-modifier checks between the first two bindings (attribute leakage) |
+| counting | `How many {plural obj} are there in the image?`, answer parsed to int, exact match | none (paper convention) |
+| spatial_relations | `Is there a {objA} {relation} a {objB} in the image?` | mirrored relation for right/left/top/bottom (yes to both directions fails) |
+
+Prompts are parsed from the generation manifests (flat text; modifier
+vocabularies extracted from the real 450 prompts; counting narration tails
+like "for a picnic" suppressed, keep-prepositions ("with/near/alongside") and
+listed verbs ("carried") keep post-verb counts; the selftest asserts
+**450/450 parse coverage** on the real prompt files plus template/answer
+spot checks). Output rows keep the e1 `score_vqa.py` contract
+(`item_id/subset/source_category/model/vqa_match/...`, append-resumable),
+so `stats_threeway.py` merges them automatically (binary match rate, >= 2
+models required) and `summarize.py` surfaces the VQA block.
+
+```bash
+bash run_e3_eval.sh vqa            # auto-detects models with E1 gen manifests
+VQA_MODELS="base final991 v6" bash run_e3_eval.sh vqa
+E1_VQA=1 bash run_e3_eval.sh run  # or hook into the full run (gpu0 chain)
+```
+
+`--mock` (with `--mock-acc`) is a deterministic oracle answerer used by the
+selftest: no torch/transformers/PIL, no image reads. BLIP-2 caveats: yes/no
+bias and weak counting are known (T2I-CompBench itself notes VQA-based
+counting underestimates); the paired per-item design keeps model comparisons
+fair, CLIP-T remains the primary E1 metric.
 
 ## Stats recipe (all components, identical)
 
@@ -152,10 +194,11 @@ bash run_e3_eval.sh status
 ```
 
 Env knobs: `V6_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1 E1_MAX_ITEMS
-INDO_SEEDS PROBE_LIMIT PROBE_STEPS PROBE_VERIFY_NPZ`. Scoring uses
+INDO_SEEDS PROBE_LIMIT PROBE_STEPS PROBE_VERIFY_NPZ VQA_MODELS E1_VQA`.
+Scoring uses
 `/group/40016/niightli/BAGEL/venvs/geneval_eval/bin/python` (torch +
-open_clip ViT-g-14 + dinov2 + lpips); generation/probing use system
-`python3` with the BAGEL stack.
+open_clip ViT-g-14 + dinov2 + lpips + transformers for the local BLIP-2
+VQA scorer); generation/probing use system `python3` with the BAGEL stack.
 
 Resumability: E1 gen and the probe skip already-done items by manifest;
 the v5 A-module generator is NOT resumable (non-empty dir without
@@ -173,6 +216,8 @@ seeds rows) and auto-passes `--overwrite` only when a split is incomplete.
 - `dinov2`/`lpips` load failures degrade to null columns (stats drop them
   per metric) instead of crashing, unlike the original scorer.
 - VQA faithfulness (E1) is merged only if `vqa_{model}.jsonl` rows exist;
-  the current E1 run has none, so the section is absent unless v6 adds it.
+  produce them with `run_e3_eval.sh vqa` (local BLIP-2, `vqa_scorer.py`). The
+  historical E1 API-based rows never materialized (HTTP 403), so the VQA
+  section appears once the local scorer runs.
 - The author delivered the launcher only; GPU evaluation itself was NOT
   run from the authoring session (per task scope).

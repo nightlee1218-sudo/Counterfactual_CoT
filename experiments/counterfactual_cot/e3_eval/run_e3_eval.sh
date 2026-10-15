@@ -10,12 +10,13 @@
 #   run        # full three-way: v6 generation+scoring on 2 GPUs in parallel, stats + summary
 #   status     # progress file + artifact inventory + last log lines
 # Granular foreground stages (single GPU):
-#   e1-gen | e1-score | indomain-gen | indomain-score | probe | stats | summary
+#   e1-gen | e1-score | vqa | indomain-gen | indomain-score | probe | stats | summary
 #
 # Only v6 is generated/scored/probed; base/final991 rows come from the
 # existing E1 / final991_eval_v1 / E2 artifacts (copied into OUT, never rescored).
 # Override knobs: V6_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1
 #                 E1_MAX_ITEMS INDO_LIMIT PROBE_LIMIT PROBE_VERIFY_NPZ
+#                 VQA_MODELS E1_VQA (vqa stage: local BLIP-2, see vqa_scorer.py)
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -92,6 +93,17 @@ e1_v6_score() { # out_root
     --gen-root "$o/gen_t2i" --out-dir "$o/scores_t2i" --models v6
 }
 
+# Local BLIP-2 VQA scoring (pure-local replacement of the 403'd API scorer).
+# Auto-detects every model with an E1 gen manifest under $o/gen_t2i plus the
+# reference base/final991 generations; VQA_MODELS narrows it when set.
+e1_vqa_score() { # out_root
+  local o="$1" models="${VQA_MODELS:-}"
+  local vm=()
+  [ -n "$models" ] && vm+=(--models $models)
+  CUDA_VISIBLE_DEVICES=$GPU0 $EVAL_PY "$HERE/vqa_scorer.py" \
+    --gen-e3-root "$o/gen_t2i" --out-dir "$o/scores_t2i" "${vm[@]}"
+}
+
 indomain_v6_gen() { # out_root splits_dir splits... (passed as array via globals)
   local o="$1" splits_dir="$2"; shift 2
   local split pairs expected manifest
@@ -156,7 +168,11 @@ INDO_SEEDS="${INDO_SEEDS:-1234 2234 3234}"
 INDO_SEEDS_N=$(echo $INDO_SEEDS | wc -w | tr -d ' ')
 
 chain_gpu0() { # out_root e1_max_items
-  e1_v6_gen "$1" "${2:-0}" && copy_reference_scores "$1" && e1_v6_score "$1"
+  e1_v6_gen "$1" "${2:-0}" && copy_reference_scores "$1" && e1_v6_score "$1" || return 1
+  # opt-in local BLIP-2 VQA pass on the same GPU (stats merges vqa rows
+  # automatically once >= 2 models have them)
+  if [ "${E1_VQA:-0}" = "1" ]; then e1_vqa_score "$1" || return 1; fi
+  return 0
 }
 
 chain_gpu1() { # out_root splits_dir splits... (probe args via globals)
@@ -245,7 +261,7 @@ stage_smoke() {
   head -2 "$SPLITS/val.jsonl" > "$o/splits/val.jsonl"
   copy_reference_scores "$o"
   write_progress "smoke" "v6-only tiny pipeline starting (E1 6 / A 2x2x2 / probe 2)"
-  ( chain_gpu0 "$o" 6 ) > "$o/logs/gpu0.log" 2>&1 & local p0=$!
+  ( E1_VQA=0 chain_gpu0 "$o" 6 ) > "$o/logs/gpu0.log" 2>&1 & local p0=$!
   ( INDO_SEEDS="1234 2234" INDO_SEEDS_N=2 PROBE_LIMIT=2 \
     chain_gpu1 "$o" "$o/splits" val ) > "$o/logs/gpu1.log" 2>&1 & local p1=$!
   echo $p0 > "$o/gpu0.pid"; echo $p1 > "$o/gpu1.pid"
@@ -297,6 +313,11 @@ stage_status() {
         echo "  [..] $f"
       fi
     done
+    for vf in "$out_root"/scores_t2i/vqa_*.jsonl; do
+      if [ -f "$vf" ]; then
+        echo "  [ok] scores_t2i/$(basename "$vf") ($(count_lines "$vf") lines)"
+      fi
+    done
     if [ -f "$out_root/probe_v6/probe_manifest.jsonl" ]; then
       echo "  probe_v6 ok pairs: $(grep -c '"status": "ok"' "$out_root/probe_v6/probe_manifest.jsonl")"
     fi
@@ -311,6 +332,7 @@ stage_status() {
 # granular foreground stages -------------------------------------------------
 stage_e1_gen()   { gpu_preflight; e1_v6_gen "$OUT" "${E1_MAX_ITEMS:-0}"; }
 stage_e1_score() { e1_v6_score "$OUT"; }
+stage_vqa()      { e1_vqa_score "$OUT"; }
 stage_indomain_gen() {
   gpu_preflight
   indomain_v6_gen "$OUT" "$SPLITS" val test
@@ -328,10 +350,11 @@ case "$STAGE" in
   status) stage_status ;;
   e1-gen) stage_e1_gen ;;
   e1-score) stage_e1_score ;;
+  vqa) stage_vqa ;;
   indomain-gen) stage_indomain_gen ;;
   indomain-score) stage_indomain_score ;;
   probe) stage_probe ;;
   stats) stage_stats ;;
   summary) stage_summary ;;
-  *) die "unknown stage: $STAGE (selftest|preflight|smoke|run|status|e1-gen|e1-score|indomain-gen|indomain-score|probe|stats|summary)" ;;
+  *) die "unknown stage: $STAGE (selftest|preflight|smoke|run|status|e1-gen|e1-score|vqa|indomain-gen|indomain-score|probe|stats|summary)" ;;
 esac

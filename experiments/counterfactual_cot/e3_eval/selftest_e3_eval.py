@@ -12,6 +12,11 @@ Covers:
   7. model_shim dry-run + real injection on a toy script
   8. score_indomain_threeway --help (lazy-import check)
   9. summarize on synthetic stats files
+ 10. v6 generator copy guard audit (20261014 smoke fix)
+ 11. four-way (base/final991/v6/v7) auto-detection + pair enumeration
+ 12. vqa_scorer: T2I-CompBench templates, answer matching, real-prompt
+     parse coverage (450/450 when the E1 prompts dir is reachable), mock
+     CLI pipeline + stats_threeway VQA merge
 
 Usage:  python3 selftest_e3_eval.py
 Exit 0 only if every test passes.
@@ -538,6 +543,215 @@ def test_four_way_models(tmp: Path) -> None:
           {"v6-final991", "v6-base", "final991-base", "v7-v6", "v7-final991", "v7-base"})
 
 
+# ---------------------------------------------------------------------------
+# 12: vqa_scorer (local BLIP-2 T2I-CompBench-style scorer)
+# ---------------------------------------------------------------------------
+def locate_e1_prompts() -> Path | None:
+    """The 450-prompt dir: sibling in the merged tree, else the known
+    server-side BAGEL copy (both live under /group)."""
+    for cand in (HERE.parent / "e1_general_t2i" / "prompts",
+                 Path("/group/40016/niightli/BAGEL/experiments/counterfactual_cot"
+                      "/e1_general_t2i/prompts")):
+        if (cand / "attribute_binding.jsonl").is_file():
+            return cand
+    return None
+
+
+def test_vqa_scorer(tmp: Path) -> None:
+    vqa = load_module("vqa_selftest", HERE / "vqa_scorer.py")
+
+    # lazy-import contract (same as score_indomain_threeway)
+    proc = subprocess.run([sys.executable, str(HERE / "vqa_scorer.py"), "--help"],
+                          capture_output=True, text=True, cwd=str(HERE))
+    check("vqa_cli_help", proc.returncode == 0 and "--mock-acc" in proc.stdout,
+          proc.stderr[-300:])
+    src = (HERE / "vqa_scorer.py").read_text(encoding="utf-8")
+    check("vqa_module_top_clean",
+          "import torch" not in src.split("def build_blip2_ctx")[0]
+          and "import transformers" not in src.split("def build_blip2_ctx")[0])
+    bad = subprocess.run([sys.executable, str(HERE / "vqa_scorer.py"),
+                          "--models", "nonsense"], capture_output=True, text=True,
+                         cwd=str(HERE))
+    check("vqa_bad_model_rejected", bad.returncode != 0)
+
+    # answer matching
+    check("vqa_yesno_variants",
+          vqa.parse_yes_no("Yes.") is True and vqa.parse_yes_no("no,") is False
+          and vqa.parse_yes_no("No") is False and vqa.parse_yes_no("YES") is True
+          and vqa.parse_yes_no("There is no dog") is False
+          and vqa.parse_yes_no("maybe") is None)
+    check("vqa_count_variants",
+          vqa.parse_count("3") == 3 and vqa.parse_count("Three cups") == 3
+          and vqa.parse_count("There are seven birds") == 7
+          and vqa.parse_count("unknown") is None)
+    check("vqa_answer_ok",
+          vqa.answer_ok("yes", True) and not vqa.answer_ok("no", True)
+          and vqa.answer_ok("four boys", 4) and not vqa.answer_ok("five", 4))
+
+    # templates: attribute binding + swapped negatives
+    q = vqa.build_questions({"prompt": "a red lipstick and a pink blush",
+                             "subset": "attribute_binding", "source_category": "color"},
+                            negatives=True)
+    check("vqa_attr_pos", [x["q"] for x in q[:2]] ==
+          ["Is there a red lipstick in the image?", "Is there a pink blush in the image?"]
+          and all(x["expected"] is True for x in q[:2]))
+    check("vqa_attr_swaps", sorted(x["q"] for x in q[2:]) ==
+          ["Is there a pink lipstick in the image?", "Is there a red blush in the image?"]
+          and all(x["expected"] is False for x in q[2:]))
+    qnn = vqa.build_questions({"prompt": "a red lipstick and a pink blush",
+                               "subset": "attribute_binding", "source_category": "color"},
+                              negatives=False)
+    check("vqa_no_negatives_flag", len(qnn) == 2)
+    # complex sentences: "glass dinner party" binding dropped, multi-word
+    # objects, of-extension, plural template
+    q = vqa.build_questions({"prompt": "The wooden salad bowl and metallic tongs mix "
+                              "the fluffy greens for the glass dinner party.",
+                              "subset": "attribute_binding", "source_category": "texture"},
+                            negatives=True)
+    check("vqa_attr_complex", [x["q"] for x in q if x["expected"] is True] ==
+          ["Is there a wooden salad bowl in the image?",
+           "Are there metallic tongs in the image?",
+           "Are there fluffy greens in the image?"])
+    q = vqa.build_questions({"prompt": "a rectangular slice of cake",
+                             "subset": "attribute_binding", "source_category": "shape"},
+                            negatives=True)
+    check("vqa_attr_of_ext", q[0]["q"] == "Is there a rectangular slice of cake in the image?")
+    q = vqa.build_questions({"prompt": "a fabric pants and a leather bag",
+                             "subset": "attribute_binding", "source_category": "texture"},
+                            negatives=True)
+    check("vqa_attr_plural_neg", "Are there leather pants in the image?" in
+          [x["q"] for x in q if x["expected"] is False])
+
+    # counting: narrative-tail suppression vs keep-prepositions
+    def counted(prompt):
+        q = vqa.build_questions({"prompt": prompt, "subset": "counting",
+                                 "source_category": "numeracy"}, negatives=True)
+        return {x["q"]: x["expected"] for x in q}
+    c = counted("six people gathered for a picnic")
+    check("vqa_count_tail_suppressed",
+          c == {"How many people are there in the image?": 6})
+    c = counted("three trains carried three cups of tea")
+    check("vqa_count_carried_kept",
+          c == {"How many trains are there in the image?": 3,
+                "How many cups are there in the image?": 3})
+    c = counted("one frog jumped near three suitcases")
+    check("vqa_count_near_kept",
+          c == {"How many frogs are there in the image?": 1,
+                "How many suitcases are there in the image?": 3})
+    c = counted("two sheep, four dogs, three candles, and three bees created a warm atmosphere")
+    check("vqa_count_atmosphere_suppressed", sorted(c.values()) == [2, 3, 3, 4]
+          and len(c) == 4 and not any("atmosphere" in k for k in c))
+    c = counted("one man and two mice")
+    check("vqa_count_plurals",
+          c == {"How many men are there in the image?": 1,
+                "How many mice are there in the image?": 2})
+    c = counted("a computer, a microphone, and two flags completed the setup")
+    check("vqa_count_indefinite_articles", sorted(c.values()) == [1, 1, 2] and len(c) == 3)
+
+    # spatial: mirror negatives, symmetric relations, grammar fixes
+    q = vqa.build_questions({"prompt": "a bird on the right of a man",
+                             "subset": "spatial_relations", "source_category": "spatial"},
+                            negatives=True)
+    check("vqa_spatial_mirror", [x["q"] for x in q] ==
+          ["Is there a bird on the right of a man in the image?",
+           "Is there a bird on the left of a man in the image?"]
+          and [x["expected"] for x in q] == [True, False])
+    q = vqa.build_questions({"prompt": "a person next to a chicken",
+                             "subset": "spatial_relations", "source_category": "spatial"},
+                            negatives=True)
+    check("vqa_spatial_symmetric", len(q) == 1
+          and q[0]["q"] == "Is there a person next to a chicken in the image?")
+    q = vqa.build_questions({"prompt": "a airplane on the right of a rabbit",
+                             "subset": "spatial_relations", "source_category": "spatial"},
+                            negatives=True)
+    check("vqa_spatial_article_fix",
+          q[0]["q"] == "Is there an airplane on the right of a rabbit in the image?")
+    q = vqa.build_questions({"prompt": "a horse on side of a bicycle",
+                             "subset": "spatial_relations", "source_category": "spatial"},
+                            negatives=True)
+    check("vqa_spatial_side_norm",
+          q[0]["q"] == "Is there a horse on the side of a bicycle in the image?")
+
+    # real-prompt coverage: 450/450 must parse (skip when prompts unreachable)
+    prompts_dir = locate_e1_prompts()
+    if prompts_dir is None:
+        print("SKIP vqa_real_coverage (no E1 prompts dir reachable)")
+    else:
+        fails: list[str] = []
+        n = 0
+        for fname in ("attribute_binding", "counting", "spatial_relations"):
+            for line in (prompts_dir / f"{fname}.jsonl").read_text(
+                    encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                n += 1
+                rec = json.loads(line)
+                try:
+                    qs = vqa.build_questions(rec, negatives=True)
+                    assert qs and all(x["q"] and x["expected"] is not None for x in qs)
+                except Exception as exc:  # noqa: BLE001
+                    fails.append(f"{rec['item_id']}: {exc!r}")
+        check("vqa_real_coverage_450", n == 450 and not fails,
+              f"n={n} fails={fails[:3]}")
+
+    # mock CLI pipeline: two models -> vqa rows -> stats_threeway merge
+    gen = tmp / "vqa_gen"
+    (gen / "gen_t2i" / "v6").mkdir(parents=True)
+    (gen / "legacy" / "base").mkdir(parents=True)
+    items = [
+        {"item_id": "attribute_binding__color__0000", "prompt": "a red lipstick and a pink blush",
+         "source_category": "color", "subset": "attribute_binding", "output_path": "/nonexistent/a.png"},
+        {"item_id": "counting__numeracy__0000", "prompt": "four boys and three phones",
+         "source_category": "numeracy", "subset": "counting", "output_path": "/nonexistent/b.png"},
+        {"item_id": "spatial_relations__spatial__0000", "prompt": "a bird on the right of a man",
+         "source_category": "spatial", "subset": "spatial_relations", "output_path": "/nonexistent/c.png"},
+    ]
+    for d in (gen / "gen_t2i" / "v6", gen / "legacy" / "base"):
+        with (d / "generation_manifest.jsonl").open("w") as f:
+            for r in items:
+                f.write(json.dumps(r) + "\n")
+    scores = tmp / "vqa_scores"
+    base_cmd = [sys.executable, str(HERE / "vqa_scorer.py"), "--mock",
+                "--gen-legacy-root", str(gen / "legacy"),
+                "--gen-e3-root", str(gen / "gen_t2i")]
+    p_oracle = subprocess.run(base_cmd + ["--models", "base", "--out-dir", str(scores)],
+                               capture_output=True, text=True, cwd=str(HERE))
+    p_flip = subprocess.run(base_cmd + ["--models", "v6", "--mock-acc", "0.0",
+                                        "--out-dir", str(scores)],
+                            capture_output=True, text=True, cwd=str(HERE))
+    check("vqa_mock_cli_exit0", p_oracle.returncode == 0 and p_flip.returncode == 0,
+          (p_oracle.stderr[-300:] + p_flip.stderr[-300:]))
+    rows_b = [json.loads(l) for l in (scores / "vqa_base.jsonl").read_text().splitlines()]
+    rows_v = [json.loads(l) for l in (scores / "vqa_v6.jsonl").read_text().splitlines()]
+    check("vqa_mock_oracle_rows", len(rows_b) == 3 and all(r["vqa_match"] is True
+          for r in rows_b) and all(r["mode"] == "mock" for r in rows_b))
+    check("vqa_mock_flip_rows", len(rows_v) == 3 and all(r["vqa_match"] is False
+          and r["n_correct"] == 0 for r in rows_v))
+    check("vqa_row_contract", all(set(("item_id", "subset", "model", "vqa_match",
+          "n_questions", "n_correct", "answers")) <= set(r) for r in rows_b + rows_v))
+    # resumable: rerun adds nothing
+    p_again = subprocess.run(base_cmd + ["--models", "base", "--out-dir", str(scores)],
+                             capture_output=True, text=True, cwd=str(HERE))
+    rows_b2 = [json.loads(l) for l in (scores / "vqa_base.jsonl").read_text().splitlines()]
+    check("vqa_resumable_no_dup", p_again.returncode == 0 and len(rows_b2) == 3)
+    # stats_threeway merges the vqa rows automatically
+    p_stats = subprocess.run([sys.executable, "stats_threeway.py", "--scores-dir",
+                             str(scores), "--bootstrap", "300"],
+                             capture_output=True, text=True, cwd=str(HERE))
+    check("vqa_stats_exit0", p_stats.returncode == 0, p_stats.stderr[-300:])
+    data = json.loads((scores / "stats_threeway.json").read_text())
+    vqa_block = data.get("vqa") or {}
+    check("vqa_stats_models", vqa_block.get("models") == ["base", "v6"])
+    entry = vqa_block.get("ALL", {})
+    check("vqa_stats_means", entry.get("model_means") == {"base": 1.0, "v6": 0.0})
+    pair = entry.get("pairs", {}).get("v6-base")
+    check("vqa_stats_pair_sig", pair is not None
+          and abs(pair["mean_diff_y_minus_x"] + 1.0) < 1e-12
+          and pair["significant"])
+    check("vqa_stats_md_section", "VQA faithfulness (match rate)" in
+          (scores / "comparison_table.md").read_text())
+
+
 def main() -> None:
     tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
     try:
@@ -552,6 +766,7 @@ def main() -> None:
         test_summarize(tmp)
         test_guard_copy()
         test_four_way_models(tmp)
+        test_vqa_scorer(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print()
