@@ -71,11 +71,11 @@ selftest). The v5 A-module generator already takes
 ```
 gen_t2i/v6/                       E1 v6 generation (450 imgs)
 scores_t2i/clipT_{base,final991,v6}.jsonl + stats_threeway.json + comparison_table.md
-gen_indomain/v6/{val,test}/       A-module v6 generation (570 imgs)
+gen_indomain/{v6,v7}/{val,test}/       A-module v6/v7 generation (570 imgs each)
 scores_indomain/indomain_{model}_{split}.jsonl + indomain_stats_threeway.json + indomain_table.md
-probe_v6/                         E2 v6 probe (manifest + maps/*.npz)
+probe_{v6,v7}/                          E2 v6/v7 probe (manifest + maps/*.npz)
 probe_stats/probe_stats_threeway.json + probe_table.md
-summary_table.md + summary.json   unified three-way summary
+summary_table.md + summary.json   unified N-way summary (models with rows)
 ```
 
 ## N-way models (v7 support, added 20261014)
@@ -187,23 +187,34 @@ passing end-to-end independently confirms both paths.
 
 ```bash
 bash run_e3_eval.sh selftest   # CPU only
-bash run_e3_eval.sh preflight  # env + reusable-artifact audit + shim dry-run
+bash run_e3_eval.sh preflight  # env + reusable-artifact audit + shim dry-run (v6 + v7 when resolvable)
 bash run_e3_eval.sh smoke      # v6-only tiny pipeline (~30 min) + stats
-bash run_e3_eval.sh run        # full: gpu0 E1 v6 -> CLIP-T; gpu1 A gen -> probe -> score; then stats+summary
+bash run_e3_eval.sh run        # full four-way: gpu0 E1 gen+score (v6 skipped when complete, v7 generated) -> VQA (default on);
+                               #   gpu1 A gen -> probe -> score (same skip rule); then stats + summary
 bash run_e3_eval.sh status
 ```
 
-Env knobs: `V6_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1 E1_MAX_ITEMS
-INDO_SEEDS PROBE_LIMIT PROBE_STEPS PROBE_VERIFY_NPZ VQA_MODELS E1_VQA`.
+Env knobs: `V6_CKPT V7_CKPT MODEL_DIR EVAL_PY N_BOOT GPU0 GPU1 E1_MAX_ITEMS
+E1_MODELS INDO_MODELS INDO_SEEDS PROBE_LIMIT PROBE_STEPS PROBE_VERIFY_NPZ
+VQA_MODELS E1_VQA`. `V7_CKPT` defaults to the resolver chain (explicit
+override -> `outputs/gold40_automask_v7_align_fsdp_full_shard/checkpoints/latest.pt`
+-> newest `outputs/*v7*/checkpoints/latest.pt`); `E1_MODELS`/`INDO_MODELS`
+default to `v6 v7` (the granular stages loop over them); `E1_VQA` defaults
+to 1 (BLIP-2 pass runs after E1 scoring; `E1_VQA=0` opts out).
 Scoring uses
 `/group/40016/niightli/BAGEL/venvs/geneval_eval/bin/python` (torch +
 open_clip ViT-g-14 + dinov2 + lpips + transformers for the local BLIP-2
 VQA scorer); generation/probing use system `python3` with the BAGEL stack.
 
-Resumability: E1 gen and the probe skip already-done items by manifest;
-the v5 A-module generator is NOT resumable (non-empty dir without
-`--overwrite` aborts), so `indomain-gen` checks completion (pairs x 2 x
-seeds rows) and auto-passes `--overwrite` only when a split is incomplete.
+Resumability / idempotent four-way: E1 gen and the probe skip already-done
+items by manifest, and the launcher additionally skips the whole stage when
+the previous three-way run's artifacts are complete (E1 manifest >= 3x150
+rows, `clipT_{model}.jsonl` >= 450 rows, probe >= 51 ok pairs, A-module
+splits >= pairs x 2 x seeds rows) — a four-way `run` after the completed
+three-way run regenerates only v7 (plus the four-way VQA pass, which is
+append-resumable per row). The v5 A-module generator is NOT resumable
+(non-empty dir without `--overwrite` aborts), so `indomain-gen` auto-passes
+`--overwrite` only when a split is incomplete.
 
 ## Limitations / notes
 

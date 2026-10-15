@@ -17,6 +17,8 @@ Covers:
  12. vqa_scorer: T2I-CompBench templates, answer matching, real-prompt
      parse coverage (450/450 when the E1 prompts dir is reachable), mock
      CLI pipeline + stats_threeway VQA merge
+ 13. run_e3_eval.sh v7 wiring: bash syntax, V7_CKPT resolution, v7 stage
+     functions, idempotent skips, E1_VQA default-on, v6-preserving smoke
 
 Usage:  python3 selftest_e3_eval.py
 Exit 0 only if every test passes.
@@ -752,6 +754,52 @@ def test_vqa_scorer(tmp: Path) -> None:
           (scores / "comparison_table.md").read_text())
 
 
+# ---------------------------------------------------------------------------
+# 13: launcher v7 wiring (four-way run_e3_eval.sh, added 20261015)
+# ---------------------------------------------------------------------------
+def test_launcher_v7_wiring() -> None:
+    sh_path = HERE / "run_e3_eval.sh"
+    check("launcher_exists", sh_path.is_file())
+    if not sh_path.is_file():
+        return
+    proc = subprocess.run(["bash", "-n", str(sh_path)], capture_output=True, text=True)
+    check("launcher_bash_syntax", proc.returncode == 0, proc.stderr[-300:])
+    src = sh_path.read_text(encoding="utf-8")
+
+    # v7 checkpoint: knob + resolver + default run name + model_ckpt gate
+    check("launcher_v7_ckpt_var", 'V7_CKPT="${V7_CKPT:-}"' in src)
+    check("launcher_v7_resolver",
+          "resolve_v7_ckpt()" in src
+          and "gold40_automask_v7_align_fsdp_full_shard" in src
+          and "*v7*/checkpoints/latest.pt" in src)
+    check("launcher_model_ckpt_gate", "model_ckpt()" in src
+          and "checkpoint missing" in src)
+
+    # v7 stage functions, isomorphic to the v6 ones
+    for fn in ("e1_v7_gen", "e1_v7_score", "indomain_v7_gen",
+               "indomain_v7_score", "probe_v7"):
+        check(f"launcher_has_{fn}", f"{fn}()" in src)
+    for fn in ("e1_gen", "e1_score", "indomain_gen", "indomain_score", "probe_run"):
+        check(f"launcher_generic_{fn}", f"{fn}() {{ # " in src)
+    check("launcher_v7_shim_alias", '--alias "$m"' in src)
+    check("launcher_indomain_v7_dirs", '--gen-v7-dir "$o/gen_indomain/v7"' in src)
+    check("launcher_probe_stats_v7dir", '--v7-dir "$o/probe_v7"' in src)
+
+    # idempotent four-way: skip markers + model loops + v6-preserving smoke
+    check("launcher_skip_markers", src.count("skip (idempotent)") >= 4)
+    check("launcher_model_loops",
+          '${E1_MODELS:-v6 v7}' in src and '${INDO_MODELS:-v6 v7}' in src)
+    check("launcher_smoke_stays_v6",
+          'E1_MODELS=v6 chain_gpu0' in src and 'INDO_MODELS=v6' in src)
+    check("launcher_run_checks_v7", "clipT_$m.jsonl" in src
+          and "probe_$m/probe_manifest.jsonl" in src)
+    check("launcher_status_lists_v7", "gen_t2i/$m/generation_manifest.jsonl" in src)
+
+    # VQA default ON in the chain, opt-out preserved, smoke opts out
+    check("launcher_vqa_default_on", '[ "${E1_VQA:-1}" = "1" ]' in src)
+    check("launcher_smoke_vqa_off", "E1_VQA=0" in src)
+
+
 def main() -> None:
     tmp = Path(tempfile.mkdtemp(prefix="e3_eval_selftest_"))
     try:
@@ -767,6 +815,7 @@ def main() -> None:
         test_guard_copy()
         test_four_way_models(tmp)
         test_vqa_scorer(tmp)
+        test_launcher_v7_wiring()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print()
