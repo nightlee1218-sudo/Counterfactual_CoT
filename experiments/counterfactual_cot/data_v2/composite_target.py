@@ -164,7 +164,12 @@ def build_edit_client(provider: str, **kwargs: Any) -> EditClient:
         return MockEditClient()
     if provider == "nanobanana":
         return NanoBananaEditClient(**kwargs)
-    raise ValueError(f"unknown edit provider: {provider!r} (mock|nanobanana)")
+    if provider == "addit":
+        # Add-it reference engine (env-gated real, mock fallback); duck-typed
+        from engine_addit import build_addit_client
+        client = build_addit_client(**kwargs)
+        return client  # type: ignore[return-value]
+    raise ValueError(f"unknown edit provider: {provider!r} (mock|nanobanana|addit)")
 
 
 # ---------------------------------------------------------------------------
@@ -539,7 +544,7 @@ def main() -> None:
     ap.add_argument("--plans", required=True, type=Path)
     ap.add_argument("--image-root", required=True, type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)
-    ap.add_argument("--provider", default="mock", choices=["mock", "nanobanana"])
+    ap.add_argument("--provider", default="mock", choices=["mock", "nanobanana", "addit"])
     ap.add_argument("--matting", default="mock",
                     choices=["mock", "auto", "rembg", "sam2", "grabcut"])
     ap.add_argument("--limit", type=int, default=0)

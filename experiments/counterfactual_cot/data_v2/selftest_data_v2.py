@@ -273,7 +273,77 @@ def run_all(tmp: Path) -> bool:
     check("audit: tampered background fails the gate", not tampered_report["all_pass"],
           f"fail={tampered_report['summary']['n_fail_gate']}")
 
-    # ---- 6. run_pilot.sh end-to-end + idempotent re-run ----------------------
+    # ---- 5b. engine_addit (mock fallback + distinct signature) ---------------
+    import engine_addit as ea
+    addit_client = ea.build_addit_client()
+    check("addit: missing weights -> mock engine", isinstance(addit_client, ea.MockAdditEditClient))
+    check("addit: real client raises cleanly when forced without weights",
+          _addit_real_guard())
+    crop_img = Image.new("RGB", (64, 64), (100, 100, 100))
+    out_nb = ct.build_edit_client("mock").edit_crop(crop_img, "p", seed=1)
+    out_ad = addit_client.edit_crop(crop_img, "p", seed=1)
+    diff_engines = not np.array_equal(np.asarray(out_nb), np.asarray(out_ad))
+    check("addit: engine outputs distinguishable from nanobanana mock", diff_engines)
+    check("addit: deterministic across same seed",
+          np.array_equal(np.asarray(addit_client.edit_crop(crop_img, "p", seed=1)),
+                         np.asarray(out_ad)))
+    check("addit: routed through composite factory",
+          type(ct.build_edit_client("addit")).__name__ == "MockAdditEditClient")
+
+    # ---- 5c. verify_checklist (mock VLM: pass + regen) ------------------------
+    import verify_checklist as vc
+    pair_plans = load_jsonl(out_dir / "manifest.jsonl")
+    by_subtype: Dict[str, Any] = {}
+    for p in pair_plans:
+        by_subtype.setdefault(p["subtype"], p)
+    checklist_ok = all(len(vc.build_checklist(p)) >= 2 for p in pair_plans)
+    check("verify: every subtype yields change+preserve items", checklist_ok,
+          f"subtypes={sorted(by_subtype)}")
+    vrep = vc.run_verify(out_dir / "manifest.jsonl", image_root,
+                         tmp / "verify_ok.json", vlm=vc.MockVlm())
+    check("verify: clean pipeline all pass",
+          vrep["summary"]["n_pass"] == vrep["summary"]["n_pairs"]
+          and vrep["summary"]["n_regen"] == 0,
+          json.dumps(vrep["summary"]))
+
+    # fault injection -> regen flagged (fail every change* item of one pair)
+    fault_pair = pair_plans[0]
+    fault_ids = {i["id"] for i in vc.build_checklist(fault_pair)
+                 if i["kind"].startswith("change")}
+    faulty = vc.MockVlm(faults={fid: "wrong" for fid in fault_ids})
+    frow = vc.verify_pair(fault_pair, image_root, out_dir, faulty, threshold=0.99)
+    check("verify: fault injection flags regen",
+          frow["status"] == "regen" and frow["n_pass"] < frow["n_items"],
+          f"score={frow.get('score')} items={frow.get('n_items')}")
+
+    # ---- 5d. integrity_guard (clean pass + overflow + erosion) -----------------
+    import integrity_guard as ig
+    irep = ig.run_guard(out_dir / "manifest.jsonl", image_root,
+                        tmp / "integrity_ok.json", matting_name="mock")
+    check("integrity: clean pipeline all ok",
+          irep["summary"]["n_ok"] == irep["summary"]["n_pairs"]
+          and irep["summary"]["n_needs_fix"] == 0,
+          json.dumps(irep["summary"]))
+
+    # overflow: tamper background outside mask
+    orep = ig.run_guard(tampered_dir / "manifest.jsonl", image_root,
+                        tmp / "integrity_overflow.json", matting_name="mock")
+    check("integrity: blend overflow detected (needs_fix)",
+          orep["summary"]["n_needs_fix"] >= 1
+          and orep["summary"]["overflow_pairs"] >= 1,
+          json.dumps(orep["summary"]))
+
+    # erosion: stub matte that finds nothing in the object region
+    class EmptyMatte:
+        def extract_alpha(self, crop: Image.Image) -> np.ndarray:
+            return np.zeros((crop.height, crop.width), dtype=np.uint8)
+    erow = ig.check_pair(pair_plans[0], image_root, out_dir, EmptyMatte())
+    check("integrity: foreground erosion detected (low IoU -> needs_fix)",
+          erow["status"] == "needs_fix"
+          and any("eroded" in r for r in erow.get("reasons", [])),
+          f"iou={erow.get('fg_iou')} reasons={erow.get('reasons')}")
+
+    # ---- 6. run_pilot.sh end-to-end (dual engine) + idempotent re-run ---------
     pilot_dir = tmp / "pilot"
     env = dict(os.environ)
     env.update({
@@ -283,18 +353,29 @@ def run_all(tmp: Path) -> bool:
         "LOG_DIR": str(pilot_dir / "logs"),
     })
     r1 = subprocess.run(["bash", str(HERE / "run_pilot.sh"), "--n", "16", "--seed", "7"],
-                        env=env, capture_output=True, text=True, timeout=600)
-    check("pilot: first run exits 0 (all gates pass)", r1.returncode == 0,
+                        env=env, capture_output=True, text=True, timeout=900)
+    check("pilot: first run exits 0 (all gates pass, both engines)", r1.returncode == 0,
           (r1.stderr or r1.stdout).strip()[-200:])
-    ledger1 = (pilot_dir / "ledger.jsonl").read_text()
+    ledger1 = (pilot_dir / "eng_nanobanana" / "ledger.jsonl").read_text()
     n_ok1 = sum(1 for line in ledger1.splitlines() if '"status": "ok"' in line)
+    check("pilot: addit engine produced its own target set",
+          (pilot_dir / "eng_addit" / "ledger.jsonl").exists()
+          and len(load_jsonl(pilot_dir / "eng_addit" / "manifest.jsonl")) > 0)
 
     r2 = subprocess.run(["bash", str(HERE / "run_pilot.sh"), "--n", "16", "--seed", "7"],
-                        env=env, capture_output=True, text=True, timeout=600)
-    ledger2 = (pilot_dir / "ledger.jsonl").read_text()
+                        env=env, capture_output=True, text=True, timeout=900)
+    ledger2 = (pilot_dir / "eng_nanobanana" / "ledger.jsonl").read_text()
     n_ok2 = sum(1 for line in ledger2.splitlines() if '"status": "ok"' in line)
     check("pilot: re-run is idempotent (no new ok rows, exit 0)",
           r2.returncode == 0 and n_ok1 == n_ok2, f"ok1={n_ok1} ok2={n_ok2}")
+
+    # merged pilot report with cross-engine stats
+    preport = json.loads((pilot_dir / "pilot_report.json").read_text(encoding="utf-8"))
+    check("pilot: pilot_report.json has both engines + audit pass",
+          set(preport["per_engine"]) == {"nanobanana", "addit"}
+          and preport["all_engines_audit_pass"]
+          and "composite" in preport["per_engine"]["addit"],
+          f"engines={sorted(preport['per_engine'])}")
 
     # nanobanana mode refuses without key
     env_nb = dict(env)
@@ -306,6 +387,20 @@ def run_all(tmp: Path) -> bool:
           r3.stderr.strip()[-120:])
 
     return all(ok for _, ok, _ in RESULTS)
+
+
+def _addit_real_guard() -> bool:
+    import engine_addit as ea
+    saved_w = os.environ.pop("ADDIT_WEIGHTS_DIR", None)
+    try:
+        try:
+            ea.build_addit_client(force_real=True)
+            return False
+        except RuntimeError:
+            return True
+    finally:
+        if saved_w is not None:
+            os.environ["ADDIT_WEIGHTS_DIR"] = saved_w
 
 
 def _key_guard() -> bool:
